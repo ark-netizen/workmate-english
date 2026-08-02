@@ -13,6 +13,11 @@ import type { PromotionStatus } from "@/lib/api";
 import { RANKS } from "@/components/promotion/rankArt";
 import { isAutoAdvanceEnabled, setAutoAdvance } from "@/lib/qaAutoAdvance";
 
+// 심사 기간 등 외부에 라이브 사이트를 공개하는 동안은, 데이터를 실제로 지우거나 조작하는
+// 위험한 QA 버튼(초기화/승급 게이트 채우기 등)은 숨긴다 — 실수로 눌러도 안전한 "연락 바로
+// 받기" 계열만 남겨서 기능 시연은 여전히 가능하게 함. 기간이 끝나면 true로 되돌리면 됨.
+const SHOW_DESTRUCTIVE_QA_TOOLS = false;
+
 // 직급별 승급에 필요한 "연속 출근일수" — server/promotion.js의 DAYS_PER_STEP(30)와 반드시 같은 값이어야 함
 const RANK_DAYS_PER_STEP = 30;
 const RANK_STEPS = RANKS.slice(0, -1).map((from, i) => ({
@@ -99,50 +104,54 @@ function QaControlPanel({
       >
         {deliveringNext ? "받는 중..." : "연락 바로 받기"}
       </button>
-      <button
-        type="button"
-        onClick={onResetToday}
-        disabled={resettingToday}
-        title="오늘 workday를 삭제해서 출근 전 상태로 되돌립니다(같은 날 반복 테스트용)"
-        className="w-full rounded-md border border-dashed border-red-300 px-2.5 py-1.5 text-left text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
-      >
-        {resettingToday ? "초기화 중..." : "오늘 초기화"}
-      </button>
-      <div className="space-y-1 border-t border-dashed border-foreground/20 pt-1.5">
-        <p className="px-0.5 text-[10px] font-medium text-foreground/40">
-          직급별 승급 게이트 채우기 (현재 직급 기준으로 골라 누르기)
-        </p>
-        {RANK_STEPS.map((step) => (
+      {SHOW_DESTRUCTIVE_QA_TOOLS && (
+        <>
           <button
-            key={step.days}
             type="button"
-            onClick={() => onBackfillDays(step.days)}
-            disabled={backfillingDays !== null}
-            title={`지난 ${step.days}일치 더미 근무 기록을 채워 ${step.from}→${step.to} 승급 조건을 채웁니다`}
-            className="w-full rounded-md border border-dashed border-blue-300 px-2.5 py-1.5 text-left text-xs font-medium text-blue-600 hover:bg-blue-50 disabled:opacity-50"
+            onClick={onResetToday}
+            disabled={resettingToday}
+            title="오늘 workday를 삭제해서 출근 전 상태로 되돌립니다(같은 날 반복 테스트용)"
+            className="w-full rounded-md border border-dashed border-red-300 px-2.5 py-1.5 text-left text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
           >
-            {backfillingDays === step.days ? "채우는 중..." : `+${step.days}일 (${step.from}→${step.to})`}
+            {resettingToday ? "초기화 중..." : "오늘 초기화"}
           </button>
-        ))}
-      </div>
-      <button
-        type="button"
-        onClick={onAdvanceDay}
-        disabled={advancingDay}
-        title="오늘을 마감하고 다음 접속 시 새로운 하루로 취급되게 합니다(대화 연속성 테스트용)"
-        className="w-full rounded-md border border-dashed border-emerald-300 px-2.5 py-1.5 text-left text-xs font-medium text-emerald-600 hover:bg-emerald-50 disabled:opacity-50"
-      >
-        {advancingDay ? "넘기는 중..." : "다음날로 넘기기"}
-      </button>
-      <button
-        type="button"
-        onClick={onResetAccount}
-        disabled={resettingAccount}
-        title="이 계정의 근무 기록·연차·승급 이력·프로필을 전부 지우고 온보딩부터 다시 시작합니다"
-        className="w-full rounded-md border border-dashed border-violet-400 px-2.5 py-1.5 text-left text-xs font-medium text-violet-600 hover:bg-violet-50 disabled:opacity-50"
-      >
-        {resettingAccount ? "초기화 중..." : "계정 전체 초기화"}
-      </button>
+          <div className="space-y-1 border-t border-dashed border-foreground/20 pt-1.5">
+            <p className="px-0.5 text-[10px] font-medium text-foreground/40">
+              직급별 승급 게이트 채우기 (현재 직급 기준으로 골라 누르기)
+            </p>
+            {RANK_STEPS.map((step) => (
+              <button
+                key={step.days}
+                type="button"
+                onClick={() => onBackfillDays(step.days)}
+                disabled={backfillingDays !== null}
+                title={`지난 ${step.days}일치 더미 근무 기록을 채워 ${step.from}→${step.to} 승급 조건을 채웁니다`}
+                className="w-full rounded-md border border-dashed border-blue-300 px-2.5 py-1.5 text-left text-xs font-medium text-blue-600 hover:bg-blue-50 disabled:opacity-50"
+              >
+                {backfillingDays === step.days ? "채우는 중..." : `+${step.days}일 (${step.from}→${step.to})`}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={onAdvanceDay}
+            disabled={advancingDay}
+            title="오늘을 마감하고 다음 접속 시 새로운 하루로 취급되게 합니다(대화 연속성 테스트용)"
+            className="w-full rounded-md border border-dashed border-emerald-300 px-2.5 py-1.5 text-left text-xs font-medium text-emerald-600 hover:bg-emerald-50 disabled:opacity-50"
+          >
+            {advancingDay ? "넘기는 중..." : "다음날로 넘기기"}
+          </button>
+          <button
+            type="button"
+            onClick={onResetAccount}
+            disabled={resettingAccount}
+            title="이 계정의 근무 기록·연차·승급 이력·프로필을 전부 지우고 온보딩부터 다시 시작합니다"
+            className="w-full rounded-md border border-dashed border-violet-400 px-2.5 py-1.5 text-left text-xs font-medium text-violet-600 hover:bg-violet-50 disabled:opacity-50"
+          >
+            {resettingAccount ? "초기화 중..." : "계정 전체 초기화"}
+          </button>
+        </>
+      )}
     </div>
   );
 }
