@@ -1,0 +1,131 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f7f8fa;
+  --foreground: #1f2328;
+  --surface: #ffffff;
+  --border: #e3e6ea;
+  --accent: #1a56ff; /* 로고 블루 */
+  --accent-2: #14b8a6; /* 로고 민트/틸 그린 */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+}
+
+/* 비즈니스 모드: 랜딩(IntroPage)에서만 토글되는 소개 화면용 테마.
+   크림톤 배경 + 틸 포인트 컬러 + 둥근 카드 + 부드러운 그림자로 바꾼다.
+   businessMode는 기본값이 true라 로그인 후 화면(Sidebar/TopBar/MobileTabBar)도 이 변수를
+   같이 쓰지만, 그 화면들은 각자 고정 색(사이드바/탭바는 초록 #5aa89a, TopBar는 흰색)을 그대로
+   쓰고 있어서 문제없음 — 여기 변수를 건드리면 안 됨(과거에 이걸 지웠다가 기본 화면이
+   크림톤에서 흰색으로 바뀌어버리는 문제가 있었음). */
+.business-mode {
+  --background: #faf3e6;
+  --foreground: #2a2620;
+  --surface: #fdfaf3;
+  --border: #eadfca;
+  --accent: #5aa89a;
+  --accent-2: #e08c4f;
+
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 14px;
+  --radius-2xl: 16px;
+  --radius-3xl: 20px;
+  --radius-4xl: 24px;
+  --radius: 10px;
+
+  --shadow-2xs: 0 1px 2px rgba(20, 20, 20, 0.06);
+  --shadow-xs: 0 1px 3px rgba(20, 20, 20, 0.08);
+  --shadow-sm: 0 2px 6px rgba(20, 20, 20, 0.08);
+  --shadow: 0 4px 10px rgba(20, 20, 20, 0.1);
+  --shadow-md: 0 6px 16px rgba(20, 20, 20, 0.12);
+  --shadow-lg: 0 12px 28px rgba(20, 20, 20, 0.16);
+  --shadow-xl: 0 24px 48px rgba(20, 20, 20, 0.2);
+  --shadow-2xl: 0 30px 60px rgba(20, 20, 20, 0.3);
+  --shadow-inner: inset 0 2px 4px rgba(20, 20, 20, 0.08);
+
+  font-family: "Apple SD Gothic Neo", "Malgun Gothic", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial,
+    sans-serif;
+}
+
+/* WorkMate 창(titlebar) 느낌의 상단 네비 + 그 아래 사선 스트라이프 디바이더 */
+.business-mode .business-titlebar {
+  background: #5aa89a;
+  color: #fff;
+  border-bottom-color: rgba(0, 0, 0, 0.1);
+}
+.business-mode .business-titlebar-dot {
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 4px;
+}
+.business-divider-strip {
+  height: 6px;
+  background: #6fbf7a;
+  background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 0 4px, transparent 4px 8px);
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Pretendard", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-pretendard {
+  font-family: "Pretendard", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial,
+    sans-serif;
+}
+
+/* 스크롤바 숨김 (모바일 프레임 느낌) */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* 모바일은 전체 폭, 데스크톱(md+)에서만 드래그로 정한 폭 적용 */
+.resizable-pane { width: 100%; }
+@media (min-width: 768px) {
+  .resizable-pane { width: var(--pane-width); }
+}
+
+@keyframes slidedown {
+  from { transform: translateY(-120%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-slidedown { animation: slidedown 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
+
+@keyframes popin {
+  from { transform: scale(0.96); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.animate-popin { animation: popin 0.25s ease-out; }
+
+@keyframes slidein {
+  from { transform: translateY(16px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-slidein { animation: slidein 0.32s cubic-bezier(0.22, 1, 0.36, 1); }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(var(--float-rotate, 0deg)); }
+  50% { transform: translateY(-8px) rotate(var(--float-rotate, 0deg)); }
+}
+.animate-float { animation: float 4s ease-in-out infinite; }
+
+@keyframes reviewslide {
+  from { opacity: 0; transform: translateX(28px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.animate-reviewslide { animation: reviewslide 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
