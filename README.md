@@ -52,3 +52,11 @@ To enable automatic deployment, configure these repository secrets:
 - `VERCEL_PROJECT_ID`
 
 If the secrets are not configured, the workflow skips deployment safely.
+
+## License
+
+Copyright (c) 2026 ark-netizen. All rights reserved.
+
+This repository is shared publicly for evaluation purposes only. No part of this
+code may be copied, modified, or redistributed without prior written permission
+from the copyright holder.
