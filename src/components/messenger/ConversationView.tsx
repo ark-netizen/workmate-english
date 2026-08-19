@@ -4,6 +4,7 @@ import type { Conversation } from "@/types/domain";
 import { useWorkday } from "@/context/useWorkday";
 import { ReplyHints } from "@/components/reply/ReplyHints";
 import { TranslateButton } from "@/components/reply/TranslateButton";
+import { SpeakButton } from "@/components/reply/SpeakButton";
 import { VoiceInputButton } from "@/components/reply/VoiceInputButton";
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { useResizable } from "@/hooks/useResizable";
@@ -186,7 +187,12 @@ export function ConversationView({ conversation }: { conversation: Conversation 
               >
                 {formatTime(message.timestamp)}
               </p>
-              {message.from === "contact" && <TranslateButton text={message.body} role={isVent ? undefined : contact?.role} />}
+              {message.from === "contact" && (
+                <span className="inline-flex items-center gap-1">
+                  <TranslateButton text={message.body} role={isVent ? undefined : contact?.role} />
+                  <SpeakButton text={message.body} />
+                </span>
+              )}
             </div>
           </div>
         ))}
