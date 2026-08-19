@@ -4,6 +4,7 @@ import type { Conversation } from "@/types/domain";
 import { useWorkday } from "@/context/useWorkday";
 import { ReplyHints } from "@/components/reply/ReplyHints";
 import { TranslateButton } from "@/components/reply/TranslateButton";
+import { VoiceInputButton } from "@/components/reply/VoiceInputButton";
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { useResizable } from "@/hooks/useResizable";
 import { formatTime } from "@/lib/format";
@@ -223,6 +224,9 @@ export function ConversationView({ conversation }: { conversation: Conversation 
                   handleSend();
                 }
               }}
+            />
+            <VoiceInputButton
+              onTranscript={(spoken) => setText((prev) => (prev.trim() ? `${prev.trim()} ${spoken}` : spoken))}
             />
             {!isVent && (
               <button

@@ -6,6 +6,7 @@ import { useWorkday } from "@/context/useWorkday";
 import { Avatar } from "@/components/ui/Avatar";
 import { ReplyHints } from "@/components/reply/ReplyHints";
 import { TranslateButton } from "@/components/reply/TranslateButton";
+import { VoiceInputButton } from "@/components/reply/VoiceInputButton";
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { useResizable } from "@/hooks/useResizable";
 import { formatDateTime } from "@/lib/format";
@@ -298,6 +299,12 @@ export function EmailView({ thread }: { thread: EmailThread }) {
             onChange={(e) => {
               textIsDefaultRef.current = false;
               setText(e.target.value);
+            }}
+          />
+          <VoiceInputButton
+            onTranscript={(spoken) => {
+              textIsDefaultRef.current = false;
+              setText((prev) => (prev.trim() ? `${prev.trim()} ${spoken}` : spoken));
             }}
           />
         </div>

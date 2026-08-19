@@ -2,6 +2,7 @@ import { useState } from "react";
 import { SquarePen } from "lucide-react";
 import { useWorkday } from "@/context/useWorkday";
 import { Avatar } from "@/components/ui/Avatar";
+import { VoiceInputButton } from "@/components/reply/VoiceInputButton";
 import type { Contact } from "@/types/domain";
 
 const ROLE_LABELS: Record<Contact["role"], string> = {
@@ -115,12 +116,17 @@ export function ComposeEmailPage() {
 
       <label className="flex flex-1 flex-col space-y-1">
         <span className="text-sm font-medium">내용</span>
-        <textarea
-          className="h-40 w-full resize-none rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none"
-          placeholder="영어로 자유롭게 써보세요"
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-        />
+        <div className="flex items-end gap-2">
+          <textarea
+            className="h-40 w-full flex-1 resize-none rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none"
+            placeholder="영어로 자유롭게 써보세요"
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+          />
+          <VoiceInputButton
+            onTranscript={(spoken) => setBody((prev) => (prev.trim() ? `${prev.trim()} ${spoken}` : spoken))}
+          />
+        </div>
       </label>
 
       <button
