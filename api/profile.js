@@ -5,6 +5,7 @@ import { requireUser } from '../server/auth.js'
 import { getProfile, saveProfile } from '../server/profile.js'
 import { getPromotionStatus, startEvaluation, submitEvaluation } from '../server/promotion.js'
 import { deleteUserAccount } from '../server/admin.js'
+import { rescheduleTodayNotifications } from '../server/workday.js'
 import { withErrors } from '../server/http.js'
 
 export default withErrors(null, async (req, res) => {
@@ -40,6 +41,10 @@ export default withErrors(null, async (req, res) => {
     }
     // 액션 없으면 온보딩 저장
     const profile = await saveProfile(userId, req.body || {})
+    // 출퇴근시간을 바꿨으면, 오늘 이미 잡혀있는(아직 발송 전) 연락들의 시각도 새 시간 기준으로 재계산
+    if (req.body?.start_time !== undefined || req.body?.end_time !== undefined) {
+      await rescheduleTodayNotifications(userId).catch(() => {})
+    }
     res.status(200).json({ profile })
     return
   }

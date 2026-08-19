@@ -11,6 +11,7 @@ import { IntroPage } from "@/pages/IntroPage";
 import { OnboardingPage } from "@/pages/OnboardingPage";
 import { PrivacyPolicyPage } from "@/pages/PrivacyPolicyPage";
 import { AdminPage } from "@/pages/AdminPage";
+import { QaPanelPage } from "@/pages/QaPanelPage";
 import { MessengerLayout } from "@/pages/messenger/MessengerLayout";
 import { MessengerIndexPage } from "@/pages/messenger/MessengerIndexPage";
 import { ConversationPage } from "@/pages/messenger/ConversationPage";
@@ -91,6 +92,10 @@ function AppRoutes() {
   }
   if (location.pathname === "/admin") {
     return <AdminPage />;
+  }
+  // 듀얼 모니터로 시연 녹화할 때 QA 도구만 따로 띄우는 창 — AppShell 없이 단독 페이지로 연다
+  if (location.pathname === "/qa") {
+    return <QaPanelPage />;
   }
 
   // 소개(랜딩)와 실제 서비스는 URL을 분리 — 소개는 항상 /intro, 서비스는 / 이하

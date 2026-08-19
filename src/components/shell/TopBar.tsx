@@ -46,12 +46,13 @@ export function TopBar({
         </div>
         <span className={`hidden truncate text-sm sm:inline ${businessMode ? "text-white/70" : "text-foreground/50"}`}>
           {now
-            ? now.toLocaleDateString("ko-KR", { month: "long", day: "numeric", weekday: "short" })
+            ? now.toLocaleDateString("ko-KR", { timeZone: "Asia/Seoul", month: "long", day: "numeric", weekday: "short" })
             : ""}
         </span>
         <span className={`shrink-0 text-sm tabular-nums ${businessMode ? "text-white/80" : "text-foreground/60"}`}>
           {now
             ? now.toLocaleTimeString("ko-KR", {
+                timeZone: "Asia/Seoul",
                 hour: "2-digit",
                 minute: "2-digit",
               })

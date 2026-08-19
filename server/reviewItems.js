@@ -88,10 +88,13 @@ export async function scheduleSameDayReview({ userId, workday, profile, characte
     // now >= deadline이면 당일 생략(scheduledAt은 null, 익일 복습만 진행)
 
     if (scheduledAt) {
+      // 저장 과정에서 실제 줄바꿈이 리터럴 "\n" 2글자로 남아있는 경우가 있어(더블 이스케이프),
+      // 화면에 백슬래시-n이 그대로 찍히지 않도록 표시 직전에 실제 줄바꿈으로 정규화한다
+      const cleanOriginalMessage = String(originalMessage || '').replace(/\\n/g, '\n')
       const body =
         format === 'fill_blank'
           ? `Quick review — fill in the blank:\n${blankOutKeyWord(answerSentence)}`
-          : `Quick review — try replying to this again from scratch:\n"${originalMessage}"`
+          : `Quick review — try replying to this again from scratch:\n"${cleanOriginalMessage}"`
       // 스케줄된 시각은 지금 당장이 아니라 미래이므로, 대화 자체는 미리 만들어두되(메시지도 함께)
       // scheduled_at을 미래로 박아서 기존 "예정 대화 따라잡기" 로직이 그때 자연스럽게 노출하게 한다
       const convo = await createReviewConversation(sb, { workdayId: workday.id, character, body })
@@ -142,7 +145,8 @@ export async function scheduleNextDayReview({ userId, workday }) {
   // 오늘 시나리오에 같은 역할 캐릭터가 없으면(드묾) 스킵 — 다음 기회에 재시도
   if (!character) return
 
-  const body = `Quick review from yesterday — try replying to this again:\n"${item.original_message}"`
+  const cleanOriginalMessage = String(item.original_message || '').replace(/\\n/g, '\n')
+  const body = `Quick review from yesterday — try replying to this again:\n"${cleanOriginalMessage}"`
   const convo = await createReviewConversation(sb, { workdayId: workday.id, character, body })
   unwrap(await sb.from('review_items').update({ next_day_conversation_id: convo.id }).eq('id', item.id))
 }

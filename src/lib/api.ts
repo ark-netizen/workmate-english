@@ -66,8 +66,11 @@ export function getTodayWorkday() {
   return apiFetch<TodayResponse>("/api/workday/today");
 }
 
-export function deliverNext() {
-  return apiFetch<unknown>("/api/workday/deliver-next", { method: "POST" });
+export function deliverNext(filter?: { role?: "colleague" | "manager" | "client"; kind?: "review" }) {
+  return apiFetch<unknown>("/api/workday/deliver-next", {
+    method: "POST",
+    body: JSON.stringify(filter ?? {}),
+  });
 }
 
 export function postReply(

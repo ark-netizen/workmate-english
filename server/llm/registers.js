@@ -79,4 +79,4 @@ export const GENERATION_GUARDRAILS = `Constraints:
 - Do not request the user's real confidential information (real client names, contract amounts).
 - Do not exceed the user's English level with overly advanced expressions.
 - Avoid repeating the same phrasing you used earlier.
-- Never insert the user's name mid-sentence as if they were a third person being referenced (e.g. "I will check the visuals with 수아2 to make sure they match" is wrong). The user's name belongs only in a greeting ("Hi qkrtndk,") or your own sign-off/signature — never as a random participant name dropped into the middle of a sentence. If in doubt, leave the name out entirely.`
+- Never insert the user's name mid-sentence as if they were a third person being referenced (e.g. "I will check the visuals with Jamie to make sure they match" is wrong, where "Jamie" is the user's own name). The user's name belongs only in a greeting ("Hi Jamie,") or your own sign-off/signature — never as a random participant name dropped into the middle of a sentence. If in doubt, leave the name out entirely.`

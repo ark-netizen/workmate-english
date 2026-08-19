@@ -11,8 +11,20 @@ import { useResizable } from "@/hooks/useResizable";
 import { formatDateTime } from "@/lib/format";
 import { resolveReplyHints } from "@/lib/hints";
 import { TRIAL_REPLY_TEXT } from "@/lib/trialReplies";
+import * as api from "@/lib/api";
+
+// 회신 작성란 기본값 — 상대 이름/내 이름을 채운 Dear/Best 틀만 미리 채워주고 본문은 직접 쓰게 한다
+function buildDefaultReplyText(contactName: string | undefined, displayName: string | undefined): string {
+  return `Dear ${contactName ?? ""},\n\n\n\nBest,\n${displayName ?? ""}`;
+}
 
 type ComposeState = "normal" | "minimized" | "maximized";
+
+// 회신 제목엔 실제 이메일처럼 "Re: "를 자동으로 붙임(이미 붙어있으면 중복 안 되게)
+function withReplyPrefix(subject: string): string {
+  if (!subject) return subject;
+  return /^re:\s*/i.test(subject) ? subject : `Re: ${subject}`;
+}
 
 function EmailMessage({
   email,
@@ -60,7 +72,9 @@ function EmailMessage({
         <span className="shrink-0 text-xs text-foreground/40">{formatDateTime(email.timestamp)}</span>
         <ChevronUp className="size-4 shrink-0 text-foreground/30" />
       </button>
-      <p className="whitespace-pre-line px-4 pb-2 text-sm leading-relaxed text-foreground/90">{email.body}</p>
+      <p className="whitespace-pre-line px-4 pb-2 text-sm leading-normal text-foreground/90">
+        {email.body.replace(/\n{3,}/g, "\n\n")}
+      </p>
       {!isUser && (
         <div className="px-4 pb-4">
           <TranslateButton text={email.body} role={senderRole} />
@@ -87,6 +101,15 @@ export function EmailView({ thread }: { thread: EmailThread }) {
   // "1분 체험하기" 게스트는 실제 화면은 그대로 두고, 답장을 미리 채워주고 보내기 버튼만 반짝이게 안내
   const trialPreset = isTrial && contact ? TRIAL_REPLY_TEXT[contact.role] : undefined;
   const alreadyReplied = thread.emails.some((e) => e.from === "user");
+  // 복습(review) 메일은 힌트 없이 스스로 다시 써보는 게 목적 — 실제 힌트도 저장돼있지 않으므로 힌트 UI를 숨긴다
+  const isReview = thread.kind === "review";
+
+  const [displayName, setDisplayName] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    api.getProfile().then((p) => setDisplayName(p.display_name ?? undefined)).catch(() => {});
+  }, []);
+  // 본문을 직접 건드리기 전까지만 Dear/Best 기본틀을 자동으로 채워준다(이미 입력 중인 내용을 덮어쓰지 않기 위해)
+  const textIsDefaultRef = useRef(true);
 
   useEffect(() => {
     if (thread.unreadCount > 0) {
@@ -102,18 +125,30 @@ export function EmailView({ thread }: { thread: EmailThread }) {
     const timer = setTimeout(clearHighlightedMessage, 2500);
     return () => clearTimeout(timer);
   }, [highlightedMessageId, thread.emails, clearHighlightedMessage]);
-  const [text, setText] = useState(() => (trialPreset && !alreadyReplied ? trialPreset : ""));
-  const [subject, setSubject] = useState(thread.subject);
+  const [text, setText] = useState(() =>
+    trialPreset && !alreadyReplied ? trialPreset : !isTrial && !alreadyReplied ? buildDefaultReplyText(contact?.name, displayName) : "",
+  );
+  const [subject, setSubject] = useState(withReplyPrefix(thread.subject));
   const [sending, setSending] = useState(false);
   // 이 스레드의 회신이 어디서 트리거됐든(본인 화면 또는 체험판 하단 안내 바) "작성 중" 표시가 뜨도록 공유 상태도 함께 반영
   const showSending = sending || sendingIds.has(thread.id);
   const [composeState, setComposeState] = useState<ComposeState>("normal");
 
   useEffect(() => {
-    setText(isTrial && trialPreset && !alreadyReplied ? trialPreset : "");
-    setSubject(thread.subject);
+    textIsDefaultRef.current = true;
+    setText(
+      trialPreset && !alreadyReplied ? trialPreset : !isTrial && !alreadyReplied ? buildDefaultReplyText(contact?.name, displayName) : "",
+    );
+    setSubject(withReplyPrefix(thread.subject));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [thread.id]);
+
+  // 프로필 이름이 마운트 이후 늦게 도착하면(비동기 조회), 아직 손대지 않은 기본틀에 한해 이름을 채워 넣는다
+  useEffect(() => {
+    if (isTrial || alreadyReplied || !textIsDefaultRef.current) return;
+    setText(buildDefaultReplyText(contact?.name, displayName));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contact?.name, displayName]);
   const {
     size: composeHeight,
     onDragStart: onComposeResizeStart,
@@ -244,10 +279,12 @@ export function EmailView({ thread }: { thread: EmailThread }) {
         {fieldWorkMessage && <p className="text-xs text-foreground/50">{fieldWorkMessage}</p>}
         {sendError && <p className="text-xs text-red-600">{sendError}</p>}
 
-        <div className="shrink-0">
-          <p className="mb-1 text-[11px] font-medium text-foreground/40">본문 힌트</p>
-          <ReplyHints key={thread.id} hints={hints} onLevelChange={setBodyHintLevel} />
-        </div>
+        {!isReview && (
+          <div className="shrink-0">
+            <p className="mb-1 text-[11px] font-medium text-foreground/40">본문 힌트</p>
+            <ReplyHints key={thread.id} hints={hints} onLevelChange={setBodyHintLevel} />
+          </div>
+        )}
 
         <div className="flex min-h-0 flex-1 gap-3">
           <Avatar name="나" size="sm" />
@@ -258,7 +295,10 @@ export function EmailView({ thread }: { thread: EmailThread }) {
             rows={isMaximized ? 16 : 5}
             placeholder="회신 내용을 입력하세요"
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={(e) => {
+              textIsDefaultRef.current = false;
+              setText(e.target.value);
+            }}
           />
         </div>
       </div>
@@ -267,7 +307,15 @@ export function EmailView({ thread }: { thread: EmailThread }) {
         실명·연락처 등 개인정보나 실제 회사 기밀은 입력하지 마세요.
       </p>
 
-      <div className="flex items-center justify-between gap-2 rounded-b-xl border-t border-border px-4 py-3">
+      <div className="flex items-center justify-end gap-2 rounded-b-xl border-t border-border px-4 py-3">
+        <button
+          type="button"
+          onClick={handleFieldWork}
+          disabled={fieldWorkPending}
+          className="shrink-0 rounded-full border border-border px-3 py-1.5 text-xs text-foreground/60 hover:bg-black/[.03] disabled:opacity-50"
+        >
+          지금 외근 중
+        </button>
         <button
           type="button"
           onClick={handleSend}
@@ -277,21 +325,13 @@ export function EmailView({ thread }: { thread: EmailThread }) {
           보내기
           <Send className="size-3.5" />
         </button>
-        <button
-          type="button"
-          onClick={handleFieldWork}
-          disabled={fieldWorkPending}
-          className="shrink-0 rounded-full border border-border px-3 py-1.5 text-xs text-foreground/60 hover:bg-black/[.03] disabled:opacity-50"
-        >
-          지금 외근 중
-        </button>
       </div>
     </>
   );
 
   return (
     <div className="flex h-full w-full flex-col">
-      <div className="flex h-16 shrink-0 items-center justify-between gap-3 border-b border-border bg-[#4B5A66] px-6">
+      <div className="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-border bg-[#4B5A66] px-6">
         <div className="flex min-w-0 items-center gap-3">
           <Link to="/email" className="shrink-0 text-sm text-white/60 md:hidden">
             ← 목록

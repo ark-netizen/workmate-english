@@ -1,12 +1,10 @@
 // LLM 호출 클라이언트 (서버 전용 — service_role / API 키는 여기서만)
-// 기본 프로바이더: SOLAR(Upstage). 어댑터 구조라 다른 프로바이더 교체 시 ADAPTERS만 추가하면 됨.
+// 프로바이더: SOLAR(Upstage) 전용.
 //
 // 필요 env (Vercel 환경변수 / 로컬 .env.local, 절대 커밋 금지):
 //   SOLAR_API_KEY = up_...
 //   SOLAR_MODEL   = solar-pro2 (기본)
-//   LLM_PROVIDER  = solar (기본)  ← claude 등 다른 프로바이더 도입 시 분기
 
-import Anthropic from '@anthropic-ai/sdk'
 import {
   buildScenarioPrompt,
   buildRoleMessagePrompt,
@@ -33,33 +31,7 @@ import {
   EvaluationQuestionsSchema,
 } from './schemas.js'
 
-const PROVIDER = process.env.LLM_PROVIDER || 'solar'
-const MODEL = process.env.CLAUDE_MODEL || 'claude-opus-4-8'
 const SOLAR_MODEL = process.env.SOLAR_MODEL || 'solar-pro2'
-
-// ── 프로바이더 어댑터 ────────────────────────────────
-// 각 어댑터는 { system, user } → 모델 응답 텍스트(문자열)를 돌려준다.
-
-let _anthropic
-function anthropic() {
-  // ANTHROPIC_API_KEY 를 환경에서 자동 사용
-  return (_anthropic ||= new Anthropic())
-}
-
-async function callClaude({ system, user }) {
-  const res = await anthropic().messages.create({
-    model: MODEL,
-    max_tokens: 16000,
-    thinking: { type: 'adaptive' },
-    output_config: { effort: 'medium' },
-    system,
-    messages: [{ role: 'user', content: user }],
-  })
-  return res.content
-    .filter((b) => b.type === 'text')
-    .map((b) => b.text)
-    .join('')
-}
 
 // SOLAR(Upstage) — OpenAI 호환 Chat Completions
 async function callSolar({ system, user }) {
@@ -82,15 +54,8 @@ async function callSolar({ system, user }) {
   return data.choices[0].message.content
 }
 
-const ADAPTERS = {
-  solar: callSolar,
-  claude: callClaude,
-}
-
 async function callLLM({ system, user }) {
-  const adapter = ADAPTERS[PROVIDER]
-  if (!adapter) throw new Error(`Unknown LLM provider: ${PROVIDER}`)
-  return adapter({ system, user })
+  return callSolar({ system, user })
 }
 
 // 모델이 돌려준 JSON 텍스트를 안전하게 파싱 (코드펜스 제거 + 첫 { … } 추출)
@@ -145,5 +110,3 @@ export const generateVentMessage = (args) => generate(buildVentResponsePrompt, V
 export const generateTranslation = (args) => generate(buildTranslationPrompt, TranslationSchema, args)
 export const generateSupportAnswer = (args) => generate(buildSupportAnswerPrompt, SupportAnswerSchema, args)
 export const generateEvaluationQuestions = (args) => generate(buildEvaluationQuestionsPrompt, EvaluationQuestionsSchema, args)
-
-export { callLLM, parseJson, MODEL, PROVIDER }

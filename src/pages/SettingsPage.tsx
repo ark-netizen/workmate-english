@@ -422,7 +422,7 @@ export function SettingsPage() {
           <span className="text-sm font-medium">내 이름</span>
           <input
             className="w-full max-w-xs rounded-md border border-border bg-transparent px-3 py-1.5 text-sm outline-none"
-            placeholder="예: 박수아"
+            placeholder="예: 홍길동"
             value={profile.display_name ?? ""}
             onChange={updateField("display_name")}
           />
@@ -544,6 +544,9 @@ export function SettingsPage() {
             />
           </label>
         </div>
+        <p className="text-xs text-foreground/50">
+          저장하면 오늘 아직 안 온 알림들은 바뀐 시간에 맞춰 자동으로 다시 계산돼요. 이미 온 알림은 그대로 유지돼요.
+        </p>
 
         <div className="space-y-2">
           <p className="text-sm font-medium">하루 알림 횟수</p>

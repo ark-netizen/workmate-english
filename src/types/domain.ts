@@ -96,6 +96,14 @@ export interface DifficultExpression {
   yourReply: string;
 }
 
+export interface RegisterFeedbackItem {
+  role: "colleague" | "manager" | "client";
+  their_quote: string;
+  their_quote_ko: string;
+  user_quote: string;
+  note: string;
+}
+
 export interface WorkdayReport {
   date: string;
   summary: string;
@@ -104,4 +112,5 @@ export interface WorkdayReport {
   keyPhrases?: KeyExpression[];
   nextPreview: string;
   difficultExpressions?: DifficultExpression[];
+  registerFeedback?: RegisterFeedbackItem[] | null;
 }

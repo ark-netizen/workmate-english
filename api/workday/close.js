@@ -6,6 +6,7 @@ import { requireUser } from '../../server/auth.js'
 import { closeWorkday, devResetToday, devAdvanceToNextDay, resetAccountProgress } from '../../server/workday.js'
 import { admin } from '../../server/db.js'
 import { withErrors } from '../../server/http.js'
+import { sendPushToUser } from '../../server/push.js'
 
 export default withErrors('POST', async (req, res) => {
   const userId = await requireUser(req)
@@ -41,4 +42,11 @@ export default withErrors('POST', async (req, res) => {
   }
   const result = await closeWorkday(workdayId)
   res.status(200).json(result)
+  // 리포트 생성이 몇 초 걸리므로, 클라이언트 응답을 먼저 보낸 다음 완료 알림을 보낸다
+  // (다른 push들과 같은 순서 원칙 — 응답보다 push가 먼저 뜨는 역전 방지)
+  sendPushToUser(userId, {
+    title: '오늘 하루 마감 완료',
+    body: '퇴근 처리가 끝났어요. 오늘의 리포트를 확인해보세요.',
+    url: '/reports',
+  }).catch(() => {})
 })

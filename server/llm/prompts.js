@@ -41,7 +41,7 @@ function buildCharacterPresetLines(profile, personaFeedback) {
     if (personality) parts.push(`personality/tone: ${personality}`)
     const feedback = personaFeedback?.[role]
     if (feedback) parts.push(`the user specifically asked for this in how ${role} writes to them, keep applying it every day: ${feedback}`)
-    return `- The "${role}" character ${parts.join('; ')}. Reflect this in their "register" field.`
+    return `- The "${role}" character ${parts.join('; ')}. Carry this into their "register" field specifically and concretely — do not generalize it away into a generic tone. If the personality is e.g. "playful", the register field itself should say something like "playful, teases lightly, uses jokes" rather than just "casual".`
   })
 
   return `Fixed character identities (use these, don't invent new ones for these roles):\n${lines.join('\n')}\n`
@@ -89,7 +89,7 @@ Topic progression rules:
 - A topic commonly lasts about 2–5 workdays, but do not force a fixed duration.
 - Preserve prior history in memory even when switching topics.
 
-Make the event concrete: include an actual deliverable, system/tool, quantity, deadline, review point, or decision. All three roles must reference the same concrete details.
+Make the event concrete: invent a real-sounding NAMED product/project specific to the user's actual industry and role (e.g. for entertainment/album planning: an actual album or single title and artist name; for e-commerce: a named product/campaign; for software: a named feature/release) — never a vague abstraction like "the schedule", "the document", or "the approved plan" with nothing concrete behind it. The name does NOT need to be deep or creative — a simple, casual, made-up title is completely fine (e.g. an album simply titled "One Love" by an artist simply named "Jiho"). Just commit to SOME specific name and use it consistently; do not hedge by leaving the product/project unnamed or only implied. Also include an actual deliverable, system/tool, quantity, deadline, review point, or decision tied to that named thing. All three roles must reference the same concrete details, including the same named product/project.
 Do not put colleague, manager, or client names in the event title, summary, goal, stage, or reply guidance. Names belong only in sender identity, natural greetings, and email sign-offs.
 Korean and English context fields must express exactly the same meaning.
 The home card only displays "stage" and, per character, "purpose" (title/summary/goal are internal only, used for generating messages, not shown to the user as-is) — keep every displayed field SHORT and scannable, like a task-list headline, never a full sentence:
@@ -147,15 +147,18 @@ function replyHintsInstruction(character, profile) {
 // 실제로 영어로 어떻게 말하는지를 보여주는 다음 단계이므로, 순서가 자연스럽게 이어지게 한다.
 // (korean_hint가 제안한 방향과 reply_hints가 서로 다른 얘기를 하면 힌트 단계끼리 안 맞아 보이므로,
 // 서로 짝을 맞추라고 위 replyHintsInstruction에서도 명시적으로 되짚어준다)
-const KOREAN_HINT_INSTRUCTION = `- korean_hint: Write a compact Korean guide in this exact multiline structure:
-요청 요약
-<one Korean sentence summarizing what the sender needs>
+const KOREAN_HINT_INSTRUCTION = `- korean_summary: ONE Korean sentence paraphrasing what the sender needs — NOT a literal translation of their sentence, a paraphrase of the underlying ask.
+- korean_reply_points: an array of 2-3 short Korean phrases, each one concrete action/decision the user should communicate back (confirm, decline, ask for more time, give a number/date, etc.) — never a translation of what the sender already said, never a long meta phrase like "이 메시지는 ~ 요청입니다" or "~라고 답변해보세요". These points and the single English reply_hints entry must communicate the same actions in the same order. This array must NOT be empty — always give at least 2 points even for a simple message.`
 
-답장에 포함할 내용
-“<first thing the user should say>”
-“<second thing the user should say, when needed>”
-“<third thing the user should say, only when needed>”
-Use 2-3 quoted reply points, each on its own line. Do not merge system explanation and reply advice into one paragraph. Do not write long meta phrases such as "이 메시지는 ~ 요청입니다" or "~라고 답변해보세요". The quoted Korean points and the single English reply_hints entry must communicate the same actions in the same order.`
+// word_hints가 korean_hint/reply_hints와 다른 방향(예: 승인/확정 어휘를 주면서 reply_hints는 보류/연기 답장을
+// 제안하는 식)을 가리키면 힌트 단계끼리 서로 안 맞아 보이므로, 반드시 같은 방향을 가리키게 못박는다
+function wordHintsInstruction(character) {
+  const base = `- word_hints: 3-5 key English words/phrases the user would ACTUALLY use if they replied along the same direction as korean_hint/reply_hints above — never generic vocabulary from an unrelated angle (e.g. if reply_hints suggests confirming/agreeing, do not give words for delaying/declining, and vice versa). Each with a short Korean meaning.`
+  if (character?.channel === 'email') {
+    return `${base} Since this is a formal email reply, include at least 1-2 formal SENTENCE-STARTER phrases fitting this reply's direction (e.g. "We are looking forward to...", "Thank you for...", "I would like to confirm...", "Please let me know if...") rather than only single words — pick starters that match what the user is actually about to say, not generic ones.`
+  }
+  return base
+}
 
 // ── 2. generateRoleMessage — 역할별 최초 메시지 (기획서 8-2) ──
 export function buildRoleMessagePrompt({ scenario, character, profile }) {
@@ -163,7 +166,7 @@ export function buildRoleMessagePrompt({ scenario, character, profile }) {
   const system = `You are ${character.name}, the user's ${character.role} (${character.title}).
 ${reg.rules}
 ${character.role === 'colleague' ? COLLEAGUE_OPENER_RULE : ''}
-${character.register ? `Your personal tone/personality: ${character.register}` : ''}
+${character.register ? `Your personal tone/personality (make this ACTUALLY show, not just a label — if it's playful/joking, include an actual light joke or teasing line; if it's blunt, be noticeably terser than the base register; etc. Concretely change your word choice/behavior, don't just stay generic): ${character.register}` : ''}
 ${GENERATION_GUARDRAILS}`
 
   const user = `Today's work event: ${scenario.title}
@@ -179,11 +182,11 @@ Write your FIRST message to the user about this event, in your register.
 Also help the user (a Korean English learner) reply:
 ${KOREAN_HINT_INSTRUCTION}
 ${replyHintsInstruction(character, profile)}
-- word_hints: 3-5 key English words/phrases useful for replying in this register, each with a short Korean meaning.
+${wordHintsInstruction(character)}
 
 ${character.channel === 'email'
-      ? jsonInstruction('{ "subject": string, "body": string, "korean_hint": string, "reply_hints": string[], "word_hints": [{ "en": string, "ko": string }] }')
-      : jsonInstruction('{ "body": string, "korean_hint": string, "reply_hints": string[], "word_hints": [{ "en": string, "ko": string }] }')}`
+      ? jsonInstruction('{ "subject": string, "body": string, "korean_summary": string, "korean_reply_points": string[], "reply_hints": string[], "word_hints": [{ "en": string, "ko": string }] }')
+      : jsonInstruction('{ "body": string, "korean_summary": string, "korean_reply_points": string[], "reply_hints": string[], "word_hints": [{ "en": string, "ko": string }] }')}`
 
   return { system, user, schema: character.channel === 'email' ? 'email_message' : 'message' }
 }
@@ -193,9 +196,10 @@ export function buildRoleResponsePrompt({ scenario, character, history, userRepl
   const reg = REGISTERS[character.role]
   const system = `You are ${character.name}, the user's ${character.role} (${character.title}).
 ${reg.rules}
-${character.register ? `Your personal tone/personality: ${character.register}` : ''}
+${character.register ? `Your personal tone/personality (make this ACTUALLY show, not just a label — if it's playful/joking, include an actual light joke or teasing line; if it's blunt, be noticeably terser than the base register; etc. Concretely change your word choice/behavior, don't just stay generic): ${character.register}` : ''}
 React AS THIS PERSON, not as a teacher. Do NOT correct grammar or score the reply.
 If the reply is vague about dates/numbers/conditions, choose "reconfirm" or "ask_more" and ask a specific question.
+If the user's reply already reasonably addresses what you asked (confirms, answers, or commits to a next step), accept it and move toward closing the exchange — do not manufacture another follow-up request or re-ask for something already covered just to keep the conversation going longer. Only ask a further question when something is genuinely still unclear, missing, or unresolved.
 Reaction types: ${REACTION_TYPES.join(', ')}.
 ${isFinalTurn ? `This is the LAST exchange allowed today, whether or not things are fully resolved. Wrap up naturally in character — e.g. you're stepping out (field work / a meeting / heading out) and can't keep replying, so suggest continuing tomorrow. Use "close" as the reaction_type and set needs_followup to false. Do NOT leave a new question hanging.` : ''}
 ${character.channel === 'email' ? nameLine(profile) : ''}
@@ -209,27 +213,27 @@ User just replied: "${userReply}"
 
 Decide how ${character.name} naturally reacts and write the reply in register.
 
-${isFinalTurn ? 'This is the last exchange — no reply hints needed, leave korean_hint/reply_hints/word_hints empty.' : `Also help the user reply, same as before:
+${isFinalTurn ? 'This is the last exchange — no reply hints needed, leave korean_summary/korean_reply_points/reply_hints/word_hints empty.' : `Also help the user reply, same as before:
 ${KOREAN_HINT_INSTRUCTION}
 ${replyHintsInstruction(character, profile)}
-- word_hints: 3-5 key English words/phrases useful for replying, each with a short Korean meaning.`}
+${wordHintsInstruction(character)}`}
 
 ${character.channel === 'email'
-      ? jsonInstruction('{ "reaction_type": string, "subject": string, "body": string, "needs_followup": boolean, "korean_hint": string, "reply_hints": string[], "word_hints": [{ "en": string, "ko": string }] }')
-      : jsonInstruction('{ "reaction_type": string, "body": string, "needs_followup": boolean, "korean_hint": string, "reply_hints": string[], "word_hints": [{ "en": string, "ko": string }] }')}`
+      ? jsonInstruction('{ "reaction_type": string, "subject": string, "body": string, "needs_followup": boolean, "korean_summary": string, "korean_reply_points": string[], "reply_hints": string[], "word_hints": [{ "en": string, "ko": string }] }')
+      : jsonInstruction('{ "reaction_type": string, "body": string, "needs_followup": boolean, "korean_summary": string, "korean_reply_points": string[], "reply_hints": string[], "word_hints": [{ "en": string, "ko": string }] }')}`
 
   return { system, user, schema: character.channel === 'email' ? 'email_response' : 'response' }
 }
 
 // ── 4. generateDailyReport — 퇴근 리포트 (기획서 13장) ──
 export function buildDailyReportPrompt({ scenario, conversations, profile, previousIssues }) {
-  const system = `You are an experienced Korean business-English tutor writing a calm "workday retrospective" for a Korean learner
-(NOT a scorecard, NOT a test result). Tone: supportive, never scolding. Do not highlight errors harshly.
+  const system = `You are a top-tier Korean business-English instructor with 10+ years of experience teaching working professionals — the kind of teacher known for explaining things so clearly and warmly that even tricky nuances click immediately. You are writing a calm "workday retrospective" for a Korean learner (NOT a scorecard, NOT a test result). Tone: warm, encouraging, never scolding — but warm does NOT mean vague. If something the user wrote is actually wrong, say plainly that it's wrong (e.g. start the note with "이 부분은 틀렸어요" or "문법상 틀린 표현이에요") before kindly explaining why and how to fix it. Never soften a real error into "this is fine/acceptable at your level" — that defeats the purpose of a correction. Being encouraging means the TONE is kind, not that the VERDICT is fudged.
 Analyze the user's actual replies across the three relationships.
+CRITICAL — attribution: every quote you place in a user-attributed field (good_expressions, corrections, register_feedback.user_quote) MUST be something the transcript labels as coming from "User:". Never quote, praise, or comment on a line said by the colleague/manager/client (labeled by their role name, not "User:") as if the user wrote it — double-check the speaker label before quoting anything. Conversely, register_feedback.their_quote MUST come from that role's own labeled line, never from "User:".
 
 LANGUAGE RULE (very important):
 - Keep actual English sentences/phrases the user wrote or should have written EXACTLY in English (the "text"/"before"/"after"/"en" fields below).
-- Write EVERY explanation, comment, and summary in Korean (모든 note/summary/feedback/issue 텍스트는 한국어) — like a Korean English-teacher's comment written on a paper: explain the grammar point, nuance, or word-choice reason in plain Korean so the user immediately understands WHY, not just what changed.
+- Write EVERY explanation, comment, and summary in Korean (모든 note/summary/feedback/issue 텍스트는 한국어) — like a skilled Korean English-teacher's comment written on a paper: explain the grammar point, nuance, or word-choice reason in plain Korean so the user immediately understands WHY, not just what changed. Where it genuinely helps, briefly include a similar real-life example sentence (in English, with the Korean explained) so the point sticks — but keep every note concise, not a lecture.
 ${GENERATION_GUARDRAILS}`
 
   const transcript = conversations
@@ -249,20 +253,29 @@ Transcript:
 ${transcript}
 
 Write the report, following the language rule above strictly.
-- A line marked "[SUGGESTED_SENTENCE_COPIED_VERBATIM]" means the user copied our own suggested sentence hint exactly, word-for-word — it is NOT something the user composed themselves. NEVER put a marked sentence in "corrections" (correcting the user for using our own suggestion is unfair and confusing). A marked sentence MAY appear in "good_expressions" if it's genuinely a good phrase to remember, but do not overuse this — prefer sentences the user actually wrote on their own when available.
-- good_expressions: up to 4 sentences the user actually wrote well (fewer is fine if the user only wrote 1-2 sentences total — never list more items than the user actually wrote, and never pad with weak/borderline examples just to reach a count). "text" = the exact English sentence. "note" = 한국어로 왜 잘 썼는지(문법/뉘앙스 포인트) 설명.
-- corrections: up to 4 sentences that genuinely needed fixing, drawn ONLY from sentences the user actually composed themselves (never a marked verbatim-copied line). If the user's reply was short and already natural, or every sentence was a copied suggestion, it is completely fine to return 0 corrections — do NOT invent, split, or manufacture extra corrections just to fill a quota. Never list more corrections than distinct self-written sentences the user actually wrote. "before"/"after" = exact English (what they wrote vs. the natural version). "note" = 한국어로 어떤 문법/표현 규칙 때문에 고쳐야 하는지 교사처럼 설명.
-- register_feedback: 한국어로, 동료/상사/거래처 각각에게 쓴 톤이 상황에 적절했는지 코멘트.
-- register_feedback.comparison: 오늘은 동료/상사/거래처 모두 같은 사건(${scenario.title})에 대해 대화했다는 점을 살려서, 유저가 실제로 쓴(또는 힌트로 제시된) 표현을 최소 2곳 이상 짧게 인용해 "같은 내용인데 상대에 따라 이렇게 표현이 달라졌다"를 한국어로 짚어주는 한 단락. 유저가 특정 관계에서 답장을 안 했으면 그 관계는 자연스럽게 생략. 대화를 실제로 안 한 관계가 2개 이상이면 이 필드는 빈 문자열로 둬도 됨.
+- A line marked "[SUGGESTED_SENTENCE_COPIED_VERBATIM]" means the user copied our own suggested sentence hint exactly, word-for-word — it is NOT something the user composed themselves, and it means they found that exchange hard enough to need the hint. NEVER put a marked sentence in "corrections" (correcting the user for using our own suggestion is unfair and confusing). This marker is INTERNAL bookkeeping — NEVER print the literal string "[SUGGESTED_SENTENCE_COPIED_VERBATIM]" or any similar bracket-tag anywhere in your output; the user must never see raw system markers. A marked sentence MAY appear in "good_expressions" if it's genuinely a good phrase to remember, but the note must be honest about it being a hint they leaned on — e.g. "이 표현은 제시된 힌트를 그대로 활용하신 거예요 — 다음엔 스스로 이 상황을 표현해보는 연습을 해보세요", never a grammar-praise note like "완벽합니다" as if the user composed it themselves (a copied hint being "grammatically perfect" is not an achievement, it's just our own text). Prefer sentences the user actually wrote on their own when available, and only include a copied one when there's a genuinely useful lesson to point out about why they needed it.
+- Coverage (important): good_expressions + corrections together should account for EVERY distinct sentence the user personally composed today (across all conversations, excluding marked hint-copies) — each such sentence belongs in exactly one of the two lists, never both, never dropped silently. Do not silently skip a self-written sentence just because it's short or unremarkable — if it's clean, it goes in good_expressions with a brief note; if it has any real issue, it goes in corrections. There is no fixed cap — if the user wrote 7 sentences today, aim for 7 entries total between the two lists (not "up to 4").
+- good_expressions: sentences the user wrote well. "text" = the exact English sentence. "note" = 한국어로 왜 잘 썼는지(문법/뉘앙스 포인트) 설명, 한 줄로 간결하게.
+- corrections: every self-written sentence that has a genuine issue (drawn ONLY from sentences the user actually composed themselves, never a marked verbatim-copied line). If the user's reply was short and already natural, or every sentence was a copied suggestion, it is completely fine to return 0 corrections — do NOT invent, split, or manufacture extra corrections just to fill a quota, but do NOT skip a sentence that genuinely has an issue just to keep the list short either. Only change what is ACTUALLY wrong (spelling, grammar, or genuinely unnatural phrasing) — do NOT swap a grammatically correct expression for a different-but-also-correct one just for style (e.g. "am/are going to" is a correct, natural way to state a plan — leave it as-is unless it's actually wrong). Worked example — user wrote "we are going to share the final metadate until tomorrow": the ONLY real errors are "metadate" (typo for "metadata") and "until" (wrong preposition — "until" means a continuous state stops at that point, but sharing a file is a one-time completed action, so "by" is correct). The correct minimal fix is "we are going to share the final metadata by tomorrow" — "are going to" must NOT be changed to "will", that part was never wrong. The "after" version MUST express the exact same content/intent as "before" — you are fixing HOW they said it, never WHAT they said. Never turn a statement into a question, add a new request, or change the substance — that is not a correction, it's a different sentence. If the actual problem is that the reply doesn't fully address what the other person asked, that belongs in register_feedback or recurring_issues instead, not in "corrections". If you change multiple things within one sentence (e.g. fixing a typo AND a preposition), the note MUST explain every single change you made, not just one of them — never leave a changed word unexplained. "before"/"after" = exact English (what they wrote vs. the natural version). "note" = 한국어로 어떤 문법/표현 규칙 때문에 고쳐야 하는지 교사처럼 설명.
+- register_feedback: an array with ONE entry per relationship (colleague/manager/client) the user actually replied to today — skip a role entirely if the user never replied to it, do not pad with empty entries. Each entry is a compact "conversation replay" card, NOT prose, and must never repeat what workday_summary already says — say something NEW and SPECIFIC to that one exchange:
+  - "role": "colleague" | "manager" | "client"
+  - "their_quote": the exact English sentence(s) that person actually sent (must be from a line labeled by their role, never "User:") — the specific request/question, not a generic paraphrase.
+  - "their_quote_ko": 한국어로 그 문장이 무슨 뜻/요청인지 짧게.
+  - "user_quote": the exact English sentence(s) the user actually sent in reply (must be from a line labeled "User:").
+  - "note": 한국어 2-3문장, 두 부분으로 구성:
+    1) 상대방 문장(their_quote)에서 그 관계 특유의 톤을 만드는 핵심 단어/표현을 1-2개 콕 집어 그대로 인용하고("Quick question", "Please confirm" 처럼), 그 표현이 주는 뉘앙스(친근함/직설적 지시/격식체 정중함 등)와 동료·상사·거래처 중 이 관계에서 왜 그런 표현을 쓰는지를 짚어준다 — 그냥 "톤이 캐주얼했다" 같은 뭉뚱그린 설명 금지, 반드시 구체적 단어를 근거로 들 것.
+    2) 유저의 답장(user_quote)이 그 톤에 맞게(혹은 안 맞게) 어떻게 응답했는지를 짧게 덧붙인다.
+    이 대화 쌍에서만 나오는 구체적 코멘트여야 하며, workday_summary나 다른 role의 note와 겹치는 일반론은 금지.
+  Order entries colleague, then manager, then client (skipping absent ones). Together the entries should make it obvious that the SAME underlying event was phrased differently by each relationship and that the user's replies matched (or didn't match) each register.
 - recurring_issues: 한국어로, 반복되는 실수 패턴.
-- recommended_expressions: 오늘 대화에서 나온 것 중 다음에도 꼭 기억해두면 좋을 표현 3-5개. "en" = 실제 영어 표현, "ko" = 한국어 뜻, "note" = 한국어로 언제/어떻게 쓰는지 + 문법 포인트 한 줄.
+- recommended_expressions: 오늘 새로 익힐 만한 표현 3-5개. corrections가 하나라도 있으면, 그 corrections의 "after"(고친 문장)를 우선적으로 여기에 포함시켜 "오늘 이렇게 틀렸으니 다음엔 이 표현으로 기억하세요"를 명확히 연결할 것(note에 "오늘 이 표현 대신 이렇게 써보세요" 같은 취지로 corrections와의 연결을 명시). corrections로 다 못 채운 나머지 자리는 오늘 대화에서 나온 다른 유용한 표현으로 채움. "en" = 실제 영어 표현, "ko" = 한국어 뜻, "note" = 한국어로 언제/어떻게 쓰는지 + 문법 포인트 한 줄.
 - workday_summary / next_day_context: 한국어로.
 
 ${jsonInstruction(`{
   "workday_summary": string (한국어),
   "good_expressions": [{ "text": string (English), "note": string (한국어) }],
   "corrections": [{ "before": string (English), "after": string (English), "note": string (한국어) }],
-  "register_feedback": { "colleague": string (한국어), "manager": string (한국어), "client": string (한국어) },
+  "register_feedback": [{ "role": "colleague"|"manager"|"client", "their_quote": string (English), "their_quote_ko": string (한국어), "user_quote": string (English), "note": string (한국어) }],
   "recurring_issues": string[] (한국어),
   "recommended_expressions": [{ "en": string (English), "ko": string (한국어), "note": string (한국어) }],
   "next_day_context": string (한국어)
@@ -346,9 +359,9 @@ Formatting: write natural flowing paragraphs, NOT one blank line between every s
 Also help the user reply:
 ${KOREAN_HINT_INSTRUCTION}
 - reply_hints: an array with EXACTLY ONE string — a short, warm greeting-style reply confirming they've seen the email, matching what was asked (a simple reply, not a detailed task report). A brief greeting (e.g. "Hi,"), 1-2 sentences that genuinely thank them and confirm they're ready to get started, and a closing + sign-off (e.g. "Best regards,"). Keep it short — this should NOT read like a task-completion report. ${profile.display_name ? `End the sign-off with the user's real name, "${profile.display_name}" — never invent a placeholder like "[Your Name]".` : `The user's name isn't set, so end with just "Best regards," and stop — never invent a placeholder name.`} Do not include a second option.
-- word_hints: 3-5 key English words/phrases useful for replying, each with a short Korean meaning.
+${wordHintsInstruction({ channel: 'email' })}
 
-${jsonInstruction('{ "subject": string, "body": string, "korean_hint": string, "reply_hints": string[], "word_hints": [{ "en": string, "ko": string }] }')}`
+${jsonInstruction('{ "subject": string, "body": string, "korean_summary": string, "korean_reply_points": string[], "reply_hints": string[], "word_hints": [{ "en": string, "ko": string }] }')}`
 
   return { system, user, schema: 'email_message' }
 }

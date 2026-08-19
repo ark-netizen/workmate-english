@@ -29,7 +29,7 @@ api/
 
 ## 필요 env (`.env.local` / Vercel, 커밋 금지) — `.env.example` 참고
 - Supabase: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
-- LLM: `ANTHROPIC_API_KEY` (+ `LLM_PROVIDER`, `CLAUDE_MODEL`)
+- LLM: `SOLAR_API_KEY` (+ `LLM_PROVIDER`, `SOLAR_MODEL`)
 - Push: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`
   - 키 생성: `npx web-push generate-vapid-keys`
 - Cron: `CRON_SECRET` (Vercel Cron이 `Authorization: Bearer $CRON_SECRET`로 호출)

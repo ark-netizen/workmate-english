@@ -5,8 +5,8 @@
 
 ## 구성
 - `registers.js` — 동료/상사/거래처 레지스터 규칙 + 반응 유형 + 생성 가드레일 (기획서 2-3·8-2·14-3)
-- `prompts.js` — 5개 생성 함수의 프롬프트 빌더 + 출력 JSON 계약 (기획서 17장). 프로바이더 독립.
-- `client.js` — 실제 LLM 호출 + JSON 파싱. 기본 프로바이더 **SOLAR(Upstage)**.
+- `prompts.js` — 5개 생성 함수의 프롬프트 빌더 + 출력 JSON 계약 (기획서 17장).
+- `client.js` — 실제 LLM 호출 + JSON 파싱. **SOLAR(Upstage)** 전용.
 
 ## 사용 (Vercel 서버 함수 등에서)
 ```js
@@ -18,12 +18,7 @@ const reply = await generateRoleResponse({ scenario, character, history, userRep
 
 ## 필요 env (`.env.local` / Vercel, 커밋 금지)
 - `SOLAR_API_KEY` — Upstage SOLAR API 키
-- `LLM_PROVIDER` — 기본 `solar` (다른 프로바이더 도입 시 분기)
 - `SOLAR_MODEL` — 선택, 기본 `solar-pro2`
-
-## 프로바이더 교체
-`client.js`의 `ADAPTERS`에 어댑터 추가 후 `LLM_PROVIDER`만 바꾸면 된다.
-(SOLAR 어댑터가 기본. Claude 어댑터도 남겨둠 — 필요 시 `LLM_PROVIDER=claude` + `ANTHROPIC_API_KEY`로 전환 가능)
 
 ## 다음 작업
 - [ ] 생성 결과를 `db/schema.sql` 테이블(scenarios/characters/conversations/messages/daily_reports/workday_memories)에 저장하는 서버 함수

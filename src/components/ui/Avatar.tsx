@@ -21,10 +21,12 @@ export function Avatar({
   name,
   size = "md",
   photoUrl,
+  className = "",
 }: {
   name: string;
   size?: keyof typeof SIZE_CLASSES;
   photoUrl?: string | null;
+  className?: string;
 }) {
   const sizeClasses = SIZE_CLASSES[size];
 
@@ -33,7 +35,7 @@ export function Avatar({
       <img
         src={photoUrl}
         alt={name}
-        className={`inline-block shrink-0 rounded-full object-cover ${sizeClasses}`}
+        className={`inline-block shrink-0 rounded-full object-cover ${sizeClasses} ${className}`}
       />
     );
   }
@@ -43,7 +45,7 @@ export function Avatar({
 
   return (
     <span
-      className={`inline-flex shrink-0 items-center justify-center rounded-full font-medium text-white ${color} ${sizeClasses}`}
+      className={`inline-flex shrink-0 items-center justify-center rounded-full font-medium text-white ${color} ${sizeClasses} ${className}`}
       aria-hidden="true"
     >
       {initial}

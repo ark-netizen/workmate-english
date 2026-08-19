@@ -70,14 +70,28 @@ function QaControlPanel({
     <div className="fixed right-3 top-20 z-40 w-52 space-y-1.5 rounded-xl border border-dashed border-foreground/30 bg-surface p-3 shadow-lg">
       <div className="mb-1 flex items-center justify-between">
         <span className="text-[11px] font-semibold uppercase tracking-wide text-foreground/40">QA 도구</span>
-        <button
-          type="button"
-          onClick={() => setCollapsed(true)}
-          aria-label="QA 패널 접기"
-          className="rounded px-1.5 text-sm leading-none text-foreground/40 hover:bg-black/[.05]"
-        >
-          −
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => {
+              window.open("/qa", "qa-panel", "width=280,height=640,noopener");
+              setCollapsed(true);
+            }}
+            title="듀얼 모니터로 녹화할 때, QA 도구만 별도 창으로 열어서 다른 모니터에 둘 수 있어요"
+            aria-label="QA 도구 새 창으로 분리"
+            className="rounded px-1.5 text-xs leading-none text-foreground/40 hover:bg-black/[.05]"
+          >
+            ⧉
+          </button>
+          <button
+            type="button"
+            onClick={() => setCollapsed(true)}
+            aria-label="QA 패널 접기"
+            className="rounded px-1.5 text-sm leading-none text-foreground/40 hover:bg-black/[.05]"
+          >
+            −
+          </button>
+        </div>
       </div>
       <button
         type="button"
@@ -240,6 +254,7 @@ export function HomePage() {
 
   const pendingItems = todayItems.filter((item) => item.status === "pending");
   const nextItem = pendingItems[0];
+  const allDone = todayItems.length > 0 && pendingItems.length === 0 && workStatus === "working";
 
   // 하이라이트된 메시지/이메일이 속한 대화·스레드 id — "오늘의 연락" 목록에서 해당 항목을 하이라이트할 때 사용
   const highlightedTargetId = highlightedMessageId
@@ -261,6 +276,7 @@ export function HomePage() {
     conversations.reduce((sum, conversation) => sum + conversation.unreadCount, 0) +
     emailThreads.reduce((sum, thread) => sum + thread.unreadCount, 0);
   const dateLabel = new Date().toLocaleDateString("ko-KR", {
+    timeZone: "Asia/Seoul",
     month: "long",
     day: "numeric",
     weekday: "long",
@@ -348,6 +364,23 @@ export function HomePage() {
           </div>
           <span className="shrink-0 rounded-full bg-blue-600 px-3 py-1.5 text-xs font-medium text-white">복습하기</span>
         </Link>
+      )}
+
+      {allDone && (
+        <button
+          type="button"
+          onClick={() => setConfirmFinish(true)}
+          disabled={finishing}
+          className="flex w-full animate-pulse items-center justify-between gap-3 rounded-xl border border-accent/40 bg-accent/10 px-4 py-3 text-left ring-2 ring-accent ring-offset-2 hover:bg-accent/15 disabled:animate-none disabled:opacity-50"
+        >
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-accent">오늘의 연락을 모두 처리했어요</p>
+            <p className="truncate text-xs text-foreground/60">퇴근 처리하면 오늘의 업무일지가 생성됩니다.</p>
+          </div>
+          <span className="shrink-0 rounded-full bg-accent px-3 py-1.5 text-xs font-medium text-white">
+            {finishing ? "퇴근 처리 중..." : "퇴근하기"}
+          </span>
+        </button>
       )}
 
       {promotion?.eligible && (

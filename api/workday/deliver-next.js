@@ -5,6 +5,7 @@ import { withErrors } from '../../server/http.js'
 
 export default withErrors('POST', async (req, res) => {
   const userId = await requireUser(req)
-  const result = await deliverNextForUser(userId)
+  const { role, kind } = req.body || {}
+  const result = await deliverNextForUser(userId, { role, kind })
   res.status(200).json(result)
 })

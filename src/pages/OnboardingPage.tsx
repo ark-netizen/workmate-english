@@ -314,7 +314,9 @@ export function OnboardingPage() {
         <div>
           <h1 className="text-lg font-semibold">사원증이 발급됐어요</h1>
           <p className="mt-1 text-sm text-foreground/60">
-            승급할수록 아바타 캐릭터도 늘어나요. 상단의 프로필을 눌러 언제든 다시 볼 수 있어요.
+            승급할수록 아바타 캐릭터도 늘어나요.
+            <br />
+            상단의 프로필을 눌러 언제든 다시 볼 수 있어요.
           </p>
         </div>
         <EmployeeIdCard profile={completedProfile} photoUrl={photoUrl} />
@@ -345,7 +347,7 @@ export function OnboardingPage() {
           <span className="text-sm font-medium">이름</span>
           <input
             className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none disabled:opacity-70"
-            placeholder="예: 박수아"
+            placeholder="예: 홍길동"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
           />

@@ -27,6 +27,9 @@ export function ConversationView({ conversation }: { conversation: Conversation 
   } = useWorkday();
   const contact = getContactById(conversation.contactId);
   const isVent = conversation.kind === "vent";
+  // 복습(review) 대화는 힌트 없이 스스로 다시 써보는 게 목적 — 실제 힌트도 저장돼있지 않으므로,
+  // 안 맞는 일반 힌트를 보여주는 대신 힌트 UI 자체를 숨긴다
+  const isReview = conversation.kind === "review";
   // "1분 체험하기" 게스트는 실제 화면은 그대로 두고, 답장을 미리 채워주고 보내기 버튼만 반짝이게 안내
   const trialPreset = isTrial && !isVent && contact ? TRIAL_REPLY_TEXT[contact.role] : undefined;
   const alreadyReplied = conversation.messages.some((m) => m.from === "user");
@@ -138,7 +141,7 @@ export function ConversationView({ conversation }: { conversation: Conversation 
 
   return (
     <div className="flex h-full w-full flex-col">
-      <div className="flex h-16 shrink-0 items-center justify-between gap-3 border-b border-border bg-[#36454F] px-4">
+      <div className="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-border bg-[#36454F] px-4">
         <div className="flex items-center gap-3">
           <Link to="/messenger" className="text-sm text-white/60 md:hidden">
             ← 목록
@@ -199,12 +202,14 @@ export function ConversationView({ conversation }: { conversation: Conversation 
         <ResizeHandle axis="y" onMouseDown={onInputResizeStart} onDoubleClick={onInputResizeReset} />
         <div className="space-y-2 px-3 pt-3">
           {sendError && <p className="text-xs text-red-600">{sendError}</p>}
-          <ReplyHints
-            key={conversation.id}
-            hints={hints}
-            externalOpenSignal={isTrial ? trialHintSignal : undefined}
-            onLevelChange={setHintLevel}
-          />
+          {!isReview && (
+            <ReplyHints
+              key={conversation.id}
+              hints={hints}
+              externalOpenSignal={isTrial ? trialHintSignal : undefined}
+              onLevelChange={setHintLevel}
+            />
+          )}
           <div className="flex items-end gap-2 rounded-2xl border border-border bg-surface px-4 py-2">
             <textarea
               style={{ height: inputHeight }}

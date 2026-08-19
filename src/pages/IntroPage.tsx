@@ -30,7 +30,7 @@ function ReviewsSection() {
   const review = reviews[index];
 
   return (
-    <section className="border-t border-border bg-surface px-4 py-16 md:px-8">
+    <section id="reviews" className="border-t border-border bg-surface px-4 py-16 md:px-8">
       <div className="mx-auto max-w-2xl text-center">
         <h2 className="text-2xl font-bold tracking-tight md:text-3xl">실제 후기를 공개합니다</h2>
         <div className="mt-8 overflow-hidden rounded-2xl border border-border bg-background p-8">
@@ -584,7 +584,7 @@ export function IntroPage({
   const navCategories = [
     { id: "preview", label: "미리보기" },
     { id: "features", label: "기능" },
-    { id: "start", label: "시작하기" },
+    { id: "reviews", label: "후기" },
   ];
 
   return (
@@ -595,8 +595,9 @@ export function IntroPage({
         }`}
       >
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 md:px-8">
-          <Logo />
-          <div className="flex items-center gap-2 sm:gap-4">
+          <Logo compact className="sm:hidden" />
+          <Logo className="hidden sm:block" />
+          <div className="flex flex-wrap items-center justify-end gap-1.5 sm:flex-nowrap sm:gap-4">
             <div className="hidden items-center gap-1 sm:flex">
               {navCategories.map((cat) => (
                 <button
@@ -615,16 +616,16 @@ export function IntroPage({
             <button
               type="button"
               onClick={handleLoginClick}
-              className={`rounded-md px-3 py-1.5 text-sm font-medium ${
+              className={`whitespace-nowrap rounded-md px-2 py-1.5 text-xs font-medium sm:px-3 sm:text-sm ${
                 businessMode ? "text-white/80 hover:text-white" : "text-foreground/60 hover:text-foreground"
               }`}
             >
-              로그인
+              로그인 / 회원가입
             </button>
             <button
               type="button"
               onClick={handleTrialClick}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium hover:opacity-90 ${
+              className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium hover:opacity-90 sm:px-4 sm:text-sm ${
                 businessMode ? "bg-white text-[#2a2620]" : "bg-accent text-white"
               }`}
             >
@@ -639,7 +640,7 @@ export function IntroPage({
                   return next;
                 })
               }
-              className={`rounded-full border px-4 py-1.5 text-sm font-medium hover:opacity-90 ${
+              className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium hover:opacity-90 sm:px-4 sm:text-sm ${
                 businessMode
                   ? "border-white/50 bg-transparent text-white"
                   : "border-border bg-transparent text-foreground/70 hover:bg-black/[.03]"

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import * as api from "@/lib/api";
 import { ensureSession } from "@/lib/session";
 import { finalizePendingConsent } from "@/lib/auth";
-import { isAutoAdvanceEnabled } from "@/lib/qaAutoAdvance";
+import { isAutoAdvanceEnabled, QA_ACTIONS_CHANNEL } from "@/lib/qaAutoAdvance";
 import type { TodayResponse } from "@/types/api";
 import type { TodayItem } from "@/types/domain";
 import { WorkdayContext, type ArrivalBanner, type WorkdayContextValue } from "./workday-context-value";
@@ -160,6 +160,16 @@ export function WorkdayProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(timer);
   }, [loading, error, data.needsOnboarding, refresh]);
 
+  // /qa로 따로 분리해서 띄운 QA 도구 창(예: 듀얼 모니터 시연 녹화용)에서 조작하면, 이 창은
+  // 최대 45초 폴링을 기다리지 않고 바로 반영되도록 즉시 refresh() — BroadcastChannel 미지원
+  // 브라우저에서는 조용히 무시되고 기존 폴링으로만 반영됨
+  useEffect(() => {
+    if (typeof BroadcastChannel === "undefined") return;
+    const channel = new BroadcastChannel(QA_ACTIONS_CHANNEL);
+    channel.onmessage = () => refresh();
+    return () => channel.close();
+  }, [refresh]);
+
   const dismissBanner = useCallback(() => setBanner(null), []);
 
   const contacts = useMemo(() => data.contacts ?? [], [data.contacts]);
@@ -194,7 +204,19 @@ export function WorkdayProvider({ children }: { children: ReactNode }) {
       setPendingReplies((prev) => new Map(prev).set(conversationId, { id: pendingId, body: text, timestamp: new Date().toISOString() }));
       setSendingIds((prev) => new Set(prev).add(conversationId));
       try {
+        // postReply는 캐릭터의 답장까지 이미 생성해서 저장한 뒤에 응답한다(서버가 동기로 처리) —
+        // 즉 이 시점에 실제로는 "입력 중"이 아니라 이미 답장이 존재하는 상태다. 그런데 그 다음
+        // refresh()로 화면에 실제 메시지가 반영되기까지도 약간의 시차가 있어서, sendingIds를
+        // refresh() 이후에 지우면 "실제 답장이 이미 보이는데 입력 중 표시가 한 프레임 더 남아있다
+        // 사라지는" 어색한 깜빡임이 생긴다 — 그래서 "입력 중" 표시는 답장이 실제로 존재하게 된
+        // 이 시점(postReply 완료)에 바로 끄고, 화면에 보이는 내 메시지(낙관적 표시)는 진짜 데이터가
+        // 들어올 때까지 유지해서(pendingReplies는 refresh 이후에 지움) 끊김 없이 이어지게 한다
         await api.postReply(conversationId, text, subject, hintLevel, hintSentence);
+        setSendingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(conversationId);
+          return next;
+        });
         await refresh();
         // 시연 영상용 QA 토글 — 켜져 있으면 다음 예정 연락도 기다리지 않고 바로 발송.
         // 여기서 await하면 이 대화의 "작성 중" 표시가 다른 대화 발송이 끝날 때까지 늘어져

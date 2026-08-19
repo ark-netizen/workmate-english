@@ -35,7 +35,10 @@ const WordHintSchema = z.object({ en: z.string(), ko: z.string() })
 export const MessageSchema = z.object({
   subject: z.string().optional(),
   body: z.string(),
-  korean_hint: z.string().default(''),
+  // korean_hint를 자유 텍스트 하나로 두면 LLM이 종종 "답장에 포함할 내용" 부분을 통째로
+  // 빼먹고 요약 한 줄만 준다 — 두 필드로 나눠서 스키마 차원에서 강제한다
+  korean_summary: z.string().default(''),
+  korean_reply_points: z.array(z.string()).default([]),
   reply_hints: z.array(z.string()).default([]),
   word_hints: z.array(WordHintSchema).default([]),
 })
@@ -45,7 +48,8 @@ export const ResponseSchema = z.object({
   subject: z.string().optional(),
   body: z.string(),
   needs_followup: z.boolean().default(false),
-  korean_hint: z.string().default(''),
+  korean_summary: z.string().default(''),
+  korean_reply_points: z.array(z.string()).default([]),
   reply_hints: z.array(z.string()).default([]),
   word_hints: z.array(WordHintSchema).default([]),
 })
@@ -56,12 +60,17 @@ export const DailyReportSchema = z.object({
   corrections: z
     .array(z.object({ before: z.string(), after: z.string(), note: z.string() }))
     .default([]),
-  register_feedback: z.object({
-    colleague: z.string().default(''),
-    manager: z.string().default(''),
-    client: z.string().default(''),
-    comparison: z.string().default(''),
-  }),
+  register_feedback: z
+    .array(
+      z.object({
+        role: z.enum(['colleague', 'manager', 'client']),
+        their_quote: z.string(),
+        their_quote_ko: z.string(),
+        user_quote: z.string(),
+        note: z.string(),
+      }),
+    )
+    .default([]),
   recurring_issues: z.array(z.string()).default([]),
   recommended_expressions: z
     .array(z.object({ en: z.string(), ko: z.string(), note: z.string().default('') }))

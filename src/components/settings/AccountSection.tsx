@@ -184,7 +184,7 @@ export function AccountSection({
             이름
             <input
               className="mt-1 w-full rounded-md border border-border bg-transparent px-3 py-1.5 text-sm text-foreground outline-none"
-              placeholder="예: 박수아"
+              placeholder="예: 홍길동"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />

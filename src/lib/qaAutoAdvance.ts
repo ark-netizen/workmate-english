@@ -10,3 +10,16 @@ export function setAutoAdvance(enabled: boolean): void {
   if (enabled) localStorage.setItem(KEY, "1");
   else localStorage.removeItem(KEY);
 }
+
+// /qa로 분리해서 띄운 QA 도구 창(듀얼 모니터 시연 녹화용)이 조작한 뒤, 메인 창에 "지금 바로
+// 새로고침해"라고 알리는 채널 — 같은 브라우저의 다른 창/탭끼리만 통하고 서버로는 안 나간다
+export const QA_ACTIONS_CHANNEL = "go-qa-actions";
+
+export function notifyQaAction(): void {
+  if (typeof BroadcastChannel === "undefined") return;
+  try {
+    new BroadcastChannel(QA_ACTIONS_CHANNEL).postMessage("refresh");
+  } catch {
+    /* 무시 — 폴링으로 대체 반영 */
+  }
+}
