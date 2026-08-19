@@ -10,7 +10,7 @@ export function AccountModal({
 }: {
   profile: ProfileResponse;
   onClose: () => void;
-  onAccountChanged: () => void;
+  onAccountChanged: () => void | Promise<void>;
   initialMode?: "signup" | "signin";
 }) {
   return (

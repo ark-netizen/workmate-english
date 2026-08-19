@@ -6,6 +6,7 @@ import { useWorkday } from "@/context/useWorkday";
 import { Avatar } from "@/components/ui/Avatar";
 import { ReplyHints } from "@/components/reply/ReplyHints";
 import { TranslateButton } from "@/components/reply/TranslateButton";
+import { SpeakButton } from "@/components/reply/SpeakButton";
 import { VoiceInputButton } from "@/components/reply/VoiceInputButton";
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { useResizable } from "@/hooks/useResizable";
@@ -77,8 +78,9 @@ function EmailMessage({
         {email.body.replace(/\n{3,}/g, "\n\n")}
       </p>
       {!isUser && (
-        <div className="px-4 pb-4">
+        <div className="flex items-center gap-1 px-4 pb-4">
           <TranslateButton text={email.body} role={senderRole} />
+          <SpeakButton text={email.body} />
         </div>
       )}
     </div>

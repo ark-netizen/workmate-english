@@ -34,7 +34,7 @@ export function AccountSection({
   initialMode = "signin",
 }: {
   profile: ProfileResponse;
-  onAccountChanged: () => void;
+  onAccountChanged: () => void | Promise<void>;
   initialMode?: "signup" | "signin";
 }) {
   const [mode, setMode] = useState<"signup" | "signin">(initialMode);
@@ -120,7 +120,10 @@ export function AccountSection({
         if (!canSubmitSignin) return;
         await signIn({ email: resolvedEmail, password });
       }
-      onAccountChanged();
+      // onAccountChanged가 다음 화면(오늘의 업무 불러오기 등)까지 끝내는 비동기 작업이라,
+      // 이걸 기다리지 않고 submitting을 먼저 꺼버리면 버튼은 "로그인"으로 돌아왔는데 화면은
+      // 아직 안 넘어가는 어색한 정지 구간이 생긴다 — 실제로 넘어갈 때까지 "처리 중"을 유지한다.
+      await onAccountChanged();
     } catch (err) {
       const code = (err as { code?: string } | null)?.code;
       if (mode === "signup" && (code === "email_exists" || code === "identity_already_exists")) {
