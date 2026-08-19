@@ -48,7 +48,7 @@ function AppRoutes() {
     return false;
   };
 
-  // 러프한 인트로 게이트: 새로고침/재방문할 때마다 매번 노출(영구 저장 안 함). 윤경님 쪽에서 디벨롭 예정.
+  // 러프한 인트로 게이트: 새로고침/재방문할 때마다 매번 노출(영구 저장 안 함).
   const [entered, setEntered] = useState(() => {
     // 카카오 등 OAuth 콜백으로 돌아온 경우(#access_token / ?code)만 인트로 건너뛰기
     if (typeof window !== "undefined") {

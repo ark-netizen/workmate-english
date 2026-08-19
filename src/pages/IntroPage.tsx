@@ -1,6 +1,6 @@
 // 서비스 소개(랜딩) 페이지 — 링글/말해보카류 구조 참고: 상단 네비 + 히어로(헤드라인+미리보기) + 컬러풀한 기능 카드 + 하단 CTA.
 // 실제 사진 대신 우리 서비스 실제 UI를 축소한 미리보기 카드를 히어로에 배치.
-// 디자인·카피는 초안 — 윤경님 쪽에서 비주얼(폰트/애니메이션/실제 이미지)로 다듬을 예정.
+// 디자인·카피는 초안 — 비주얼(폰트/애니메이션/실제 이미지)은 추후 다듬을 예정.
 import { useEffect, useRef, useState } from "react";
 import type { ComponentType, CSSProperties, ReactNode } from "react";
 import { Sparkles, Building2, Bell, FileText, HeartHandshake, Star, type LucideIcon } from "lucide-react";

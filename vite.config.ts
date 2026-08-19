@@ -16,7 +16,7 @@ export default defineConfig({
   server: {
     port: Number(process.env.PORT) || 5173,
     strictPort: false,
-    // 순수 `vite` dev(윤경님 프론트 단독 개발)에서 /api를 프로덕션 백엔드로 프록시.
+    // 순수 `vite` dev(프론트 단독 개발)에서 /api를 프로덕션 백엔드로 프록시.
     // vercel dev로 띄우면 vercel이 /api를 직접 서빙하므로 이 프록시는 안 탐.
     proxy: {
       "/api": {
