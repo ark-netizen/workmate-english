@@ -86,11 +86,16 @@ export function TopBar({
               }}
               aria-pressed={active}
               aria-label={`${label} 모드${active ? " (현재 선택됨)" : "로 전환"}`}
+              // 활성 상태 배경색은 Tailwind 클래스(bg-foreground 등)로 주면 이 버튼에서만 다른
+              // 규칙에 밀려 안 먹히는 문제가 있어(활성/비활성 배경이 서로 뒤바뀐 것처럼 보였음),
+              // 우선순위가 확실한 인라인 스타일로 직접 지정한다.
+              style={{
+                backgroundColor: active ? (businessMode ? "#ffffff" : "#1f2328") : "transparent",
+                color: active ? (businessMode ? "#5aa89a" : "#ffffff") : undefined,
+              }}
               className={`flex items-center gap-1 rounded-full px-2 py-1.5 text-xs font-medium transition-colors ${
                 active
-                  ? businessMode
-                    ? "bg-white text-[#5aa89a]"
-                    : "bg-foreground text-white"
+                  ? ""
                   : businessMode
                     ? "text-white/60 hover:bg-white/10"
                     : "text-foreground/40 hover:bg-black/[.03]"
