@@ -7,12 +7,17 @@
 import { REGISTERS, REACTION_TYPES, GENERATION_GUARDRAILS } from './registers.js'
 
 const LEVEL_HINT = {
-  beginner: `Keep it very simple: short sentences (under ~10 words each), one idea per sentence.
-Use common, everyday words only — no idioms, no phrasal verbs, no slang, no compressed/ellipted phrasing (e.g. avoid "Any updates you've heard?" — write "Did you hear anything new?" instead).
-Prefer simple present/past tense.
-Keep the WHOLE message to ONE main ask or topic — do not combine multiple separate requests, questions, or pieces of information into a single message (e.g. do not ask about the timeline AND mention a formatting detail AND ask about legal review all at once). Pick the single most important thing and say only that. The message overall should be short (roughly 2-3 short sentences for a messenger chat, a bit more for an email) — never a dense multi-part message.`,
-  intermediate: 'Use natural everyday business English; some idioms are fine, but avoid rare/advanced vocabulary. Prefer one main ask per message over stacking several unrelated requests together.',
-  advanced: 'Use fluent, nuanced business English with varied structures.',
+  // 이전 버전도 "짧게, 쉬운 단어로"라고는 했지만 수동태·if/that절·완료시제가 계속 섞여 나와
+  // 실제 초급자에게는 여전히 어려웠음 — 문장 구조 자체를 못박아 제한한다(CEFR A2 수준).
+  beginner: `This user is a TRUE beginner (CEFR A2 level) — this is much simpler than typical "simple business English":
+- ONE clause per sentence — NO subordinate clauses at all (no if/that/whether/because/when/which-clauses), NO passive voice, NO relative clauses.
+- Only simple present, simple past, or "can/will" for future — never a perfect tense (no "has been", "have done"), never a conditional.
+- Max ~8 words per sentence.
+- Only common, everyday concrete words — avoid business/abstract vocabulary (e.g. instead of "confirm readiness", "finalize", "quality standards", "align on", write "Is it ready?", "Is it done?", "Is it good?").
+- The WHOLE message is ONE single ask, in 2-3 very short sentences (a little more for an email) — never combine multiple requests or details.
+Right difficulty example: "Hi! Is the report ready? Please check today." Too hard (do NOT write like this): "Could you confirm whether the report has been finalized and is ready for review?"`,
+  intermediate: 'Use natural everyday business English — contractions, common idioms, and phrasal verbs are fine, but avoid rare/advanced vocabulary and long multi-clause sentences. Prefer one main ask per message over stacking several unrelated requests together.',
+  advanced: 'Use fluent, nuanced business English with varied structures, idioms, and natural register shifts appropriate to a native professional speaker.',
 }
 
 const jsonInstruction = (schemaText) =>
@@ -148,14 +153,19 @@ function replyHintsInstruction(character, profile) {
   const signOffRule = profile?.display_name
     ? `If a sign-off needs a name, use the user's real display name exactly once after the closing.`
     : `If the user's name is unavailable, end after the closing and never invent a placeholder.`
+  // 이 답장은 유저가 "따라 써볼" 모범 답안이라, 캐릭터 본문뿐 아니라 이것도 같은 난이도 제약을
+  // 받아야 함 — 안 짚어주면 초급 설정에서도 답장 힌트만 문장구조가 어렵게 나오는 경우가 있었음
+  const levelReminder = LEVEL_HINT[profile?.english_level]
+    ? ` This reply must follow the SAME difficulty constraints given above for the user's English level — do not make it harder than the character's own message.`
+    : ''
 
   if (character.channel === 'email') {
-    return `- reply_hints: an array with EXACTLY ONE string containing one concise professional email reply. Use a greeting, no more than 2-3 complete body sentences, and a closing. Politely confirm the request, state the action/progress, and give the relevant schedule when applicable. ${noNameInBody} ${signOffRule} Never output placeholders such as "[Your Name]", "{{user_name}}", an account ID, or a fake team name.`
+    return `- reply_hints: an array with EXACTLY ONE string containing one concise professional email reply. Use a greeting, no more than 2-3 complete body sentences, and a closing. Politely confirm the request, state the action/progress, and give the relevant schedule when applicable. ${noNameInBody} ${signOffRule} Never output placeholders such as "[Your Name]", "{{user_name}}", an account ID, or a fake team name.${levelReminder}`
   }
   if (character.role === 'manager') {
-    return `- reply_hints: an array with EXACTLY ONE string containing 1-2 easy but complete sentences for reporting to a manager. Include the completed action, current progress, next action, or deadline as relevant. Every sentence must have an explicit subject and verb. Never use fragments such as "Text updated.", "Checking now.", or "Will submit." ${noNameInBody}`
+    return `- reply_hints: an array with EXACTLY ONE string containing 1-2 easy but complete sentences for reporting to a manager. Include the completed action, current progress, next action, or deadline as relevant. Every sentence must have an explicit subject and verb. Never use fragments such as "Text updated.", "Checking now.", or "Will submit." ${noNameInBody}${levelReminder}`
   }
-  return `- reply_hints: an array with EXACTLY ONE string containing one short, natural, complete messenger reply to a colleague. Keep it casual and use common everyday workplace English, but do not use sentence fragments. ${noNameInBody}`
+  return `- reply_hints: an array with EXACTLY ONE string containing one short, natural, complete messenger reply to a colleague. Keep it casual and use common everyday workplace English, but do not use sentence fragments. ${noNameInBody}${levelReminder}`
 }
 
 // korean_hint는 "이 메시지가 무슨 뜻인지"만 알려주는 게 아니라, 한국어로도 뭐라고 답할지조차 막막한
