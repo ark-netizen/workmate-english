@@ -4,7 +4,6 @@ import { useWorkday } from "@/context/useWorkday";
 import { Avatar } from "@/components/ui/Avatar";
 import { VoiceInputButton } from "@/components/reply/VoiceInputButton";
 import { SpellFixButton } from "@/components/reply/SpellFixButton";
-import { HelpTip } from "@/components/ui/HelpTip";
 import type { Contact } from "@/types/domain";
 
 const ROLE_LABELS: Record<Contact["role"], string> = {
@@ -132,10 +131,7 @@ export function ComposeEmailPage() {
       </label>
 
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5">
-          <SpellFixButton text={body} onFixed={setBody} />
-          <HelpTip id="spell-fix" text="단어 철자만 확인해서 고쳐줘요. 문법(시제·어순 등)은 그대로 둬요." />
-        </div>
+        <SpellFixButton text={body} onFixed={setBody} />
         <button
           type="button"
           onClick={handleSend}

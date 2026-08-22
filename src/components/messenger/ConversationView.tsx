@@ -7,7 +7,6 @@ import { TranslateButton } from "@/components/reply/TranslateButton";
 import { SpeakButton } from "@/components/reply/SpeakButton";
 import { VoiceInputButton } from "@/components/reply/VoiceInputButton";
 import { SpellFixButton } from "@/components/reply/SpellFixButton";
-import { HelpTip } from "@/components/ui/HelpTip";
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { useResizable } from "@/hooks/useResizable";
 import { formatTime } from "@/lib/format";
@@ -237,20 +236,17 @@ export function ConversationView({ conversation }: { conversation: Conversation 
               onTranscript={(spoken) => setText((prev) => (prev.trim() ? `${prev.trim()} ${spoken}` : spoken))}
             />
             {!isVent && (
-              <>
-                <button
-                  type="button"
-                  onClick={handleFieldWork}
-                  disabled={fieldWorkPending}
-                  className="shrink-0 rounded-full border border-border px-3 py-1 text-xs text-foreground/60 hover:bg-black/[.03] disabled:opacity-50"
-                >
-                  지금 외근 중
-                </button>
-                <HelpTip id="field-work" text="지금 답장하기 어려우면 눌러보세요. 30분 뒤에 같은 연락이 다시 와요." />
-              </>
+              <button
+                type="button"
+                onClick={handleFieldWork}
+                disabled={fieldWorkPending}
+                title="지금 답장하기 어려우면 눌러보세요. 30분 뒤에 같은 연락이 다시 와요."
+                className="shrink-0 rounded-full border border-border px-3 py-1 text-xs text-foreground/60 hover:bg-black/[.03] disabled:opacity-50"
+              >
+                지금 외근 중
+              </button>
             )}
             <SpellFixButton text={text} onFixed={setText} />
-            <HelpTip id="spell-fix" text="단어 철자만 확인해서 고쳐줘요. 문법(시제·어순 등)은 그대로 둬요." />
             <button
               type="button"
               onClick={handleSend}
