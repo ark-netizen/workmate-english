@@ -218,9 +218,6 @@ export function ConversationView({ conversation }: { conversation: Conversation 
               onLevelChange={setHintLevel}
             />
           )}
-          <div className="flex flex-wrap items-center gap-1.5">
-            <SpellFixButton text={text} onFixed={setText} />
-          </div>
           <div className="flex items-end gap-2 rounded-2xl border border-border bg-surface px-4 py-2">
             <textarea
               style={{ height: inputHeight }}
@@ -248,6 +245,7 @@ export function ConversationView({ conversation }: { conversation: Conversation 
                 지금 외근 중
               </button>
             )}
+            <SpellFixButton text={text} onFixed={setText} />
             <button
               type="button"
               onClick={handleSend}

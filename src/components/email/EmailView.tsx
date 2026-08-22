@@ -289,16 +289,6 @@ export function EmailView({ thread }: { thread: EmailThread }) {
             <ReplyHints key={thread.id} hints={hints} onLevelChange={setBodyHintLevel} />
           </div>
         )}
-        <div className="flex flex-wrap items-center gap-1.5">
-          <SpellFixButton
-            text={text}
-            onFixed={(corrected) => {
-              textIsDefaultRef.current = false;
-              setText(corrected);
-            }}
-          />
-        </div>
-
         <div className="flex min-h-0 flex-1 gap-3">
           <Avatar name="나" size="sm" />
           <textarea
@@ -335,6 +325,13 @@ export function EmailView({ thread }: { thread: EmailThread }) {
         >
           지금 외근 중
         </button>
+        <SpellFixButton
+          text={text}
+          onFixed={(corrected) => {
+            textIsDefaultRef.current = false;
+            setText(corrected);
+          }}
+        />
         <button
           type="button"
           onClick={handleSend}
