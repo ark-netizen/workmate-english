@@ -411,15 +411,18 @@ export async function startWorkday(userId) {
     await sb.from('user_profiles').update(nameLock).eq('user_id', userId).then(() => {}, () => {})
   }
 
-  // 알림 횟수가 기본 3건을 초과하는 만큼은 동료/상사/거래처 중 매일 무작위로 추가 배정 —
-  // 새 사건이 아니라 오늘 사건에 대한 후속 체크인이라 채점/리포트 대상 아님(kind: 'checkin')
+  // 알림 횟수가 기본 3건을 초과하는 만큼은 같은 사건의 다음 업무 단계로 흘러가는 추가 체크인 —
+  // 새 사건이 아니라 오늘 사건의 후속이라 채점/리포트 대상 아님(kind: 'checkin'). generateScenario가
+  // 이미 함께 만들어준 extra_checkins(있으면)를 쓰고, 없으면(개수 부족 등) 기존 고정 템플릿으로 대체.
   const extraCount = count - chars.length
+  const extraCheckins = Array.isArray(gen.extra_checkins) ? gen.extra_checkins : []
   for (let i = 0; i < extraCount; i++) {
-    const pick = chars[Math.floor(Math.random() * chars.length)]
+    const provided = extraCheckins[i]
+    const pick = (provided && chars.find((c) => c.role === provided.role)) || chars[Math.floor(Math.random() * chars.length)]
     const character = characterByRole[pick.role]
     // 여기도 근무 마감을 넘기지 않게 캡(위와 동일한 이유)
     const scheduledAt = new Date(Math.min(startMs + (chars.length + i) * gap, endDeadlineMs)).toISOString()
-    const template = CHECKIN_TEMPLATES[Math.floor(Math.random() * CHECKIN_TEMPLATES.length)]
+    const fallback = CHECKIN_TEMPLATES[Math.floor(Math.random() * CHECKIN_TEMPLATES.length)]
     const convo = unwrap(
       await sb.from('conversations').insert({
         workday_id: workday.id,
@@ -434,11 +437,11 @@ export async function startWorkday(userId) {
       await sb.from('messages').insert({
         conversation_id: convo.id,
         sender: 'character',
-        body: template.body,
+        body: provided?.body_en || fallback.body,
         seq: 1,
-        korean_hint: template.korean_hint,
-        reply_hints: template.reply_hints,
-        word_hints: template.word_hints,
+        korean_hint: provided?.korean_hint || fallback.korean_hint,
+        reply_hints: capReplyHints(provided?.reply_hints) || fallback.reply_hints,
+        word_hints: provided?.word_hints?.length ? provided.word_hints : fallback.word_hints,
       }),
     )
     unwrap(

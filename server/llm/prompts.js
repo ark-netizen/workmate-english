@@ -55,9 +55,16 @@ function buildPersonaResetLines(resetRoles) {
 
 // ── 1. generateScenario — 하루 Workday Scenario + 세 역할 (기획서 8-1) ──
 export function buildScenarioPrompt({ profile, previousMemory, resetRoles, personaFeedback }) {
+  // 하루 알림 횟수(3~6) 중 기본 3건(동료/상사/거래처)을 초과하는 만큼은, 같은 사건의 다음 업무
+  // 단계로 흘러가는 "추가 체크인"을 LLM이 같이 만들어준다(요청 1번으로 끝나서 별도 LLM 호출 없음).
+  const extraCount = Math.min(Math.max(profile.daily_count || 3, 3), 6) - 3
+
   const system = `You design one coherent workday context for an immersive English-at-work service.
 The user handles ONE shared business event across three relationships: colleague, manager, and client.
-The event is shared; only each person's purpose, register, and channel differ.
+The event is shared, AND all three make the exact same specific request of the user — only each
+person's register, channel, and phrasing differ. This is the core of the product: the user practices
+replying to the SAME request three different ways (casual to a colleague, direct to a manager, formal
+to a client), so the underlying ask must not be split into three different tasks.
 ${GENERATION_GUARDRAILS}`
 
   const user = `User profile:
@@ -77,10 +84,11 @@ ${buildCharacterPresetLines(profile, personaFeedback)}
 Create exactly ONE shared work event for today. The home context card and all three role messages must refer to this same event, deliverable, deadline, and stage.
 
 Relationship rules:
-- colleague: casual messenger check-in or coordination about the shared event
-- manager: clear messenger request, progress check, decision, or deadline about the shared event
-- client: polite formal email request, confirmation, feedback, or schedule coordination about the shared event
-The three people do not all perform the same task. They approach the same event from their own relationship and purpose.
+First decide ONE specific, concrete request tied to the shared event — something the user can concretely act on today (e.g. "review the attached draft by 3pm", "confirm these numbers are correct", "check whether the build is ready"). ALL THREE people ask the user this SAME request today — the substance of the ask must be identical across all three, not three different tasks. Only the delivery differs by relationship:
+- colleague: casual messenger phrasing of that same request, framed as a coworker check-in
+- manager: clear, direct messenger phrasing of that same request, framed as a progress check or deadline reminder
+- client: polite, formal email phrasing of that same request, framed as a professional inquiry
+Do not split the request into three different sub-tasks — the whole point is that the user practices replying to one identical ask in three registers.
 
 Topic progression rules:
 - Prefer advancing the previous topic through a realistic next stage: drafting → review → revision → upload/delivery → confirmation → final approval/result sharing.
@@ -95,6 +103,8 @@ Korean and English context fields must express exactly the same meaning.
 The home card only displays "stage" and, per character, "purpose" (title/summary/goal are internal only, used for generating messages, not shown to the user as-is) — keep every displayed field SHORT and scannable, like a task-list headline, never a full sentence:
 - stage_ko/stage_en: a 2-4 word status label (e.g. "최종 검토 중" / "Final review").
 - Each character's purpose_ko/purpose_en: a 2-5 word label naming ONLY that person's angle on today's shared event, not the event itself and not other people's parts (e.g. colleague "진행상황 파악" / "Checking progress", manager "마감 확인" / "Confirming the deadline", client "조건 확인" / "Confirming terms"). Never include a name inside purpose_ko/purpose_en — the name is shown separately next to it.
+${extraCount > 0 ? `
+This user also gets ${extraCount} extra follow-up check-in(s) later in the day, beyond the three main messages above. Unlike the three main messages (which all make the identical request), each follow-up must move the SAME shared event forward to a different, later stage or sub-task — e.g. a status update, a small new snag, a revised number, a confirmation that something is done, a next step now that the first ask was handled. Assign each one to whichever of colleague/manager/client would realistically send it (roles may repeat). These are casual/professional continuations, not a repeat of the original request.` : ''}
 
 ${jsonInstruction(`{
   "title_en": string,
@@ -112,7 +122,13 @@ ${jsonInstruction(`{
       "name": string, "title": string, "register": string,
       "goal": string, "known_info": string, "unknown_info": string,
       "purpose_en": string, "purpose_ko": string }
-  ]
+  ]${extraCount > 0 ? `,
+  "extra_checkins": [
+    { "role": "colleague"|"manager"|"client", "body_en": string,
+      "korean_hint": string (한국어, what this follow-up means and what direction to reply in),
+      "reply_hints": string[] (EXACTLY one natural English reply matching the channel/register of that role),
+      "word_hints": [{ "en": string, "ko": string }] (3-5 entries) }
+  ]` : ''}
 }`)} `
 
   return { system, user, schema: 'scenario' }

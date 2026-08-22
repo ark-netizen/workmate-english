@@ -1,6 +1,8 @@
 // LLM 출력 스키마 검증 (zod) — 파싱 실패/누락 필드를 서버에서 걸러낸다.
 import { z } from 'zod'
 
+const WordHintSchema = z.object({ en: z.string(), ko: z.string() })
+
 export const ScenarioSchema = z.object({
   title_en: z.string(),
   title_ko: z.string(),
@@ -28,9 +30,20 @@ export const ScenarioSchema = z.object({
       }),
     )
     .length(3),
+  // 하루 알림 횟수가 3회를 초과할 때만 요청하는 추가 체크인(같은 사건의 다음 업무 단계) — 없으면 빈 배열
+  extra_checkins: z
+    .array(
+      z.object({
+        role: z.enum(['colleague', 'manager', 'client']),
+        body_en: z.string(),
+        korean_hint: z.string().default(''),
+        reply_hints: z.array(z.string()).default([]),
+        word_hints: z.array(WordHintSchema).default([]),
+      }),
+    )
+    .optional()
+    .default([]),
 })
-
-const WordHintSchema = z.object({ en: z.string(), ko: z.string() })
 
 export const MessageSchema = z.object({
   subject: z.string().optional(),
