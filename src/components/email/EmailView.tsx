@@ -289,6 +289,15 @@ export function EmailView({ thread }: { thread: EmailThread }) {
             <ReplyHints key={thread.id} hints={hints} onLevelChange={setBodyHintLevel} />
           </div>
         )}
+        <div className="flex flex-wrap items-center gap-1.5">
+          <SpellFixButton
+            text={text}
+            onFixed={(corrected) => {
+              textIsDefaultRef.current = false;
+              setText(corrected);
+            }}
+          />
+        </div>
 
         <div className="flex min-h-0 flex-1 gap-3">
           <Avatar name="나" size="sm" />
@@ -308,13 +317,6 @@ export function EmailView({ thread }: { thread: EmailThread }) {
             onTranscript={(spoken) => {
               textIsDefaultRef.current = false;
               setText((prev) => (prev.trim() ? `${prev.trim()} ${spoken}` : spoken));
-            }}
-          />
-          <SpellFixButton
-            text={text}
-            onFixed={(corrected) => {
-              textIsDefaultRef.current = false;
-              setText(corrected);
             }}
           />
         </div>
