@@ -240,6 +240,9 @@ export function SettingsPage() {
       setProfile((prev) => ({ ...prev, ...patch }));
       setOriginalProfile((prev) => ({ ...prev, ...patch }));
       setBasicSaved(true);
+      // 출퇴근시간을 바꾸면 서버가 오늘 남은 연락 시각도 같이 재계산하는데, 홈/오늘의 연락은
+      // 다음 폴링(45초)이 와야 반영돼서 "저장했는데 안 바뀐다"로 보였음 — 저장 직후 바로 당겨온다
+      refreshWorkday().catch(() => {});
     } finally {
       setBasicSaving(false);
     }
