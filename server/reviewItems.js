@@ -1,16 +1,11 @@
 // 힌트 난이도(word/sentence) 기반 당일+익일 복습 — server/workday.js의 submitReply/startWorkday에서 호출된다.
 // 정책: 한국어 힌트까지만=정상(복습 대상 아님), 단어까지=Tier1("영작해보기" 2회), 문장까지=Tier2("빈칸채우기"→"영작해보기")
 import { admin, unwrap } from './db.js'
+import { todayAt } from './time.js'
 
 const preview = (t) => (t || '').replace(/\n+/g, ' ').trim().slice(0, 60)
 const routeFor = (channel, conversationId) =>
   channel === 'email' ? `/email/${conversationId}` : `/messenger/${conversationId}`
-function todayAt(hhmm) {
-  const [h, m] = (hhmm || '10:00').split(':').map(Number)
-  const d = new Date()
-  d.setHours(h, m, 0, 0)
-  return d
-}
 
 // 정답 문장에서 가장 긴(=핵심 표현일 가능성이 높은) 단어 하나를 빈칸 처리
 function blankOutKeyWord(sentence) {
