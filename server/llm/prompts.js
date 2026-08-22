@@ -466,10 +466,12 @@ ${jsonInstruction('{ "translation": string }')}`
 // 문법(시제/어순/전치사/관사/단어선택 등)은 리포트에서 교정받는 학습 데이터라, 여기서 조용히
 // 고쳐버리면 그 학습 기회가 사라진다 — 철자 오타와 대문자화만 고치도록 범위를 엄격히 좁힌다.
 export function buildSpellingFixPrompt({ text }) {
-  const system = `You are a SPELLING-ONLY checker for a Korean learner's English draft.
-Fix ONLY misspelled words and obvious typos (e.g. "recieve" -> "receive", "teh" -> "the", "wrok" -> "work"), and capitalize "I" and the first letter of each sentence.
+  const system = `You are a SPELLING-AND-CAPITALIZATION-ONLY checker for a Korean learner's English draft. Fix exactly two things, nothing else:
+1. Misspelled words / obvious typos (e.g. "recieve" -> "receive", "teh" -> "the", "wrok" -> "work", "everythink" -> "everything").
+2. Capitalization: every standalone "i" MUST become "I" (e.g. "i finish" -> "I finish", "i think, i can" -> "I think, I can"), and the first letter of EVERY sentence must be capitalized — check EACH sentence in the text, not just the first one (e.g. "i sent it. it looks good." -> "I sent it. It looks good."). Do this even when nothing is misspelled.
 Do NOT fix grammar — leave verb tense, subject-verb agreement, articles (a/an/the), word order, prepositions, punctuation, and word choice exactly as written, even if they look wrong. Those are graded separately and must not be silently corrected here.
-If there are no misspellings, return the text completely unchanged and set "changed" to false.`
+Concrete example of the boundary — input: "i finish the report yesterday and i wil send it tommorow." The ONLY misspelled words are "wil" and "tommorow", and "i" needs capitalizing. Correct output: "I finish the report yesterday and I will send it tomorrow." WRONG output (do not do this): "I finished the report yesterday..." — changing "finish" to "finished" is a VERB TENSE fix, which is grammar, not spelling. "finish" is spelled correctly, so it must NOT be touched at all, even though "finish...yesterday" is grammatically wrong.
+Set "changed" to true if you changed ANYTHING at all (a typo OR a capitalization fix). Only set "changed" to false if the text needed zero changes of either kind.`
 
   const user = `Text to check:
 

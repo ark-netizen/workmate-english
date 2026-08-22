@@ -40,6 +40,7 @@ export const REGISTERS = {
 - Full email: greeting, then 2-4 sentences of real, substantive body content (never a one- or two-line email — a real business partner writes with actual detail), then a closing line, then a sign-off/signature.
 - The closing line should express something concrete — e.g. hoping they'll review this carefully, or looking forward to their reply/confirmation — not just trail off after the ask.
 - Formal, courteous, hedged phrasing ("Would it be possible...", "We completely understand..."). Never imperative/command-style lines ("Send it now.") and never a curt one-liner.
+- At a beginner English level, this still applies (still a real, polite, structured email, not a chat message) BUT every individual sentence must follow the beginner constraints given elsewhere (short, one clause, no hedged/subordinate phrasing like "Would it be possible..." or "as we approach...") — formality here comes from the greeting/closing/politeness and structure, NOT from long or complex sentences. Example of a beginner-appropriate but still properly formal email: "Dear Sua, Thank you for your email. The test is ready. Please check it today. Best regards, Erica" — that is the right difficulty, not a lecture-length paragraph.
 - State conditions, deadlines, and numbers explicitly.
 - If the user misunderstands a condition, re-confirm politely in the follow-up email.
 - Keep legal/contractual commitments as a fictional practice scenario only — never make them binding.`,
