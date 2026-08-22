@@ -1292,34 +1292,38 @@ export async function getTodaySnapshot(userId) {
     }
   }
 
-  for (const [, group] of scenarioGroups) {
-    // scheduled_at이 내림차순이라 보통 group[0]이 오늘 대화지만, 외근 재예약이 누적되면 예전 대화의
-    // scheduled_at이 오늘 대화와 같아지거나 더 늦어질 수 있어 group[0]이 오늘 게 아닐 수 있음 —
-    // 오늘 workday에 속한 대화가 있으면 그걸 항상 우선해서 "오늘의 연락"이 빠지지 않게 한다
-    const todayInGroup = group.find((c) => c.workday_id === workday.id)
-    const latest = todayInGroup || group[0]
-    const allMessages = []
-    for (const c of group) {
+  // 대화방마다 메시지를 하나씩 순서대로(await) 가져오면 대화 수만큼 왕복이 쌓여 로그인/새로고침이
+  // 눈에 띄게 느려진다(원격 DB 왕복 지연이 대화 개수만큼 그대로 더해짐) — 서로 독립적인 조회라
+  // Promise.all로 한꺼번에 병렬 요청한다. 이후 배열 정렬(아래)에서 순서를 다시 명시적으로 맞추므로
+  // 병렬 처리로 완료 순서가 뒤섞여도 결과에는 영향이 없다.
+  await Promise.all([
+    ...Array.from(scenarioGroups.values()).map(async (group) => {
+      // scheduled_at이 내림차순이라 보통 group[0]이 오늘 대화지만, 외근 재예약이 누적되면 예전 대화의
+      // scheduled_at이 오늘 대화와 같아지거나 더 늦어질 수 있어 group[0]이 오늘 게 아닐 수 있음 —
+      // 오늘 workday에 속한 대화가 있으면 그걸 항상 우선해서 "오늘의 연락"이 빠지지 않게 한다
+      const todayInGroup = group.find((c) => c.workday_id === workday.id)
+      const latest = todayInGroup || group[0]
+      const results = await Promise.all(
+        group.map((c) => sb.from('messages').select('*').eq('conversation_id', c.id).order('seq')),
+      )
+      const allMessages = results.flatMap((res) => mapMessages(unwrap(res) || []))
+      // 대화(conversation) 단위 scheduled_at으로만 순서를 정하면, 외근 재예약·QA 도구(다음날로 넘기기,
+      // 강제발송 등)로 여러 날짜의 scheduled_at이 서로 뒤엉켰을 때 메시지가 뒤죽박죽으로 이어붙여진다 —
+      // 실제로 언제 오갔는지의 기준인 메시지 자체의 시각(timestamp)으로 최종 정렬해 항상 진짜 시간순이 되게 한다
+      allMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
+      pushTodayItem(latest, allMessages)
+      // 목록에 표시할 대표 대화는 "이미 도착한 것 중 가장 최근"이어야 함 — 오늘 것이 아직 도착 전이면
+      // 지난 날짜의 마지막 대화로 대체하고, 그마저 없으면(한 번도 도착한 적 없음) 이 상대는 목록에 아예 안 보인다
+      const deliveredLatest = group.find((c) => c.status !== 'scheduled')
+      if (deliveredLatest) pushThreadContent(deliveredLatest, allMessages)
+    }),
+    ...otherConvos.map(async (c) => {
       const messages = unwrap(await sb.from('messages').select('*').eq('conversation_id', c.id).order('seq')) || []
-      allMessages.push(...mapMessages(messages))
-    }
-    // 대화(conversation) 단위 scheduled_at으로만 순서를 정하면, 외근 재예약·QA 도구(다음날로 넘기기,
-    // 강제발송 등)로 여러 날짜의 scheduled_at이 서로 뒤엉켰을 때 메시지가 뒤죽박죽으로 이어붙여진다 —
-    // 실제로 언제 오갔는지의 기준인 메시지 자체의 시각(timestamp)으로 최종 정렬해 항상 진짜 시간순이 되게 한다
-    allMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
-    pushTodayItem(latest, allMessages)
-    // 목록에 표시할 대표 대화는 "이미 도착한 것 중 가장 최근"이어야 함 — 오늘 것이 아직 도착 전이면
-    // 지난 날짜의 마지막 대화로 대체하고, 그마저 없으면(한 번도 도착한 적 없음) 이 상대는 목록에 아예 안 보인다
-    const deliveredLatest = group.find((c) => c.status !== 'scheduled')
-    if (deliveredLatest) pushThreadContent(deliveredLatest, allMessages)
-  }
-
-  for (const c of otherConvos) {
-    const messages = unwrap(await sb.from('messages').select('*').eq('conversation_id', c.id).order('seq')) || []
-    const mapped = mapMessages(messages)
-    pushTodayItem(c, mapped)
-    pushThreadContent(c, mapped)
-  }
+      const mapped = mapMessages(messages)
+      pushTodayItem(c, mapped)
+      pushThreadContent(c, mapped)
+    }),
+  ])
 
   // "오늘의 연락"은 예정 시각이 이른 순으로(다음 연락 예정을 정확히 고르기 위해), 채팅방/메일함 목록은
   // 최근 업데이트 순으로 정렬 — 위 그룹핑 과정에서 원래의 조회 순서가 흐트러졌으므로 여기서 다시 명시적으로 정렬
