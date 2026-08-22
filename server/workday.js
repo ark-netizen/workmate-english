@@ -160,7 +160,12 @@ export async function startWorkday(userId) {
     )
   } else {
     if (['OFF_DUTY', 'DONE', 'ON_LEAVE', 'HALF_DAY'].includes(workday.state)) return { workday, reused: true }
-    workday = unwrap(await sb.from('workdays').update({ state: 'COMMUTING', started_at: new Date().toISOString() }).eq('id', workday.id).select().single())
+    // 이 함수는 화면 조회/폴링마다(45초마다) 호출되는데, 이미 진행 중인 근무일의 started_at을
+    // 매번 "지금"으로 덮어쓰면 근무 시간이 계속 0에 가깝게 리셋돼서 절대 누적되지 않았다 —
+    // state만 필요할 때 바로잡고, started_at은 처음 출근했을 때 값을 그대로 둔다.
+    if (workday.state !== 'COMMUTING') {
+      workday = unwrap(await sb.from('workdays').update({ state: 'COMMUTING' }).eq('id', workday.id).select().single())
+    }
   }
 
   // 이미 시나리오가 있으면 그대로

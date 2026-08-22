@@ -646,7 +646,9 @@ export function IntroPage({
                   : "border-border bg-transparent text-foreground/70 hover:bg-black/[.03]"
               }`}
             >
-              {businessMode ? "비즈니스 모드" : "게임 모드"}
+              {/* businessMode(true)는 실제로는 레트로 창 스타일(FeatureWindowScrollList)이 나가는
+                  "게임 모드" 쪽이라, 라벨을 그 실제 화면과 맞춘다 — 색상·컴포넌트 분기는 그대로 둠 */}
+              {businessMode ? "게임 모드" : "비즈니스 모드"}
             </button>
           </div>
         </div>

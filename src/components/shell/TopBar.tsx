@@ -69,10 +69,12 @@ export function TopBar({
             businessMode ? "border-white/40" : "border-border"
           }`}
         >
+          {/* businessMode(true)는 실제로는 이 초록/틸 배경 쪽이라 "게임 모드"로, false가 "비즈니스
+              모드"(깔끔한 흰 배경)로 불려야 함 — 색상 자체는 그대로 두고 라벨/활성 매핑만 맞춘다 */}
           {(
             [
-              { key: "game", active: !businessMode, Icon: Gamepad2, label: "게임" },
-              { key: "business", active: businessMode, Icon: Briefcase, label: "비즈니스" },
+              { key: "game", active: businessMode, Icon: Gamepad2, label: "게임" },
+              { key: "business", active: !businessMode, Icon: Briefcase, label: "비즈니스" },
             ] as const
           ).map(({ key, active, Icon, label }) => (
             <button
@@ -80,7 +82,7 @@ export function TopBar({
               type="button"
               onClick={() => {
                 if (active) return;
-                const next = key === "business";
+                const next = key === "game";
                 setBusinessMode(next);
                 setStoredBusinessMode(next); // 직접 고른 값이니 저장 — 다른 페이지·다음 방문에도 유지
               }}
