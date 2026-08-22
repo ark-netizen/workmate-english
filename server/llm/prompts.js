@@ -290,7 +290,7 @@ Write the report, following the language rule above strictly.
   - "user_quote": the exact English sentence(s) the user actually sent in reply (must be from a line labeled "User:").
   - "note": 한국어 2-3문장, 두 부분으로 구성:
     1) 상대방 문장(their_quote)에서 그 관계 특유의 톤을 만드는 핵심 단어/표현을 1-2개 콕 집어 그대로 인용하고("Quick question", "Please confirm" 처럼), 그 표현이 주는 뉘앙스(친근함/직설적 지시/격식체 정중함 등)와 동료·상사·거래처 중 이 관계에서 왜 그런 표현을 쓰는지를 짚어준다 — 그냥 "톤이 캐주얼했다" 같은 뭉뚱그린 설명 금지, 반드시 구체적 단어를 근거로 들 것.
-    2) 유저의 답장(user_quote)이 그 톤에 맞게(혹은 안 맞게) 어떻게 응답했는지를 짧게 덧붙인다.
+    2) 유저의 답장(user_quote)이 그 톤에 맞게(혹은 안 맞게) 어떻게 응답했는지를 짧게 덧붙인다. 여기서도 corrections와 같은 기준을 적용한다 — 실제로 안 맞거나 틀린 부분이 있을 때만 지적하고, 이미 맞는 걸 다른 맞는 표현으로 바꾸라고 하면 안 된다. 특히 캐주얼한 관계(동료)에서 자연스러운 축약형(I've, don't, I'm, gonna 등)은 그 자체로 정답이며 "I have/I am"처럼 풀어 쓰는 게 더 문법적으로 정확한 게 아니다 — 축약형을 풀어 쓰라고 지적하는 것은 톤을 오히려 어긋나게 만드는 잘못된 조언이니 금지. 지적할 실제 문제가 없으면 그 문장은 그냥 톤에 잘 맞았다고 짧게 언급하고 넘어간다.
     이 대화 쌍에서만 나오는 구체적 코멘트여야 하며, workday_summary나 다른 role의 note와 겹치는 일반론은 금지.
   Order entries colleague, then manager, then client (skipping absent ones). Together the entries should make it obvious that the SAME underlying event was phrased differently by each relationship and that the user's replies matched (or didn't match) each register.
 - recurring_issues: 한국어로, 반복되는 실수 패턴.
