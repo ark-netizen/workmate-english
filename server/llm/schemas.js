@@ -110,6 +110,12 @@ export const TranslationSchema = z.object({
   translation: z.string(),
 })
 
+// 답장 입력창 "오타 교정" 버튼 — 철자만 고침(문법은 건드리지 않음)
+export const SpellingFixSchema = z.object({
+  corrected: z.string(),
+  changed: z.boolean().default(false),
+})
+
 // CS 챗봇(우측 하단) FAQ 자동 응답
 export const SupportAnswerSchema = z.object({
   answer: z.string(),

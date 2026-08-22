@@ -8,6 +8,7 @@ import { ReplyHints } from "@/components/reply/ReplyHints";
 import { TranslateButton } from "@/components/reply/TranslateButton";
 import { SpeakButton } from "@/components/reply/SpeakButton";
 import { VoiceInputButton } from "@/components/reply/VoiceInputButton";
+import { SpellFixButton } from "@/components/reply/SpellFixButton";
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { useResizable } from "@/hooks/useResizable";
 import { formatDateTime } from "@/lib/format";
@@ -307,6 +308,13 @@ export function EmailView({ thread }: { thread: EmailThread }) {
             onTranscript={(spoken) => {
               textIsDefaultRef.current = false;
               setText((prev) => (prev.trim() ? `${prev.trim()} ${spoken}` : spoken));
+            }}
+          />
+          <SpellFixButton
+            text={text}
+            onFixed={(corrected) => {
+              textIsDefaultRef.current = false;
+              setText(corrected);
             }}
           />
         </div>

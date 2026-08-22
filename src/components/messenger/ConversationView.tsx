@@ -6,6 +6,7 @@ import { ReplyHints } from "@/components/reply/ReplyHints";
 import { TranslateButton } from "@/components/reply/TranslateButton";
 import { SpeakButton } from "@/components/reply/SpeakButton";
 import { VoiceInputButton } from "@/components/reply/VoiceInputButton";
+import { SpellFixButton } from "@/components/reply/SpellFixButton";
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { useResizable } from "@/hooks/useResizable";
 import { formatTime } from "@/lib/format";
@@ -234,6 +235,7 @@ export function ConversationView({ conversation }: { conversation: Conversation 
             <VoiceInputButton
               onTranscript={(spoken) => setText((prev) => (prev.trim() ? `${prev.trim()} ${spoken}` : spoken))}
             />
+            <SpellFixButton text={text} onFixed={setText} />
             {!isVent && (
               <button
                 type="button"

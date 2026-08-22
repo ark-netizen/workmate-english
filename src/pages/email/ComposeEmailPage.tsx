@@ -3,6 +3,7 @@ import { SquarePen } from "lucide-react";
 import { useWorkday } from "@/context/useWorkday";
 import { Avatar } from "@/components/ui/Avatar";
 import { VoiceInputButton } from "@/components/reply/VoiceInputButton";
+import { SpellFixButton } from "@/components/reply/SpellFixButton";
 import type { Contact } from "@/types/domain";
 
 const ROLE_LABELS: Record<Contact["role"], string> = {
@@ -126,6 +127,7 @@ export function ComposeEmailPage() {
           <VoiceInputButton
             onTranscript={(spoken) => setBody((prev) => (prev.trim() ? `${prev.trim()} ${spoken}` : spoken))}
           />
+          <SpellFixButton text={body} onFixed={setBody} />
         </div>
       </label>
 

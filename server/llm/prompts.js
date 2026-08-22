@@ -462,6 +462,26 @@ ${jsonInstruction('{ "translation": string }')}`
   return { system, user, schema: 'translation' }
 }
 
+// ── 10-1. buildSpellingFixPrompt — 답장 입력창 "오타 교정" 버튼 ──
+// 문법(시제/어순/전치사/관사/단어선택 등)은 리포트에서 교정받는 학습 데이터라, 여기서 조용히
+// 고쳐버리면 그 학습 기회가 사라진다 — 철자 오타와 대문자화만 고치도록 범위를 엄격히 좁힌다.
+export function buildSpellingFixPrompt({ text }) {
+  const system = `You are a SPELLING-ONLY checker for a Korean learner's English draft.
+Fix ONLY misspelled words and obvious typos (e.g. "recieve" -> "receive", "teh" -> "the", "wrok" -> "work"), and capitalize "I" and the first letter of each sentence.
+Do NOT fix grammar — leave verb tense, subject-verb agreement, articles (a/an/the), word order, prepositions, punctuation, and word choice exactly as written, even if they look wrong. Those are graded separately and must not be silently corrected here.
+If there are no misspellings, return the text completely unchanged and set "changed" to false.`
+
+  const user = `Text to check:
+
+"""
+${text}
+"""
+
+${jsonInstruction('{ "corrected": string, "changed": boolean }')}`
+
+  return { system, user, schema: 'spelling_fix' }
+}
+
 // ── 11. buildSupportAnswerPrompt — 우측 하단 CS 챗봇 FAQ 자동 응답 ──
 export function buildSupportAnswerPrompt({ question }) {
   const system = `You are the customer support assistant for "부캐영어(WorkMate English)", a Korean business-English

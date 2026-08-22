@@ -109,6 +109,14 @@ export function translateText(text: string, role?: string) {
   });
 }
 
+// 답장 입력창 "오타 교정" 버튼 — 철자만 고침(문법은 그대로 둠, 리포트 교정용으로 남겨둬야 함)
+export function fixSpelling(text: string) {
+  return apiFetch<{ corrected: string; changed: boolean }>("/api/reply", {
+    method: "POST",
+    body: JSON.stringify({ fixSpelling: true, text }),
+  });
+}
+
 // CS 챗봇(우측 하단) — FAQ 자동 응답 / 문의 남기기
 export function askSupportBot(text: string) {
   return apiFetch<{ answer: string }>("/api/reply", {

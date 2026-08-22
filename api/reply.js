@@ -2,19 +2,20 @@
 // body에 { conversationId, markRead: true }만 있으면 답변 대신 읽음 처리만 함(대화 열 때 호출)
 // body에 { vent: true, text }만 있으면 conversationId 없이 "마음 편하게 말 걸기" 채널로 발송
 // body에 { translate: true, text }만 있으면 받은 메시지/이메일을 한국어로 번역
+// body에 { fixSpelling: true, text }만 있으면 사용자가 쓰던 답장 초안의 철자만 교정(문법은 안 건드림)
 // body에 { support: 'ask'|'inquiry', text }만 있으면 CS 챗봇 질문/문의 접수
 // body에 { surveyResponse: true, surveyId, rating, review }만 있으면 설문 응답(별점+후기) 제출
 // body에 { getPublicReviews: true }만 있으면 소개 페이지용 공개 후기 목록 조회
 import { requireUser } from '../server/auth.js'
 import { submitReply, markConversationRead, sendVentMessage } from '../server/workday.js'
-import { generateTranslation } from '../server/llm/client.js'
+import { generateTranslation, generateSpellingFix } from '../server/llm/client.js'
 import { askSupportBot, submitSupportInquiry, submitSurveyResponse, getPublicReviews } from '../server/support.js'
 import { admin } from '../server/db.js'
 import { withErrors } from '../server/http.js'
 import { sendPushToUser } from '../server/push.js'
 
 export default withErrors('POST', async (req, res) => {
-  const { conversationId, text, markRead, vent, translate, role, support, surveyResponse, getPublicReviews: wantsPublicReviews, hintLevel, hintSentence } = req.body || {}
+  const { conversationId, text, markRead, vent, translate, fixSpelling, role, support, surveyResponse, getPublicReviews: wantsPublicReviews, hintLevel, hintSentence } = req.body || {}
 
   // 소개(랜딩) 페이지의 공개 후기는 로그인 전 방문자도 봐야 하므로, 다른 액션과 달리 인증 없이 처리
   if (wantsPublicReviews) {
@@ -31,6 +32,16 @@ export default withErrors('POST', async (req, res) => {
       return
     }
     const result = await generateTranslation({ text: text.trim(), role })
+    res.status(200).json(result)
+    return
+  }
+
+  if (fixSpelling) {
+    if (!text?.trim()) {
+      res.status(400).json({ error: 'text 필요' })
+      return
+    }
+    const result = await generateSpellingFix({ text: text.trim() })
     res.status(200).json(result)
     return
   }

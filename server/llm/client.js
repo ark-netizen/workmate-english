@@ -15,6 +15,7 @@ import {
   buildOjtWelcomePrompt,
   buildVentResponsePrompt,
   buildTranslationPrompt,
+  buildSpellingFixPrompt,
   buildSupportAnswerPrompt,
   buildEvaluationQuestionsPrompt,
 } from './prompts.js'
@@ -27,6 +28,7 @@ import {
   PeriodReportSchema,
   VentMessageSchema,
   TranslationSchema,
+  SpellingFixSchema,
   SupportAnswerSchema,
   EvaluationQuestionsSchema,
 } from './schemas.js'
@@ -108,5 +110,6 @@ export const createWorkdayMemory = (args) => generate(buildWorkdayMemoryPrompt, 
 export const generateOjtWelcomeEmail = (args) => generate(buildOjtWelcomePrompt, MessageSchema, args)
 export const generateVentMessage = (args) => generate(buildVentResponsePrompt, VentMessageSchema, args)
 export const generateTranslation = (args) => generate(buildTranslationPrompt, TranslationSchema, args)
+export const generateSpellingFix = (args) => generate(buildSpellingFixPrompt, SpellingFixSchema, args)
 export const generateSupportAnswer = (args) => generate(buildSupportAnswerPrompt, SupportAnswerSchema, args)
 export const generateEvaluationQuestions = (args) => generate(buildEvaluationQuestionsPrompt, EvaluationQuestionsSchema, args)
