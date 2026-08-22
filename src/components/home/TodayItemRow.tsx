@@ -23,8 +23,11 @@ const channelStyle = {
 
 function initials(name?: string) {
   if (!name) return "";
-  return name
-    .split(" ")
+  const words = name.trim().split(/\s+/);
+  const firstWord = words[0] ?? "";
+  // 이름 첫 단어가 이미 약어(예: "HR Team"의 "HR")면 단어별 첫 글자 조합("HT") 대신 그 약어 그대로 씀
+  if (/^[A-Z]{2,}$/.test(firstWord)) return firstWord.slice(0, 2);
+  return words
     .map((part) => part[0])
     .join("")
     .slice(0, 2)

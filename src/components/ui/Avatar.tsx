@@ -40,7 +40,12 @@ export function Avatar({
     );
   }
 
-  const initial = name.trim().charAt(0).toUpperCase() || "?";
+  // 이름 첫 단어가 이미 약어(예: "HR Team"의 "HR")면 그 약어 전체를 이니셜로 쓴다 —
+  // 첫 글자만 쓰면 "H"가 되어 원래 이름이 뭔지 알아볼 수 없어짐
+  const firstWord = name.trim().split(/\s+/)[0] ?? "";
+  const initial = /^[A-Z]{2,}$/.test(firstWord)
+    ? firstWord.slice(0, 2)
+    : name.trim().charAt(0).toUpperCase() || "?";
   const color = PALETTE[hashString(name) % PALETTE.length];
 
   return (

@@ -316,7 +316,14 @@ export async function startWorkday(userId) {
   const count = Math.min(Math.max(profile.daily_count || 3, 3), 6)
   const startMs = Math.max(Date.now() + 10 * 60000, todayAt(profile.start_time).getTime() + 10 * 60000)
   let endDeadlineMs = todayAt(profile.end_time).getTime() - 30 * 60000
-  if (endDeadlineMs <= startMs) endDeadlineMs = startMs + FALLBACK_WINDOW_MS
+  if (endDeadlineMs <= startMs) {
+    // 대체 창도 자정을 넘기면 "내일 새벽 2시" 같은 시각이 나와 오늘 연락인데 날짜가 다음날로 보이므로,
+    // 오늘 자정 전까지로 한 번 더 잘라낸다(자정이 임박한 극단적인 경우엔 최소 30분만 확보)
+    const endOfToday = new Date()
+    endOfToday.setHours(23, 59, 0, 0)
+    endDeadlineMs = Math.min(startMs + FALLBACK_WINDOW_MS, endOfToday.getTime())
+    if (endDeadlineMs <= startMs) endDeadlineMs = startMs + 30 * 60000
+  }
   const span = endDeadlineMs - startMs
   const gap = computeNotifyGap(span, count)
   // 역할별로 설정에서 직접 지정한 알림 시각이 있으면 그걸 쓰고, 이미 지난 시각이면 "지금+10분"으로 대체
@@ -510,7 +517,12 @@ export async function rescheduleTodayNotifications(userId) {
   const count = pending.length
   const startMs = Math.max(Date.now() + 10 * 60000, todayAt(profile.start_time).getTime() + 10 * 60000)
   let endDeadlineMs = todayAt(profile.end_time).getTime() - 30 * 60000
-  if (endDeadlineMs <= startMs) endDeadlineMs = startMs + FALLBACK_WINDOW_MS
+  if (endDeadlineMs <= startMs) {
+    const endOfToday = new Date()
+    endOfToday.setHours(23, 59, 0, 0)
+    endDeadlineMs = Math.min(startMs + FALLBACK_WINDOW_MS, endOfToday.getTime())
+    if (endDeadlineMs <= startMs) endDeadlineMs = startMs + 30 * 60000
+  }
   const span = endDeadlineMs - startMs
   const gap = computeNotifyGap(span, count)
   const roleCustomTime = (role) => profile[`${role}_notify_time`]
@@ -1215,12 +1227,40 @@ export async function getTodaySnapshot(userId) {
     }
   }
 
-  const pushThread = (c, mapped) => {
+  // 아직 도착 전(scheduled)이라 채팅방/메일함 목록엔 안 올라가는 상대도, "오늘의 연락" 카드에는
+  // 이름·직함이 보여야 하므로 대화 내용 유무와 무관하게 contacts에는 항상 등록해둔다
+  const ensureContact = (ch) => {
+    if (seenContact.has(ch.id)) return
+    seenContact.add(ch.id)
+    contacts.push({ id: ch.id, name: ch.name, role: ch.role, title: ch.title || '' })
+  }
+
+  // 'vent'(마음 편하게 말 걸기)는 "오늘의 연락(예정된 업무 연락)" 목록엔 안 보여줌.
+  // 지난 날짜 대화는 채팅방/메일함에서는 계속 보이되, "오늘의 연락" 목록은 오늘 것만 대상으로 함
+  const pushTodayItem = (c, mapped) => {
+    if (c.kind === 'vent' || c.workday_id !== workday.id) return
     const ch = c.characters
-    if (!seenContact.has(ch.id)) {
-      seenContact.add(ch.id)
-      contacts.push({ id: ch.id, name: ch.name, role: ch.role, title: ch.title || '' })
-    }
+    ensureContact(ch)
+    const last = mapped[mapped.length - 1]
+    todayItems.push({
+      id: c.id,
+      contactId: ch.id,
+      channel: c.channel,
+      kind: c.kind,
+      targetId: c.id,
+      title: last ? preview(last.body) : c.status === 'done' ? `${roleLabel(ch.role)} 연락 건너뜀 (휴가)` : `${roleLabel(ch.role)} 연락 예정`,
+      status: ITEM_STATUS[c.status] || 'pending',
+      dueAt: c.scheduled_at,
+    })
+  }
+
+  // 채팅방/메일함(실제 대화 내용) 목록에는 아직 도착하지 않은(status: 'scheduled') 대화는 올리지 않는다.
+  // 아직 메시지가 없는데도 그 미래의 scheduled_at이 "최근 업데이트 시각"으로 잡혀서, 정작 이미 온
+  // 메시지들보다 위(최신)로 정렬돼버리고, 내용도 없는 빈 대화가 목록에 보이는 문제가 있었다.
+  const pushThreadContent = (c, mapped) => {
+    if (c.status === 'scheduled') return
+    const ch = c.characters
+    ensureContact(ch)
     const last = mapped[mapped.length - 1]
     // "안 읽음" = 아직 답장 안 함이 아니라 실제로 안 열어봄 기준(읽으면 바로 사라짐)
     const unreadCount = c.status === 'awaiting' && (!c.read_at || new Date(c.read_at) < new Date(last?.timestamp || 0)) ? 1 : 0
@@ -1240,21 +1280,6 @@ export async function getTodaySnapshot(userId) {
     } else {
       conversations.push({ id: c.id, contactId: ch.id, channel: 'messenger', kind: c.kind, unreadCount, updatedAt, messages: mapped })
     }
-
-    // 'vent'(마음 편하게 말 걸기)는 "오늘의 연락(예정된 업무 연락)" 목록엔 안 보여줌.
-    // 지난 날짜 대화는 채팅방/메일함에서는 계속 보이되, "오늘의 연락" 목록은 오늘 것만 대상으로 함
-    if (c.kind !== 'vent' && c.workday_id === workday.id) {
-      todayItems.push({
-        id: c.id,
-        contactId: ch.id,
-        channel: c.channel,
-        kind: c.kind,
-        targetId: c.id,
-        title: last ? preview(last.body) : c.status === 'done' ? `${roleLabel(ch.role)} 연락 건너뜀 (휴가)` : `${roleLabel(ch.role)} 연락 예정`,
-        status: ITEM_STATUS[c.status] || 'pending',
-        dueAt: c.scheduled_at,
-      })
-    }
   }
 
   for (const [, group] of scenarioGroups) {
@@ -1272,12 +1297,18 @@ export async function getTodaySnapshot(userId) {
     // 강제발송 등)로 여러 날짜의 scheduled_at이 서로 뒤엉켰을 때 메시지가 뒤죽박죽으로 이어붙여진다 —
     // 실제로 언제 오갔는지의 기준인 메시지 자체의 시각(timestamp)으로 최종 정렬해 항상 진짜 시간순이 되게 한다
     allMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
-    pushThread(latest, allMessages)
+    pushTodayItem(latest, allMessages)
+    // 목록에 표시할 대표 대화는 "이미 도착한 것 중 가장 최근"이어야 함 — 오늘 것이 아직 도착 전이면
+    // 지난 날짜의 마지막 대화로 대체하고, 그마저 없으면(한 번도 도착한 적 없음) 이 상대는 목록에 아예 안 보인다
+    const deliveredLatest = group.find((c) => c.status !== 'scheduled')
+    if (deliveredLatest) pushThreadContent(deliveredLatest, allMessages)
   }
 
   for (const c of otherConvos) {
     const messages = unwrap(await sb.from('messages').select('*').eq('conversation_id', c.id).order('seq')) || []
-    pushThread(c, mapMessages(messages))
+    const mapped = mapMessages(messages)
+    pushTodayItem(c, mapped)
+    pushThreadContent(c, mapped)
   }
 
   // "오늘의 연락"은 예정 시각이 이른 순으로(다음 연락 예정을 정확히 고르기 위해), 채팅방/메일함 목록은
