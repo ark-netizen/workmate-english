@@ -29,6 +29,11 @@ const MAX_ROLE_GAP_MS = 180 * 60000
 // 60분 하한을 그대로 강제하면 뒤쪽 항목들이 endDeadlineMs 캡에 몰려 서로 같은 시각에 겹쳐버린다 —
 // 그래서 자연 간격이 60분보다 짧으면 최소 5분 간격으로라도 붙여서 전부 서로 다른 시각에 표시되게 한다
 const MIN_SQUEEZE_GAP_MS = 5 * 60000
+// 설정한 퇴근 시각이 이미 지나버린 경우(퇴근을 이른 시각으로 잡았거나, 그 시각이 지난 뒤에 출근한 경우) —
+// todayAt()은 항상 "오늘 날짜의 그 시각"만 계산해서 다음날로 넘기지 않으므로, endDeadlineMs가 과거가
+// 되어 span이 음수가 되고 모든 알림이 그 과거 시각(예: 새벽) 하나로 뭉쳐버린다. 이럴 땐 퇴근 시각 대신
+// 지금부터 이 정도 창을 새로 잡아 정상적으로 분산시킨다.
+const FALLBACK_WINDOW_MS = 4 * 60 * 60000
 function computeNotifyGap(span, count) {
   if (count <= 1) return 0
   const natural = span / (count - 1)
@@ -310,7 +315,8 @@ export async function startWorkday(userId) {
   // 간격은 근무시간 길이에 비례해서 자동으로 늘어나되(최소 60분/최대 180분 캡), 고정 60분이 아니게 함
   const count = Math.min(Math.max(profile.daily_count || 3, 3), 6)
   const startMs = Math.max(Date.now() + 10 * 60000, todayAt(profile.start_time).getTime() + 10 * 60000)
-  const endDeadlineMs = todayAt(profile.end_time).getTime() - 30 * 60000
+  let endDeadlineMs = todayAt(profile.end_time).getTime() - 30 * 60000
+  if (endDeadlineMs <= startMs) endDeadlineMs = startMs + FALLBACK_WINDOW_MS
   const span = endDeadlineMs - startMs
   const gap = computeNotifyGap(span, count)
   // 역할별로 설정에서 직접 지정한 알림 시각이 있으면 그걸 쓰고, 이미 지난 시각이면 "지금+10분"으로 대체
@@ -503,7 +509,8 @@ export async function rescheduleTodayNotifications(userId) {
 
   const count = pending.length
   const startMs = Math.max(Date.now() + 10 * 60000, todayAt(profile.start_time).getTime() + 10 * 60000)
-  const endDeadlineMs = todayAt(profile.end_time).getTime() - 30 * 60000
+  let endDeadlineMs = todayAt(profile.end_time).getTime() - 30 * 60000
+  if (endDeadlineMs <= startMs) endDeadlineMs = startMs + FALLBACK_WINDOW_MS
   const span = endDeadlineMs - startMs
   const gap = computeNotifyGap(span, count)
   const roleCustomTime = (role) => profile[`${role}_notify_time`]

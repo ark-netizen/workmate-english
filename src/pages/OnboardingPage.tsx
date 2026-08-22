@@ -216,6 +216,11 @@ export function OnboardingPage() {
       // "시작하기" 클릭이라는 사용자 제스처 안에서 바로 요청해야 브라우저가 알림 권한 팝업을 띄워줌
       // (페이지 로드 시 자동 호출은 대부분 브라우저에서 무시/차단됨)
       subscribePush().catch(() => {});
+      // 오늘 시나리오는 LLM으로 생성돼서 몇 초 걸리는데, "시작하기"를 누른 뒤에야 시작하면 그 시간이
+      // 고스란히 로딩으로 느껴진다 — 사원증 화면을 보는(어차피 몇 초 머무는) 동안 미리 백그라운드로
+      // 생성을 시작해둔다. WorkdayContext.refresh()를 쓰면 needsOnboarding이 바로 꺼져 사원증
+      // 화면을 건너뛰게 되므로, 컨텍스트를 안 거치는 직접 호출로 서버에서만 미리 만들어두고 결과는 버림.
+      api.getTodayWorkday().catch(() => {});
       // refresh()는 사원증 리빌 화면에서 "시작하기"를 눌렀을 때 호출 — 그 전엔 온보딩 화면에 머물러야 함
       setCompletedProfile(payload);
     } catch (err) {
