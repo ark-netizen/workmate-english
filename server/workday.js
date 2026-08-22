@@ -113,12 +113,21 @@ const decodeWorkContext = (scenario) => {
 const routeFor = (channel, conversationId) =>
   channel === 'email' ? `/email/${conversationId}` : `/messenger/${conversationId}`
 
-// 'HH:MM' → 오늘 날짜의 Date
+// 'HH:MM'(사용자가 입력한 한국 시간 기준 시각) → 그 시각의 실제 절대 시각(Date)
+// ⚠️ Date.prototype.setHours()는 "서버 프로세스의 로컬 타임존" 기준으로 시/분을 설정한다.
+// Vercel 서버리스 함수는 기본적으로 UTC로 돌아가므로, 예전엔 "오후 6시"가 UTC 18시가 되어
+// 한국 시간(UTC+9)으로는 다음날 새벽 3시가 되어버렸다(사용자가 어떤 시각을 넣어도 항상 +9시간
+// 밀려서 새벽대로 몰리던 버그의 원인). 한국은 서머타임이 없는 고정 UTC+9라, 서버 타임존과
+// 무관하게 "오늘 날짜(한국 기준) + 그 시각 + KST 오프셋"을 직접 조합해 절대 시각을 만든다.
 function todayAt(hhmm) {
   const [h, m] = (hhmm || '10:00').split(':').map(Number)
-  const d = new Date()
-  d.setHours(h, m, 0, 0)
-  return d
+  const kstDate = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date()) // "YYYY-MM-DD" (한국 기준 오늘 날짜)
+  return new Date(`${kstDate}T${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00+09:00`)
 }
 
 async function loadProfile(userId) {
@@ -319,9 +328,7 @@ export async function startWorkday(userId) {
   if (endDeadlineMs <= startMs) {
     // 대체 창도 자정을 넘기면 "내일 새벽 2시" 같은 시각이 나와 오늘 연락인데 날짜가 다음날로 보이므로,
     // 오늘 자정 전까지로 한 번 더 잘라낸다(자정이 임박한 극단적인 경우엔 최소 30분만 확보)
-    const endOfToday = new Date()
-    endOfToday.setHours(23, 59, 0, 0)
-    endDeadlineMs = Math.min(startMs + FALLBACK_WINDOW_MS, endOfToday.getTime())
+    endDeadlineMs = Math.min(startMs + FALLBACK_WINDOW_MS, todayAt('23:59').getTime())
     if (endDeadlineMs <= startMs) endDeadlineMs = startMs + 30 * 60000
   }
   const span = endDeadlineMs - startMs
@@ -518,9 +525,7 @@ export async function rescheduleTodayNotifications(userId) {
   const startMs = Math.max(Date.now() + 10 * 60000, todayAt(profile.start_time).getTime() + 10 * 60000)
   let endDeadlineMs = todayAt(profile.end_time).getTime() - 30 * 60000
   if (endDeadlineMs <= startMs) {
-    const endOfToday = new Date()
-    endOfToday.setHours(23, 59, 0, 0)
-    endDeadlineMs = Math.min(startMs + FALLBACK_WINDOW_MS, endOfToday.getTime())
+    endDeadlineMs = Math.min(startMs + FALLBACK_WINDOW_MS, todayAt('23:59').getTime())
     if (endDeadlineMs <= startMs) endDeadlineMs = startMs + 30 * 60000
   }
   const span = endDeadlineMs - startMs
