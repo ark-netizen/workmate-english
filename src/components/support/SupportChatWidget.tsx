@@ -149,7 +149,10 @@ export function SupportChatWidget({
   return (
     <div className="fixed bottom-20 right-5 z-40 flex h-[480px] w-[340px] max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-2xl md:bottom-5">
       <div className="flex items-center justify-between bg-[#36454F] px-4 py-3">
-        <span className="text-sm font-medium text-white">도움이 필요하신가요?</span>
+        <div className="flex flex-col">
+          <span className="text-sm font-semibold text-white">도움이 필요하신가요?</span>
+          <span className="text-[10px] font-medium text-white/60">Upstage Solar 기반 AI</span>
+        </div>
         <button
           type="button"
           onClick={() => onOpenChange(false)}
@@ -163,7 +166,7 @@ export function SupportChatWidget({
       <div className="flex-1 space-y-2 overflow-y-auto p-3">
         {entries.length === 0 && (
           <div className="rounded-2xl bg-black/[.03] px-3 py-2 text-xs leading-relaxed text-foreground">
-            안녕하세요! 부캐영어 이용 중 궁금한 점을 도와드릴게요.
+            안녕하세요! Upstage Solar 기반 AI가 부캐영어 이용 중 궁금한 점을 도와드릴게요.
           </div>
         )}
         {entries.map((entry) => (

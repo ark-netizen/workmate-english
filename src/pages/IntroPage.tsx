@@ -342,11 +342,6 @@ function FeatureScrollList({ items }: { items: typeof features }) {
   const [active, setActive] = useState(0);
 
   useEffect(() => {
-    document.documentElement.classList.add("snap-y", "snap-proximity");
-    return () => document.documentElement.classList.remove("snap-y", "snap-proximity");
-  }, []);
-
-  useEffect(() => {
     ratiosRef.current = items.map(() => 0);
     const observer = new IntersectionObserver(
       (entries) => {
@@ -433,11 +428,6 @@ function FeatureWindowScrollList({ items }: { items: typeof features }) {
   const [active, setActive] = useState(0);
 
   useEffect(() => {
-    document.documentElement.classList.add("snap-y", "snap-proximity");
-    return () => document.documentElement.classList.remove("snap-y", "snap-proximity");
-  }, []);
-
-  useEffect(() => {
     ratiosRef.current = items.map(() => 0);
     const observer = new IntersectionObserver(
       (entries) => {
@@ -466,7 +456,7 @@ function FeatureWindowScrollList({ items }: { items: typeof features }) {
   };
 
   return (
-    <div className="relative overflow-hidden rounded-[28px] bg-[linear-gradient(180deg,#1d3fd6_0%,#3a63e0_22%,#5f8ae8_44%,#8fb4f0_66%,#bcd6f5_82%,#bcd6f5_100%)] px-4 py-10 sm:px-8 sm:py-14">
+    <div className="relative overflow-hidden rounded-[28px] bg-[linear-gradient(180deg,#1a3fd8_0%,#3562e6_20%,#5a89ef_42%,#86adf5_62%,#c3ddf9_82%,#eef6fc_100%)] px-4 py-10 sm:px-8 sm:py-14">
       <div
         className="pointer-events-none absolute inset-0"
         style={{
@@ -708,6 +698,9 @@ export function IntroPage({
                 기능 살펴보기 ↓
               </button>
             </div>
+            <p className="text-xs font-medium text-foreground/40">
+              Powered by <span className="font-semibold text-foreground/60">Upstage Solar</span> — 동료·상사·거래처의 모든 대화를 Solar가 만들어요
+            </p>
           </Reveal>
 
           <Reveal delayMs={150}>
