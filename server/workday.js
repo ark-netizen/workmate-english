@@ -1,7 +1,7 @@
 // 하루 업무 오케스트레이션 (서버 전용)
 // DB(schema.sql) + LLM(server/llm) + Web Push 를 잇는다. 기획서 17장 기능 단위.
 import { admin, unwrap } from './db.js'
-import { todayAt } from './time.js'
+import { todayAt, todayDateKST } from './time.js'
 import { sendPushToUser } from './push.js'
 import { getProfile } from './profile.js'
 import { getActiveSurveyForUser } from './support.js'
@@ -125,7 +125,7 @@ async function loadProfile(userId) {
 export async function startWorkday(userId) {
   const sb = admin()
   const profile = await loadProfile(userId)
-  const workDate = new Date().toISOString().slice(0, 10)
+  const workDate = todayDateKST()
 
   // 오늘 workday 확보 (있으면 재사용)
   let workday = unwrap(
@@ -498,7 +498,7 @@ export async function rescheduleTodayNotifications(userId) {
   const profile = await loadProfile(userId)
   if (profile.is_trial) return { skipped: true, reason: 'trial' }
 
-  const workDate = new Date().toISOString().slice(0, 10)
+  const workDate = todayDateKST()
   const workday = unwrap(await sb.from('workdays').select('id, state').eq('user_id', userId).eq('work_date', workDate).maybeSingle())
   if (!workday) return { skipped: true, reason: 'no-workday' }
   if (['OFF_DUTY', 'DONE', 'ON_LEAVE', 'HALF_DAY'].includes(workday.state)) return { skipped: true, reason: 'workday-closed' }
@@ -659,7 +659,7 @@ export async function deliverDueNotifications() {
 // 시연 영상을 역할별로 따로 찍을 때, 큐 순서와 무관하게 원하는 역할을 바로 불러오기 위함
 export async function deliverNextForUser(userId, filter = {}) {
   const sb = admin()
-  const workDate = new Date().toISOString().slice(0, 10)
+  const workDate = todayDateKST()
   const workday = unwrap(
     await sb.from('workdays').select('id').eq('user_id', userId).eq('work_date', workDate).maybeSingle(),
   )
@@ -690,7 +690,7 @@ const FIELD_WORK_DELAY_MIN = 30
 
 export async function goOnFieldWork(userId, delayMinutes = FIELD_WORK_DELAY_MIN, source = 'app') {
   const sb = admin()
-  const workDate = new Date().toISOString().slice(0, 10)
+  const workDate = todayDateKST()
   const workday = unwrap(
     await sb.from('workdays').select('id, state').eq('user_id', userId).eq('work_date', workDate).maybeSingle(),
   )
@@ -725,7 +725,7 @@ export async function goOnFieldWork(userId, delayMinutes = FIELD_WORK_DELAY_MIN,
 // half_day/annual: 남은 예정 연락을 건너뛰고 하루를 그 상태로 마감
 export async function takeLeave(userId, kind) {
   const sb = admin()
-  const workDate = new Date().toISOString().slice(0, 10)
+  const workDate = todayDateKST()
   const workday = unwrap(
     await sb.from('workdays').select('*').eq('user_id', userId).eq('work_date', workDate).maybeSingle(),
   )
@@ -904,7 +904,7 @@ async function getOrCreateVentConversation(sb, workday) {
 // 유저가 먼저 말을 거는 경우("마법의 소라고동") — 대화가 없으면 새로 만들고, 있으면 이어서
 export async function sendVentMessage(userId, userText) {
   const sb = admin()
-  const workDate = new Date().toISOString().slice(0, 10)
+  const workDate = todayDateKST()
   const workday = unwrap(
     await sb.from('workdays').select('id, state').eq('user_id', userId).eq('work_date', workDate).maybeSingle(),
   )
@@ -987,7 +987,7 @@ async function maybeSendComfortPing(userId, workday) {
 // (scenarios/characters/conversations/messages/daily_reports 등은 전부 workdays FK cascade로 같이 삭제됨)
 export async function devResetToday(userId) {
   const sb = admin()
-  const workDate = new Date().toISOString().slice(0, 10)
+  const workDate = todayDateKST()
   const workday = unwrap(
     await sb.from('workdays').select('id').eq('user_id', userId).eq('work_date', workDate).maybeSingle(),
   )
@@ -1604,7 +1604,7 @@ export async function devBackfillPastDays(userId, count = 30) {
 // 같은 방식으로 충돌 없는 날짜를 찾음) 오늘 기록은 보존한 채, 실제 오늘 날짜 슬롯을 다시 비운다
 export async function devAdvanceToNextDay(userId) {
   const sb = admin()
-  const workDate = new Date().toISOString().slice(0, 10)
+  const workDate = todayDateKST()
   const workday = unwrap(
     await sb.from('workdays').select('*').eq('user_id', userId).eq('work_date', workDate).maybeSingle(),
   )

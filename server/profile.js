@@ -2,6 +2,7 @@
 // display_name은 user_profiles가 아니라 app_users 테이블 컬럼이라 별도로 합쳐서 다룬다.
 import { admin, unwrap } from './db.js'
 import { RANKS } from './promotion.js'
+import { todayDateKST } from './time.js'
 
 export async function getProfile(userId) {
   const sb = admin()
@@ -38,7 +39,7 @@ const EDITABLE_FIELDS = [
 // 오늘 이미 생성된 캐릭터 이름에도 바로 반영한다. 대화방/연락처 목록은 전부 characters.name을 그 자리에서
 // 조인해서 보여주므로(server/workday.js의 getTodaySnapshot), 이 값만 바꾸면 화면에 즉시 반영된다.
 async function renameActiveCharacters(sb, userId, renames) {
-  const workDate = new Date().toISOString().slice(0, 10)
+  const workDate = todayDateKST()
   const workday = unwrap(
     await sb.from('workdays').select('id').eq('user_id', userId).eq('work_date', workDate).maybeSingle(),
   )
