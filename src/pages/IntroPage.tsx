@@ -3,7 +3,7 @@
 // 디자인·카피는 초안 — 비주얼(폰트/애니메이션/실제 이미지)은 추후 다듬을 예정.
 import { useEffect, useRef, useState } from "react";
 import type { ComponentType, CSSProperties, ReactNode } from "react";
-import { Sparkles, Building2, Bell, FileText, HeartHandshake, Star, type LucideIcon } from "lucide-react";
+import { Sparkles, Building2, Bell, FileText, HeartHandshake, Star, Gamepad2, Briefcase, type LucideIcon } from "lucide-react";
 import { AccountModal } from "@/components/shell/AccountModal";
 import { Logo } from "@/components/ui/Logo";
 import { useBusinessMode } from "@/context/useBusinessMode";
@@ -631,25 +631,49 @@ export function IntroPage({
             >
               1분 체험하기
             </button>
-            <button
-              type="button"
-              onClick={() =>
-                setBusinessMode((v) => {
-                  const next = !v;
-                  setStoredBusinessMode(next); // 직접 고른 값이니 저장 — 다른 페이지·다음 방문에도 유지
-                  return next;
-                })
-              }
-              className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium hover:opacity-90 sm:px-4 sm:text-sm ${
-                businessMode
-                  ? "border-white/50 bg-transparent text-white"
-                  : "border-border bg-transparent text-foreground/70 hover:bg-black/[.03]"
+            <div
+              role="group"
+              aria-label="모드 선택"
+              className={`flex shrink-0 items-center gap-0.5 rounded-full border p-0.5 ${
+                businessMode ? "border-white/40" : "border-border"
               }`}
             >
               {/* businessMode(true)는 실제로는 레트로 창 스타일(FeatureWindowScrollList)이 나가는
-                  "게임 모드" 쪽이라, 라벨을 그 실제 화면과 맞춘다 — 색상·컴포넌트 분기는 그대로 둠 */}
-              {businessMode ? "게임 모드" : "비즈니스 모드"}
-            </button>
+                  "게임 모드" 쪽이라, 라벨/활성 매핑을 그 실제 화면과 맞춘다 — 홈 화면(TopBar)과 동일한 토글 */}
+              {(
+                [
+                  { key: "game", active: businessMode, Icon: Gamepad2, label: "게임" },
+                  { key: "business", active: !businessMode, Icon: Briefcase, label: "비즈니스" },
+                ] as const
+              ).map(({ key, active, Icon, label }) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => {
+                    if (active) return;
+                    const next = key === "game";
+                    setBusinessMode(next);
+                    setStoredBusinessMode(next); // 직접 고른 값이니 저장 — 다른 페이지·다음 방문에도 유지
+                  }}
+                  aria-pressed={active}
+                  aria-label={`${label} 모드${active ? " (현재 선택됨)" : "로 전환"}`}
+                  style={{
+                    backgroundColor: active ? (businessMode ? "#ffffff" : "#1f2328") : "transparent",
+                    color: active ? (businessMode ? "#5aa89a" : "#ffffff") : undefined,
+                  }}
+                  className={`flex items-center gap-1 rounded-full px-2 py-1.5 text-xs font-medium transition-colors sm:px-3 ${
+                    active
+                      ? ""
+                      : businessMode
+                        ? "text-white/60 hover:bg-white/10"
+                        : "text-foreground/40 hover:bg-black/[.03]"
+                  }`}
+                >
+                  <Icon className="size-4" strokeWidth={2} />
+                  <span className="hidden sm:inline">{label}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </nav>
