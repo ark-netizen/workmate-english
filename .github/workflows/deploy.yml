@@ -1,4 +1,4 @@
-name: Deploy to Vercel
+name: Deploy (GitHub Pages + Supabase Edge Functions)
 
 on:
   push:
@@ -7,52 +7,70 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: vercel-deploy-${{ github.ref }}
+  group: pages-deploy-${{ github.ref }}
   cancel-in-progress: true
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    env:
-      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
+jobs:
+  pages:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check Vercel secrets
-        id: secrets
-        shell: bash
-        run: |
-          if [[ -n "$VERCEL_TOKEN" && -n "$VERCEL_ORG_ID" && -n "$VERCEL_PROJECT_ID" ]]; then
-            echo "ready=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "Vercel secrets are not configured. Skipping deployment."
-          fi
-
       - uses: actions/setup-node@v4
-        if: steps.secrets.outputs.ready == 'true'
         with:
           node-version: 20
 
       - name: Install dependencies
-        if: steps.secrets.outputs.ready == 'true'
         run: npm ci
 
       - name: Build
-        if: steps.secrets.outputs.ready == 'true'
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_VAPID_PUBLIC_KEY: ${{ secrets.VITE_VAPID_PUBLIC_KEY }}
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
         run: npm run build
 
-      - name: Install Vercel CLI
-        if: steps.secrets.outputs.ready == 'true'
-        run: npm install --global vercel@latest
+      - uses: actions/configure-pages@v5
 
-      - name: Pull Vercel project settings
-        if: steps.secrets.outputs.ready == 'true'
-        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
 
-      - name: Deploy to Vercel
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+  supabase-functions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Supabase secrets
+        id: secrets
+        shell: bash
+        run: |
+          if [[ -n "${{ secrets.SUPABASE_ACCESS_TOKEN }}" && -n "${{ secrets.SUPABASE_PROJECT_REF }}" ]]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Supabase 배포 시크릿이 없어 Edge Function 배포를 건너뜁니다."
+          fi
+
+      - uses: supabase/setup-cli@v1
         if: steps.secrets.outputs.ready == 'true'
-        run: vercel deploy --prod --token="$VERCEL_TOKEN"
+        with:
+          version: latest
+
+      - name: Deploy Edge Function
+        if: steps.secrets.outputs.ready == 'true'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase functions deploy api --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}"

@@ -1,0 +1,7 @@
+project_id = "zchagwujhqjfteehexmp"
+
+[functions.api]
+# 앱 자체 인증(server/auth.js requireUser)이 있고, 공개 후기 조회·크론 시크릿 등
+# 로그인 토큰 없이 오는 요청도 있어서 플랫폼 레벨 JWT 강제 검증은 끈다.
+verify_jwt = false
+import_map = "./functions/import_map.json"
