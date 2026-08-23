@@ -1,3 +1,7 @@
+// 백엔드가 GitHub Pages(이 서비스워커의 origin)가 아니라 Supabase Edge Function이라, 상대경로("/api/...")로
+// fetch하면 안 되고 이 주소로 절대경로를 만들어 호출해야 한다.
+const API_BASE_URL = "https://zchagwujhqjfteehexmp.functions.supabase.co";
+
 self.addEventListener("install", () => {
   self.skipWaiting();
 });
@@ -59,21 +63,28 @@ function handleFieldWorkAction() {
   return self.registration.pushManager
     .getSubscription()
     .then((subscription) => {
-      if (!subscription) return;
-      return fetch("/api/push", {
+      if (!subscription) return Promise.reject(new Error("구독 정보 없음"));
+      return fetch(`${API_BASE_URL}/api/push`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ endpoint: subscription.endpoint, action: "field-work" }),
       });
     })
-    .then(() =>
-      self.registration.showNotification("외근 처리됐습니다", {
+    .then((response) => {
+      if (!response.ok) throw new Error(`외근 처리 실패: ${response.status}`);
+      return self.registration.showNotification("외근 처리됐습니다", {
         body: "30분 후 다시 알려드릴게요.",
         icon: "/brand/logo-mark.png",
         tag: "field-work-ack",
+      });
+    })
+    .catch(() =>
+      self.registration.showNotification("외근 처리 실패", {
+        body: "네트워크 문제로 처리가 안 됐어요. 앱에서 다시 시도해주세요.",
+        icon: "/brand/logo-mark.png",
+        tag: "field-work-ack",
       }),
-    )
-    .catch(() => {});
+    );
 }
 
 self.addEventListener("notificationclick", (event) => {
