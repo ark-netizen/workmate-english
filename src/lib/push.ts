@@ -25,7 +25,10 @@ export async function subscribePush(): Promise<PushSubscribeResult> {
     return "unsupported";
   }
 
-  const registration = await navigator.serviceWorker.register("/sw.js");
+  await navigator.serviceWorker.register("/sw.js");
+  // register()는 워커가 install/activate 되기 전에도 resolve돼서, 바로 이어서 subscribe하면
+  // "no active Service Worker" 에러가 남 — ready는 활성화가 끝난 뒤에만 resolve됨
+  const registration = await navigator.serviceWorker.ready;
   const subscription = await registration.pushManager.subscribe({
     userVisibleOnly: true,
     applicationServerKey: urlBase64ToUint8Array(vapidKey),
