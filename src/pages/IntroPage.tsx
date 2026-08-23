@@ -64,12 +64,13 @@ function ReviewsSection() {
   );
 }
 
+// 카드마다 배경색을 다르게 칠하던 5색 팔레트가 "색이 너무 많다"는 피드백을 받아서,
+// 카드 배경/테두리는 중립 톤으로 통일하고 아이콘 배지만 브랜드 컬러(accent/accent-2)로
+// 절제해서 포인트를 준다.
 const colorClasses = {
-  purple: { bg: "bg-purple-50", border: "border-purple-100", icon: "text-purple-600", iconBg: "bg-purple-100" },
-  blue: { bg: "bg-blue-50", border: "border-blue-100", icon: "text-blue-600", iconBg: "bg-blue-100" },
-  pink: { bg: "bg-pink-50", border: "border-pink-100", icon: "text-pink-600", iconBg: "bg-pink-100" },
-  indigo: { bg: "bg-indigo-50", border: "border-indigo-100", icon: "text-indigo-600", iconBg: "bg-indigo-100" },
-  violet: { bg: "bg-violet-50", border: "border-violet-100", icon: "text-violet-600", iconBg: "bg-violet-100" },
+  accent: { bg: "bg-surface", border: "border-border", icon: "text-accent", iconBg: "bg-accent/10" },
+  "accent-2": { bg: "bg-surface", border: "border-border", icon: "text-accent-2", iconBg: "bg-accent-2/10" },
+  neutral: { bg: "bg-surface", border: "border-border", icon: "text-foreground/70", iconBg: "bg-foreground/10" },
 };
 
 // 기능 #1(차별점) 시각자료 — 실제 메신저 말풍선 스타일 그대로, 같은 상황을 세 가지 톤으로
@@ -213,40 +214,40 @@ const features: {
   icon: LucideIcon;
   title: string;
   body: string;
-  color: "purple" | "blue" | "pink" | "indigo" | "violet";
+  color: "accent" | "accent-2" | "neutral";
   Visual: ComponentType;
 }[] = [
   {
     icon: Sparkles,
-    color: "purple",
+    color: "accent",
     title: "동료·상사·거래처, 다른 표현",
     body: "같은 상황도 상대에 따라 캐주얼·격식·보수적 톤으로 구분해 배우고, 대화가 쌓일수록 더 고도화돼요.",
     Visual: ToneExample,
   },
   {
     icon: Building2,
-    color: "blue",
+    color: "accent-2",
     title: "내 업종·직무 맞춤 시나리오",
     body: "업종·직무만 입력하면 나만의 동료·상사·거래처가 매일 자동으로 생겨요.",
     Visual: ScenarioExample,
   },
   {
     icon: Bell,
-    color: "pink",
+    color: "neutral",
     title: "놓치지 않는 웹 알림",
     body: "새 연락은 알림으로, 바쁘면 '외근 중' 버튼 하나로 미뤄요.",
     Visual: NotificationExample,
   },
   {
     icon: FileText,
-    color: "indigo",
+    color: "accent",
     title: "하루·주간·월간 리포트",
     body: "퇴근 리포트부터 매주·매달 성장 흐름까지 정리해드려요.",
     Visual: ReportExample,
   },
   {
     icon: HeartHandshake,
-    color: "violet",
+    color: "accent-2",
     title: "스트레스 받을 때는, 고함항아리에 소리질러봐요!",
     body: "영어를 배우는 걸 넘어서, 영어로 솔직하게 털어놓을 수 있는 스트레스 공유 동료가 생겨요. 바쁜 하루가 감지되면 먼저 위로와 표현을 건네고, 내가 먼저 말을 걸 수도 있어요.",
     Visual: VentExample,

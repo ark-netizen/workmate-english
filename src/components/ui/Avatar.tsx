@@ -1,15 +1,8 @@
 import { hashString } from "@/lib/hash";
 
-const PALETTE = [
-  "bg-blue-500",
-  "bg-emerald-500",
-  "bg-orange-500",
-  "bg-purple-500",
-  "bg-pink-500",
-  "bg-teal-500",
-  "bg-amber-500",
-  "bg-indigo-500",
-];
+// 예전엔 8색 무지개 팔레트를 이름 해시로 뿌렸는데, 카드/아바타 색이 너무 다채롭다는
+// 피드백으로 브랜드 컬러(accent/accent-2) 중심 + 중립 톤 3가지로 절제했다.
+const PALETTE = ["bg-accent", "bg-accent-2", "bg-slate-500"];
 
 const SIZE_CLASSES = {
   sm: "h-7 w-7 text-xs",

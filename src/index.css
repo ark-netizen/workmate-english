@@ -76,12 +76,20 @@ html, body, #root {
   height: 100%;
 }
 
+/* 큰 모니터/확대 환경에서 전체적으로 글씨가 작고 흐릿하다는 피드백 —
+   rem 기반인 Tailwind 크기 전체가 이 값에 비례해서 커지므로, 컴포넌트 하나하나
+   고치는 대신 여기 한 곳만 올려서 전체 배율을 살짝 키운다. */
+html {
+  font-size: 107%;
+}
+
 body {
   margin: 0;
   background: var(--background);
   color: var(--foreground);
   font-family: "Pretendard", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial,
     sans-serif;
+  font-weight: 450;
   -webkit-font-smoothing: antialiased;
 }
 
