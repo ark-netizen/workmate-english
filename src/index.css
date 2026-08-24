@@ -162,7 +162,7 @@ body {
   isolation: isolate;
   transition: background-color 180ms ease, border-color 180ms ease;
 }
-.intro-nav-inner { max-width: 1180px; min-height: 68px; }
+.intro-nav-inner { max-width: 1600px; min-height: 68px; }
 .intro-nav-link,
 .intro-login-btn,
 .intro-trial-btn,
@@ -340,7 +340,7 @@ body {
 }
 .intro-page .hero .copy{opacity:1;text-align:left}
 .intro-page .hero .eyebrow{display:inline-block;border:1px solid #bed0ff;background:#fff;color:#1a56ff;border-radius:999px;padding:7px 11px;font-size:11px;font-weight:900;letter-spacing:.15em}
-.intro-page .hero .copy h1{margin:24px 0 18px;color:#11213a;font-size:clamp(38px,3.1vw,48px);font-weight:800;line-height:1.12;letter-spacing:-.045em}
+.intro-page .hero .copy h1{margin:24px 0 18px;color:#11213a;font-size:clamp(42px,3.4vw,58px);font-weight:800;line-height:1.12;letter-spacing:-.045em}
 .intro-page .hero .copy h1 em{color:#1a56ff;font-style:normal}
 .intro-page .hero .copy p{margin:0;color:#657187;font-size:17px;line-height:1.75}
 .intro-page .hero .actions{display:flex;gap:13px;margin-top:30px}
@@ -371,7 +371,7 @@ body {
 .intro-game .hero .wrap{align-items:start}
 .intro-game .hero .eyebrow{display:none}
 .intro-game .hero .copy{padding-top:18px}
-.intro-game .hero .copy h1{margin:8px 0 16px;color:#28352f;font-size:clamp(40px,3vw,46px);line-height:1.22;text-shadow:2px 2px 0 #f7fff7}
+.intro-game .hero .copy h1{margin:8px 0 16px;color:#28352f;font-size:clamp(44px,3.25vw,56px);line-height:1.22;text-shadow:2px 2px 0 #f7fff7}
 .intro-game .hero .copy h1 em{color:#2f8f80}
 .intro-game .hero .copy p{max-width:560px;padding:10px 13px;border:0;background:rgba(222,246,255,.64);color:#243d3a;font-weight:700}
 .intro-game .hero .primary{border:2px solid #28352f;border-radius:4px;background:#2f795d;color:#fff;box-shadow:4px 4px 0 #28352f}
@@ -386,13 +386,13 @@ body {
 .intro-game .hero .person strong{color:#28352f}
 .intro-game .hero .person small{color:#33473f;font-weight:700}
 .intro-game .hero .tone{border:2px solid #28352f;border-radius:3px;background:#fff;color:#28352f;font-weight:900}
-.intro-game .intro-pixel-office-bg{display:block;width:100%;max-width:1180px;height:auto;margin:24px auto 0;image-rendering:pixelated}
-.intro-game .hero>.hero-system{width:100%;max-width:1180px;margin:14px auto 0;position:static;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;border:3px solid #28352f;background:#fff9e9;box-shadow:7px 7px 0 rgba(40,53,47,.25)}
-.intro-game .hero>.hero-system:before{content:"WORKMATE SYSTEM";grid-column:1/-1;padding:9px 12px;border-bottom:3px solid #28352f;background:#2f795d;color:#fff;font-size:11px;font-weight:900}
-.intro-game .hero>.hero-system .feat{min-height:86px;padding:10px;border:0;border-right:1px solid #cdbf9f;border-radius:0;background:#fff9e9;box-shadow:none}
-.intro-game .hero>.hero-system .feat b{color:#1f6d55;font-size:9px;font-weight:900}
-.intro-game .hero>.hero-system .feat span{color:#4d554f;font-weight:700}
-.intro-game .hero>.hero-system:after{content:"POWERED BY SOLAR AI  ·  관계와 직무를 이해하는 실무 영어 시뮬레이션";grid-column:1/-1;padding:12px 14px;border-top:2px solid #28352f;background:#eaf5df;color:#24483b;font-size:12px;font-weight:900}
+.intro-game .intro-pixel-office-bg{display:block;width:calc(100% + 48px);max-width:none;height:auto;margin:clamp(-190px,-10vw,-96px) -24px 0;image-rendering:pixelated}
+.intro-game .hero>.hero-system{width:100%;max-width:1600px;margin:0 auto;position:static;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;border:3px solid #28352f;background:#fff9e9;box-shadow:7px 7px 0 rgba(40,53,47,.25)}
+.intro-game .hero>.hero-system:before{content:"WORKMATE SYSTEM";grid-column:1/-1;padding:9px 12px;border-bottom:3px solid #28352f;background:#2f795d;color:#fff;font-size:14px;font-weight:900}
+.intro-game .hero>.hero-system .feat{min-height:104px;padding:15px 14px;border:0;border-right:1px solid #cdbf9f;border-radius:0;background:#fff9e9;box-shadow:none}
+.intro-game .hero>.hero-system .feat b{color:#1f6d55;font-size:14px;font-weight:900}
+.intro-game .hero>.hero-system .feat span{color:#4d554f;font-size:13px;line-height:1.55;font-weight:700}
+.intro-game .hero>.hero-system:after{content:"POWERED BY SOLAR AI  ·  관계와 직무를 이해하는 실무 영어 시뮬레이션";grid-column:1/-1;padding:12px 14px;border-top:2px solid #28352f;background:#eaf5df;color:#24483b;font-size:14px;font-weight:900}
 
 @media(max-width:900px){
   .intro-page .hero{padding:48px 20px 36px}
@@ -423,3 +423,19 @@ body {
   background:#eef3fb!important;
 }
 /* END BUSINESS-SECTION-BACKGROUND-CONSISTENCY-V15 */
+
+
+/* INTRO-WIDE-SCALE-V16 */
+.intro-features-section>div{max-width:1400px!important}
+.intro-game .intro-game-features>.relative{max-width:1120px!important}
+.intro-business .intro-business-features{max-width:1120px!important}
+.intro-trial-frame{max-width:1400px!important}
+@media(max-width:900px){
+  .intro-game .intro-pixel-office-bg{width:calc(100% + 40px);margin:clamp(-70px,-8vw,-28px) -20px 0}
+  .intro-game .hero>.hero-system{margin-top:0}
+}
+@media(max-width:560px){
+  .intro-game .intro-pixel-office-bg{width:calc(100% + 32px);margin:-24px -16px 0}
+  .intro-game .hero>.hero-system .feat{min-height:auto;padding:13px}
+}
+/* END INTRO-WIDE-SCALE-V16 */
