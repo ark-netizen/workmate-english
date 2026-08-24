@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
 const STORAGE_KEY = "go:home-section-tour-dismissed";
+const MENU_MOVE_MS = 360;
+const MENU_SCAN_STEP_MS = 75;
+const MENU_SCAN_SETTLE_MS = 90;
 
 export interface TourStep {
   title: string;
@@ -99,10 +102,15 @@ export function SectionTourGuide({
   // anchor 단계에서 말풍선을 강조 요소 옆에 붙이기 위한 위치 — 스크롤/리사이즈에도 다시 계산함
   const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
   // rowItems 단계에서 각 설명을 그 항목의 실제 행 위치에 맞추기 위한 좌표들
-  const [rowRects, setRowRects] = useState<{ desc: string; rect: DOMRect }[]>([]);
+  const [rowRects, setRowRects] = useState<{ selector: string; desc: string; rect: DOMRect }[]>([]);
   // 마지막 단계에서 onDismiss가 있으면(=곧 다른 화면으로 넘어감), 말없이 확 이동하지 않고
   // "이동해요" 안내를 잠깐 보여준 뒤 넘어간다
   const [leaving, setLeaving] = useState(false);
+  // 메뉴 단계는 오른쪽 중앙에서 보던 시선을 왼쪽 메뉴로 짧게 옮긴 뒤, 메뉴를 빠르게 위→아래로 훑는다.
+  const [menuArriving, setMenuArriving] = useState(false);
+  const [menuMoveStarted, setMenuMoveStarted] = useState(false);
+  const [menuScanSelector, setMenuScanSelector] = useState<string | null>(null);
+  const [menuScanDone, setMenuScanDone] = useState(true);
 
   useEffect(() => {
     if (dismissed) return;
@@ -136,9 +144,11 @@ export function SectionTourGuide({
         const rects = rowItems
           .map((r) => {
             const target = document.querySelector<HTMLElement>(r.selector);
-            return target && isVisible(target) ? { desc: r.desc, rect: target.getBoundingClientRect() } : null;
+            return target && isVisible(target)
+              ? { selector: r.selector, desc: r.desc, rect: target.getBoundingClientRect() }
+              : null;
           })
-          .filter((v): v is { desc: string; rect: DOMRect } => v !== null);
+          .filter((v): v is { selector: string; desc: string; rect: DOMRect } => v !== null);
         setRowRects(rects);
       } else {
         setRowRects([]);
@@ -157,6 +167,95 @@ export function SectionTourGuide({
       window.removeEventListener("scroll", updateRect, true);
     };
   }, [dismissed, index, availableSteps]);
+
+  useEffect(() => {
+    if (dismissed) return;
+    const step = availableSteps[index]?.step;
+    if (!step?.rowItems || !step.extendPanel) {
+      setMenuArriving(false);
+      setMenuMoveStarted(false);
+      setMenuScanSelector(null);
+      setMenuScanDone(true);
+      return;
+    }
+
+    const visibleRows = step.rowItems.filter((row) => {
+      const target = document.querySelector<HTMLElement>(row.selector);
+      return !!target && isVisible(target);
+    });
+    if (visibleRows.length === 0) {
+      setMenuArriving(false);
+      setMenuMoveStarted(false);
+      setMenuScanSelector(null);
+      setMenuScanDone(true);
+      return;
+    }
+
+    setMenuArriving(true);
+    setMenuMoveStarted(false);
+    setMenuScanSelector(null);
+    setMenuScanDone(false);
+
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    timers.push(setTimeout(() => setMenuMoveStarted(true), 20));
+    timers.push(setTimeout(() => setMenuArriving(false), MENU_MOVE_MS));
+    visibleRows.forEach((row, rowIndex) => {
+      timers.push(
+        setTimeout(
+          () => setMenuScanSelector(row.selector),
+          MENU_MOVE_MS + rowIndex * MENU_SCAN_STEP_MS,
+        ),
+      );
+    });
+    timers.push(
+      setTimeout(() => {
+        setMenuScanSelector(null);
+        setMenuScanDone(true);
+      }, MENU_MOVE_MS + visibleRows.length * MENU_SCAN_STEP_MS + MENU_SCAN_SETTLE_MS),
+    );
+
+    return () => timers.forEach(clearTimeout);
+  }, [dismissed, index, availableSteps]);
+
+  useEffect(() => {
+    const step = availableSteps[index]?.step;
+    if (!step?.rowItems || menuScanDone) return;
+
+    const rows = step.rowItems
+      .map((row) => document.querySelector<HTMLElement>(row.selector))
+      .filter((el): el is HTMLElement => !!el && isVisible(el));
+    const previous = rows.map((el) => ({
+      el,
+      opacity: el.style.opacity,
+      transition: el.style.transition,
+    }));
+
+    rows.forEach((el) => {
+      el.style.transition = "opacity 90ms ease";
+      el.style.opacity = menuScanSelector && el.matches(menuScanSelector) ? "1" : "0.48";
+    });
+
+    return () => {
+      previous.forEach(({ el, opacity, transition }) => {
+        el.style.opacity = opacity;
+        el.style.transition = transition;
+      });
+    };
+  }, [menuScanSelector, menuScanDone, index, availableSteps]);
+
+  useEffect(() => {
+    if (!menuScanSelector) return;
+    const target = document.querySelector<HTMLElement>(menuScanSelector);
+    if (!target) return;
+    const hadRing2 = target.classList.contains("ring-2");
+    const hadRingAccent = target.classList.contains("ring-accent");
+    if (!hadRing2) target.classList.add("ring-2");
+    if (!hadRingAccent) target.classList.add("ring-accent");
+    return () => {
+      if (!hadRing2) target.classList.remove("ring-2");
+      if (!hadRingAccent) target.classList.remove("ring-accent");
+    };
+  }, [menuScanSelector]);
 
   if (dismissed || availableSteps.length === 0) return null;
 
@@ -187,12 +286,10 @@ export function SectionTourGuide({
 
   const extendPanel = current.step.extendPanel;
 
-  // rowItems + extendPanel 조합: 설명 한 줄 한 줄을 그 항목의 실제 행 위치에 맞춰 그리는
+  // rowItems + extendPanel 조합: 설명 한 줄 한 줄을 그 항목의 실제 화면 위치(행)에 맞춰 그리는
   // 전용 레이아웃 — "표의 행처럼 나란히" 보여야 해서 일반 카드 렌더링과는 완전히 다르게 그린다.
-  // 위쪽(설명 목록)은 사이드바와 같은 색으로 이어붙이되, 실제로 눌러야 하는 이전/다음 버튼은
-  // 거기 섞여 있으면 "여기가 조작 가능한 곳"이라는 게 안 보인다는 피드백 — 버튼 영역만 흰
-  // 카드로 분리해서 색이 바뀌는 지점 자체가 "여기부터 누르는 곳"이라는 신호가 되게 한다.
-  // 흰 카드는 설명 목록 바로 아래에 틈 없이 이어붙여서, 괜히 안 쓰는 여백이 생기지 않게 한다.
+  // 메뉴 단계 진입 시에는 오른쪽 중앙의 안내가 왼쪽으로 이동하는 짧은 연결 동작을 먼저 보여주고,
+  // 도착 직후 메뉴 행을 빠르게 훑어서 사용자의 시선이 실제 왼쪽 메뉴를 한 번 거치게 한다.
   if (current.step.rowItems && extendPanel && anchorRect && rowRects.length > 0 && typeof window !== "undefined") {
     const HEADER_H = 34;
     const PAD = 8;
@@ -203,17 +300,34 @@ export function SectionTourGuide({
     const panelTop = clamp(firstRect.top - HEADER_H - PAD, 8, window.innerHeight - 100);
     const rowsBottom = lastRect.bottom + PAD;
     const tealHeight = rowsBottom - panelTop;
+    const moveStartLeft = Math.max(16, window.innerWidth - ANCHOR_WIDTH - 24);
+    const moveStartTop = Math.max(16, window.innerHeight / 2 - 48);
+    const panelOpacity = menuArriving ? "opacity-0" : "opacity-100";
 
     return (
       <>
+        {menuArriving && (
+          <div
+            className={`fixed z-[10000] w-[17rem] max-w-[calc(100vw-1rem)] rounded-xl p-3 shadow-xl transition-[top,left,transform,opacity] duration-[360ms] ease-out ${extendPanel.bg}`}
+            style={{
+              top: menuMoveStarted ? panelTop : moveStartTop,
+              left: menuMoveStarted ? panelLeft : moveStartLeft,
+              transform: menuMoveStarted ? "scale(0.98)" : "scale(1)",
+              opacity: menuMoveStarted ? 0.94 : 1,
+            }}
+          >
+            <p className={`text-xs font-semibold ${extendPanel.title}`}>이번엔 왼쪽 메뉴를 살펴볼게요</p>
+          </div>
+        )}
+
         {/* 왼쪽 변은 사이드바와 맞닿는 선이라 위쪽도 아래쪽도 항상 각지게 두고, 오른쪽만
             둥글게 해서 "각졌다 둥글었다" 뒤섞이지 않고 한 가지 규칙으로 통일한다 */}
         <div
-          className={`fixed z-30 w-[17rem] max-w-[calc(100vw-1rem)] rounded-tr-xl transition-[top,left,height] duration-200 ease-out ${extendPanel.bg}`}
+          className={`fixed z-30 w-[17rem] max-w-[calc(100vw-1rem)] rounded-tr-xl transition-[top,left,height,opacity] duration-150 ease-out ${panelOpacity} ${extendPanel.bg}`}
           style={{ top: panelTop, left: panelLeft, height: tealHeight }}
         />
         <div
-          className="fixed z-30 w-[17rem] max-w-[calc(100vw-1rem)] rounded-br-xl border border-t-0 border-border bg-surface shadow-lg transition-[top,left] duration-200 ease-out"
+          className={`fixed z-30 w-[17rem] max-w-[calc(100vw-1rem)] rounded-br-xl border border-t-0 border-border bg-surface shadow-lg transition-[top,left,opacity] duration-150 ease-out ${panelOpacity}`}
           style={{ top: rowsBottom, left: panelLeft, height: CONTROL_H }}
         >
           {leaving ? (
@@ -226,7 +340,7 @@ export function SectionTourGuide({
               <button
                 type="button"
                 onClick={() => setIndex((i) => Math.max(0, i - 1))}
-                disabled={index === 0}
+                disabled={index === 0 || !menuScanDone}
                 aria-label="이전"
                 className="flex h-7 w-7 items-center justify-center rounded-full border border-border text-foreground/60 hover:bg-black/[.03] disabled:opacity-30"
               >
@@ -235,7 +349,10 @@ export function SectionTourGuide({
               <button
                 type="button"
                 onClick={() => (isLast ? handleFinalConfirm() : setIndex((i) => i + 1))}
-                className="flex items-center gap-1 rounded-full bg-accent px-3 py-1.5 text-xs font-medium text-white hover:opacity-90"
+                disabled={!menuScanDone}
+                className={`flex items-center gap-1 rounded-full bg-accent px-3 py-1.5 text-xs font-medium text-white transition-all hover:opacity-90 disabled:cursor-default ${
+                  menuScanDone ? "ring-2 ring-accent ring-offset-2" : "opacity-40"
+                }`}
               >
                 {isLast ? "확인했어요" : "다음"}
                 {!isLast && <ChevronRight className="size-3.5" />}
@@ -243,7 +360,7 @@ export function SectionTourGuide({
             </div>
           )}
         </div>
-        {!leaving && (
+        {!leaving && !menuArriving && (
           <>
             <div
               className="fixed z-30 flex items-center justify-between px-3"
@@ -261,15 +378,25 @@ export function SectionTourGuide({
                 <X className="size-4" />
               </button>
             </div>
-            {rowRects.map(({ desc, rect }, i) => (
-              <p
-                key={i}
-                className={`fixed z-30 truncate px-3 text-xs leading-none ${extendPanel.item}`}
-                style={{ top: rect.top + rect.height / 2 - 6, left: panelLeft, width: ANCHOR_WIDTH }}
-              >
-                {desc}
-              </p>
-            ))}
+            {rowRects.map(({ selector, desc, rect }, i) => {
+              const active = selector === menuScanSelector;
+              return (
+                <p
+                  key={i}
+                  className={`fixed z-30 truncate px-3 text-xs leading-none transition-[opacity,transform,font-weight] duration-100 ${extendPanel.item}`}
+                  style={{
+                    top: rect.top + rect.height / 2 - 6,
+                    left: panelLeft,
+                    width: ANCHOR_WIDTH,
+                    opacity: menuScanDone ? 0.86 : active ? 1 : 0.34,
+                    transform: active ? "translateX(4px)" : "translateX(0)",
+                    fontWeight: active ? 700 : 500,
+                  }}
+                >
+                  {desc}
+                </p>
+              );
+            })}
           </>
         )}
       </>
