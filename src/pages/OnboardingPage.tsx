@@ -296,7 +296,9 @@ export function OnboardingPage() {
           {/* 화살표+미리보기 칸을 항상 DOM에 두고 max-width/opacity만 트랜지션해서, "다음"을 눌렀을 때
               사원증이 순간이동하듯 옮겨가지 않고 자연스럽게 옆으로 밀리듯 보이게 함. max-h는 실제
               캡션 텍스트가 여러 줄로 접힐 때도 잘리지 않도록 넉넉하게 잡는다 */}
-          <div className="flex w-full flex-col items-center gap-3 sm:flex-row sm:items-center sm:justify-center">
+          {/* sm: 이상에서는 gap을 컨테이너에 주지 않고 각 항목의 좌측 여백으로 개별 부여한다 —
+              접힌(0폭) 항목도 flex gap은 그대로 차지해서, 카드만 있을 때 중앙이 살짝 밀려 보였음 */}
+          <div className="flex w-full flex-col items-center gap-3 sm:flex-row sm:items-center sm:justify-center sm:gap-0">
             <div className="flex flex-col items-center gap-2">
               <EmployeeIdCard profile={trialPreviewProfile} photoUrl={photoUrl} hideAvatarPicker />
               {/* 카드 발급 상태 안내는 카드 바로 아래 붙여서 보여주고, 다음 단계로 넘어가면
@@ -311,7 +313,7 @@ export function OnboardingPage() {
             </div>
             <div
               className={`flex flex-col items-center gap-1.5 overflow-hidden text-foreground/40 transition-all duration-500 ease-out ${
-                isDetailStep ? "max-h-56 opacity-100 sm:max-w-[10rem] sm:px-2" : "max-h-0 opacity-0 sm:max-w-0 sm:px-0"
+                isDetailStep ? "max-h-56 opacity-100 sm:max-w-[10rem] sm:ml-3 sm:px-2" : "max-h-0 opacity-0 sm:max-w-0 sm:ml-0 sm:px-0"
               }`}
             >
               <ArrowDown className="size-5 shrink-0 sm:hidden" />
@@ -322,7 +324,7 @@ export function OnboardingPage() {
             </div>
             <div
               className={`w-full overflow-hidden transition-all duration-500 ease-out sm:w-auto ${
-                isDetailStep ? "max-h-[40rem] opacity-100 sm:max-w-xs" : "max-h-0 opacity-0 sm:max-w-0"
+                isDetailStep ? "max-h-[40rem] opacity-100 sm:max-w-xs sm:ml-3" : "max-h-0 opacity-0 sm:max-w-0 sm:ml-0"
               }`}
             >
               <TrialOnboardingPreview />
