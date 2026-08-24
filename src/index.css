@@ -506,5 +506,6 @@ body {
 
 /* GAME-NAV-BOTTOM-LINE-V7 */
 .intro-game .intro-nav{border-bottom:3px solid #28352f!important;box-shadow:none!important}
-.intro-business .intro-nav{border-bottom:1px solid #dfe5ef!important}
+.intro-business .intro-nav{border-bottom:3px solid #28352f!important;box-shadow:none!important}
 /* END GAME-NAV-BOTTOM-LINE-V7 */
+
