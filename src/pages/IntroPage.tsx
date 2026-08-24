@@ -422,30 +422,30 @@ function FeatureWindowScrollList({ items }: { items: typeof features }) {
                   i === active ? "scale-100 opacity-100" : "scale-[0.97] opacity-60"
                 }`}
               >
-                <div className="flex items-center justify-between border-b-2 border-[#2b2b2b] bg-[#5fb8b0] px-4 py-2.5">
-                  <span className="text-[15px] font-bold text-[#1c3a37]">WorkMate</span>
+                <div className="flex items-center justify-between border-b-2 border-[#2b2b2b] bg-[#5fb8b0] px-5 py-3.5">
+                  <span className="text-[18px] font-bold text-[#1c3a37]">WorkMate</span>
                   <div className="flex gap-1.5">
-                    <span className="flex h-5 w-[22px] items-center justify-center rounded border-[1.5px] border-[#2b2b2b] bg-[#eaf7f5] text-[11px] text-[#1c3a37]">
+                    <span className="flex h-6 w-[26px] items-center justify-center rounded border-[1.5px] border-[#2b2b2b] bg-[#eaf7f5] text-[13px] text-[#1c3a37]">
                       -
                     </span>
-                    <span className="flex h-5 w-[22px] items-center justify-center rounded border-[1.5px] border-[#2b2b2b] bg-[#eaf7f5] text-[11px] text-[#1c3a37]">
+                    <span className="flex h-6 w-[26px] items-center justify-center rounded border-[1.5px] border-[#2b2b2b] bg-[#eaf7f5] text-[13px] text-[#1c3a37]">
                       □
                     </span>
-                    <span className="flex h-5 w-[22px] items-center justify-center rounded border-[1.5px] border-[#2b2b2b] bg-[#f4a4a0] text-[11px] text-[#5c1c18]">
+                    <span className="flex h-6 w-[26px] items-center justify-center rounded border-[1.5px] border-[#2b2b2b] bg-[#f4a4a0] text-[13px] text-[#5c1c18]">
                       ×
                     </span>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-6 p-6 sm:grid-cols-2 sm:items-center sm:gap-8 sm:p-8">
+                <div className="grid grid-cols-1 gap-8 p-8 sm:grid-cols-2 sm:items-center sm:gap-10 sm:p-10">
                   <div>
                     <div
-                      className={`mb-4 flex h-16 w-16 items-center justify-center rounded-xl border-2 border-[#2b2b2b] shadow-[2px_2px_0_rgba(0,0,0,0.15)] ${c.iconBg}`}
+                      className={`mb-5 flex h-20 w-20 items-center justify-center rounded-xl border-2 border-[#2b2b2b] shadow-[2px_2px_0_rgba(0,0,0,0.15)] ${c.iconBg}`}
                     >
-                      <Icon className={`h-7 w-7 ${c.icon}`} strokeWidth={1.75} />
+                      <Icon className={`h-9 w-9 ${c.icon}`} strokeWidth={1.75} />
                     </div>
-                    <p className="mb-3 text-xl leading-relaxed font-bold text-[#1c1c1c]">{f.title}</p>
-                    <p className="text-[13px] leading-loose text-[#5c5c5c]">{f.body}</p>
+                    <p className="mb-3 text-2xl leading-relaxed font-bold text-[#1c1c1c]">{f.title}</p>
+                    <p className="text-[16px] leading-loose text-[#5c5c5c]">{f.body}</p>
                   </div>
                   <div className="intro-game-feature-visual rounded-2xl border-2 border-[#2b2b2b] shadow-[2px_2px_0_rgba(0,0,0,0.12)]">
                     <Visual />
