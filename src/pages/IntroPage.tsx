@@ -490,9 +490,9 @@ const heroSystemItems = [
 function withSolarHighlight(text: string) {
   return text.split(/(solar)/gi).map((part, i) =>
     /^solar$/i.test(part) ? (
-      <span className="solar-mark" key={i}>
+      <mark className="solar-mark" key={i}>
         {part}
-      </span>
+      </mark>
     ) : (
       part
     ),
