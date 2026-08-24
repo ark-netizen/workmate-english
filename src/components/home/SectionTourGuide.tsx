@@ -17,6 +17,18 @@ export interface TourStep {
   /** 메뉴처럼 강조 영역 안에 항목이 여러 개일 때, 하나씩 넘기지 않고 설명만 한 번에 목록으로
    *  보여줌 — 라벨은 실제 메뉴에 이미 보이므로 반복하지 않는다 */
   items?: string[];
+  /** 있으면 흰 카드(테두리·그림자) 대신, 강조된 요소와 같은 배경색으로 틈 없이 이어붙여서
+   *  "그 요소 자체가 옆으로 늘어난 것"처럼 보이게 한다 — 메뉴처럼 별도 말풍선보다는 사이드바
+   *  자체의 연장처럼 보이는 게 자연스러운 경우에 씀(anchor: "right" 전용) */
+  extendPanel?: {
+    bg: string;
+    title: string;
+    body: string;
+    item: string;
+    close: string;
+    prevBtn: string;
+    nextBtn: string;
+  };
 }
 
 // ring-inset을 썼더니, 프로필 카드처럼 안쪽에 배경이 꽉 찬 자식 요소가 있는 경우 그 자식의
@@ -154,12 +166,17 @@ export function SectionTourGuide({
     setTimeout(dismiss, 900);
   };
 
+  const extendPanel = current.step.extendPanel;
+
   let anchorStyle: { top?: number; bottom?: number; left: number } | null = null;
   if (anchor && anchorRect && typeof window !== "undefined") {
     if (anchor === "right") {
+      // extendPanel은 "같은 색으로 이어붙여서 늘어난 것처럼" 보여야 하므로 틈을 안 둔다.
+      // 말풍선일 때는 겹치지 않게 12px 띄운다.
+      const gap = extendPanel ? 0 : 12;
       anchorStyle = {
         top: clamp(anchorRect.top, 8, window.innerHeight - ANCHOR_HEIGHT_GUESS - 8),
-        left: clamp(anchorRect.right + 12, 8, window.innerWidth - ANCHOR_WIDTH - 8),
+        left: clamp(anchorRect.right + gap, 8, window.innerWidth - ANCHOR_WIDTH - 8),
       };
     } else {
       // top: 모바일 하단 탭바 위에 붙이는 용도라, 뷰포트 바닥 기준(bottom)으로 띄워야
@@ -171,37 +188,52 @@ export function SectionTourGuide({
     }
   }
 
-  const cardClassName = anchor
-    ? "fixed z-30 w-[17rem] max-w-[calc(100vw-1rem)] rounded-xl border border-accent/30 bg-surface p-3 shadow-xl transition-[top,left,bottom] duration-200 ease-out"
-    : "fixed inset-x-4 top-1/2 z-30 mx-auto max-w-sm -translate-y-1/2 rounded-xl border border-accent/30 bg-surface p-4 shadow-xl md:inset-x-auto md:right-6 md:w-80";
+  // extendPanel이 있으면 흰 카드(테두리·그림자·둥근 모서리) 대신, 강조된 요소와 같은 배경색을
+  // 틈 없이 이어붙이고 오른쪽 모서리만 둥글게 해서 "그 요소가 옆으로 늘어난 것"처럼 보이게 한다
+  const cardClassName = extendPanel
+    ? `fixed z-30 w-[17rem] max-w-[calc(100vw-1rem)] rounded-r-xl p-3 transition-[top,left,bottom] duration-200 ease-out ${extendPanel.bg}`
+    : anchor
+      ? "fixed z-30 w-[17rem] max-w-[calc(100vw-1rem)] rounded-xl border border-accent/30 bg-surface p-3 shadow-xl transition-[top,left,bottom] duration-200 ease-out"
+      : "fixed inset-x-4 top-1/2 z-30 mx-auto max-w-sm -translate-y-1/2 rounded-xl border border-accent/30 bg-surface p-4 shadow-xl md:inset-x-auto md:right-6 md:w-80";
+
+  const titleClass = extendPanel ? `text-xs font-semibold ${extendPanel.title}` : "text-xs font-semibold text-accent";
+  const closeClass = extendPanel
+    ? `shrink-0 rounded p-0.5 ${extendPanel.close}`
+    : "shrink-0 rounded p-0.5 text-foreground/40 hover:bg-black/[.05] hover:text-foreground/70";
+  const bodyClass = extendPanel ? `mt-2 text-sm ${extendPanel.body}` : "mt-2 text-sm text-foreground/80";
+  const itemsListClass = extendPanel
+    ? "mt-2.5 max-h-64 space-y-1.5 overflow-y-auto border-t border-white/20 pt-2.5"
+    : "mt-2.5 max-h-64 space-y-1.5 overflow-y-auto border-t border-border pt-2.5";
+  const itemClass = extendPanel ? `text-xs ${extendPanel.item}` : "text-xs text-foreground/60";
+  const prevBtnClass = extendPanel
+    ? `flex h-7 w-7 items-center justify-center rounded-full border disabled:opacity-30 ${extendPanel.prevBtn}`
+    : "flex h-7 w-7 items-center justify-center rounded-full border border-border text-foreground/60 hover:bg-black/[.03] disabled:opacity-30";
+  const nextBtnClass = extendPanel
+    ? `flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium hover:opacity-90 ${extendPanel.nextBtn}`
+    : "flex items-center gap-1 rounded-full bg-accent px-3 py-1.5 text-xs font-medium text-white hover:opacity-90";
 
   return (
     <div className={cardClassName} style={anchorStyle ?? undefined}>
       {leaving ? (
-        <p className="flex items-center gap-2 text-sm text-foreground/70">
-          <span className="size-3.5 shrink-0 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
+        <p className={`flex items-center gap-2 text-sm ${extendPanel ? extendPanel.body : "text-foreground/70"}`}>
+          <span className="size-3.5 shrink-0 animate-spin rounded-full border-2 border-current/30 border-t-current" />
           곧 다음 화면으로 이동해요...
         </p>
       ) : (
         <>
           <div className="flex items-start justify-between gap-2">
-            <p className="text-xs font-semibold text-accent">
+            <p className={titleClass}>
               {index + 1} / {availableSteps.length} · {current.step.title}
             </p>
-            <button
-              type="button"
-              onClick={dismiss}
-              aria-label="안내 닫기"
-              className="shrink-0 rounded p-0.5 text-foreground/40 hover:bg-black/[.05] hover:text-foreground/70"
-            >
+            <button type="button" onClick={dismiss} aria-label="안내 닫기" className={closeClass}>
               <X className="size-4" />
             </button>
           </div>
-          <p className="mt-2 text-sm text-foreground/80">{current.step.text}</p>
+          <p className={bodyClass}>{current.step.text}</p>
           {current.step.items && (
-            <ul className="mt-2.5 max-h-64 space-y-1.5 overflow-y-auto border-t border-border pt-2.5">
+            <ul className={itemsListClass}>
               {current.step.items.map((desc, i) => (
-                <li key={i} className="text-xs text-foreground/60">
+                <li key={i} className={itemClass}>
                   {desc}
                 </li>
               ))}
@@ -213,7 +245,7 @@ export function SectionTourGuide({
               onClick={() => setIndex((i) => Math.max(0, i - 1))}
               disabled={index === 0}
               aria-label="이전"
-              className="flex h-7 w-7 items-center justify-center rounded-full border border-border text-foreground/60 hover:bg-black/[.03] disabled:opacity-30"
+              className={prevBtnClass}
             >
               <ChevronLeft className="size-4" />
             </button>
@@ -224,17 +256,13 @@ export function SectionTourGuide({
                   current.step.cta?.onClick();
                   dismiss();
                 }}
-                className="flex items-center gap-1 rounded-full bg-accent px-3 py-1.5 text-xs font-medium text-white hover:opacity-90"
+                className={nextBtnClass}
               >
                 {current.step.cta.label}
                 <ChevronRight className="size-3.5" />
               </button>
             ) : (
-              <button
-                type="button"
-                onClick={() => (isLast ? handleFinalConfirm() : setIndex((i) => i + 1))}
-                className="flex items-center gap-1 rounded-full bg-accent px-3 py-1.5 text-xs font-medium text-white hover:opacity-90"
-              >
+              <button type="button" onClick={() => (isLast ? handleFinalConfirm() : setIndex((i) => i + 1))} className={nextBtnClass}>
                 {isLast ? "확인했어요" : "다음"}
                 {!isLast && <ChevronRight className="size-3.5" />}
               </button>

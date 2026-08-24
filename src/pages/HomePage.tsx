@@ -15,6 +15,7 @@ import { isAutoAdvanceEnabled, setAutoAdvance } from "@/lib/qaAutoAdvance";
 import { SectionTourGuide, type TourStep } from "@/components/home/SectionTourGuide";
 import { isAnonymousSession } from "@/lib/session";
 import { navItems } from "@/components/shell/nav-items";
+import { useBusinessMode } from "@/context/useBusinessMode";
 
 // 심사 기간 등 외부에 라이브 사이트를 공개하는 동안은, 데이터를 실제로 지우거나 조작하는
 // 위험한 QA 버튼(초기화/승급 게이트 채우기 등)은 숨긴다 — 실수로 눌러도 안전한 "연락 바로
@@ -227,6 +228,7 @@ export function HomePage() {
     leaveBalance,
     workContext,
   } = useWorkday();
+  const { businessMode } = useBusinessMode();
   const navigate = useNavigate();
   const [deliveringNext, setDeliveringNext] = useState(false);
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
@@ -363,6 +365,28 @@ export function HomePage() {
   // 데스크톱/모바일은 반응형으로 항상 한쪽만 보이므로, 후보를 둘 다 넣어두면 실제로 보이는
   // 쪽만 걸러써준다
   const navTourItems = navItems.map((item) => item.desc);
+  // 데스크톱 메뉴 설명 박스는 별도 흰 말풍선이 아니라, 사이드바와 같은 배경색으로 틈 없이
+  // 이어붙여서 "사이드바 자체가 옆으로 늘어난 것"처럼 보이게 한다 — 게임/비즈니스 모드에 따라
+  // 사이드바 배경이 다르므로(Sidebar.tsx와 동일 기준) 그에 맞춰 색을 맞춘다
+  const menuPanelTheme = businessMode
+    ? {
+        bg: "bg-[#5aa89a]",
+        title: "text-white",
+        body: "text-white/90",
+        item: "text-white/75",
+        close: "text-white/60 hover:bg-white/10 hover:text-white",
+        prevBtn: "border-white/40 text-white/70 hover:bg-white/10",
+        nextBtn: "bg-white text-[#2f7a6c]",
+      }
+    : {
+        bg: "bg-surface border border-border",
+        title: "text-accent",
+        body: "text-foreground/80",
+        item: "text-foreground/60",
+        close: "text-foreground/40 hover:bg-black/[.05] hover:text-foreground/70",
+        prevBtn: "border-border text-foreground/60 hover:bg-black/[.03]",
+        nextBtn: "bg-accent text-white",
+      };
   const navTourSteps: TourStep[] = [
     {
       selector: "#tour-nav-desktop",
@@ -370,6 +394,7 @@ export function HomePage() {
       text: "메뉴에서 볼 수 있는 기능들이에요.",
       items: navTourItems,
       anchor: "right",
+      extendPanel: menuPanelTheme,
     },
     {
       selector: "#tour-nav-mobile",
