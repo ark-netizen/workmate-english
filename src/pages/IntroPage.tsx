@@ -409,15 +409,7 @@ function FeatureWindowScrollList({ items }: { items: typeof features }) {
   };
 
   return (
-    <div className="intro-game-features relative overflow-hidden rounded-[28px] bg-[linear-gradient(180deg,#1a3fd8_0%,#3562e6_20%,#5a89ef_42%,#86adf5_62%,#c3ddf9_82%,#eef6fc_100%)] px-4 py-10 sm:px-8 sm:py-14">
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px)",
-          backgroundSize: "14px 14px",
-        }}
-      />
+    <div className="intro-game-features relative px-4 py-10 sm:px-8 sm:py-14">
       <div className="relative z-[1] mx-auto w-full max-w-3xl space-y-8 md:space-y-12">
         {items.map((f, i) => {
           const Icon = f.icon;
