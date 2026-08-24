@@ -291,7 +291,7 @@ export function OnboardingPage() {
             <EmployeeIdCard profile={trialPreviewProfile} photoUrl={photoUrl} hideAvatarPicker />
             <div
               className={`flex flex-col items-center gap-1.5 overflow-hidden text-foreground/40 transition-all duration-500 ease-out sm:px-2 ${
-                isDetailStep ? "max-h-32 opacity-100 sm:max-w-[10rem]" : "max-h-0 opacity-0 sm:max-w-0"
+                isDetailStep ? "max-h-56 opacity-100 sm:max-w-[10rem]" : "max-h-0 opacity-0 sm:max-w-0"
               }`}
             >
               <ArrowDown className="size-5 shrink-0 sm:hidden" />
