@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import * as api from "@/lib/api";
@@ -12,7 +12,7 @@ import type { ProfileResponse } from "@/types/api";
 import type { PromotionStatus } from "@/lib/api";
 import { RANKS } from "@/components/promotion/rankArt";
 import { isAutoAdvanceEnabled, setAutoAdvance } from "@/lib/qaAutoAdvance";
-import { FirstVisitGuide } from "@/components/home/FirstVisitGuide";
+import { SectionTourGuide, type TourStep } from "@/components/home/SectionTourGuide";
 
 // 심사 기간 등 외부에 라이브 사이트를 공개하는 동안은, 데이터를 실제로 지우거나 조작하는
 // 위험한 QA 버튼(초기화/승급 게이트 채우기 등)은 숨긴다 — 실수로 눌러도 안전한 "연락 바로
@@ -234,6 +234,10 @@ export function HomePage() {
   const [advancingDay, setAdvancingDay] = useState(false);
   const [resettingAccount, setResettingAccount] = useState(false);
   const [promotion, setPromotion] = useState<PromotionStatus | null>(null);
+  const profileSectionRef = useRef<HTMLDivElement | null>(null);
+  const statsSectionRef = useRef<HTMLElement | null>(null);
+  const contextSectionRef = useRef<HTMLElement | null>(null);
+  const contactsSectionRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     api.getProfile().then(setProfile).catch(() => setProfile(null));
@@ -347,14 +351,35 @@ export function HomePage() {
     }
   };
 
+  const tourSteps: TourStep[] = [
+    {
+      ref: profileSectionRef,
+      title: "프로필 · 근무시간",
+      text: "내 사원증과 오늘 일한 시간이 여기 표시돼요. 승급하면 아바타 캐릭터도 바뀌어요.",
+    },
+    {
+      ref: statsSectionRef,
+      title: "근무 현황 요약",
+      text: "근무 상태, 연차, 읽지 않은 메시지, 다음 연락 예정 시간을 한눈에 볼 수 있어요.",
+    },
+    {
+      ref: contextSectionRef,
+      title: "오늘의 업무 상황",
+      text: "오늘 무슨 상황인지, 동료·상사·거래처에게 각각 뭘 전달해야 하는지 알려줘요.",
+    },
+    {
+      ref: contactsSectionRef,
+      title: "오늘의 연락",
+      text: "여기서 받은 메시지에 답장하면 하루가 진행되고, 다 처리한 뒤 퇴근하면 리포트가 만들어져요.",
+    },
+  ];
+
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-6 md:px-8 md:py-8">
       <div>
         <h1 className="text-lg font-semibold">Today&apos;s Workday</h1>
         <p className="mt-1 text-sm text-foreground/60">{dateLabel}</p>
       </div>
-
-      <FirstVisitGuide />
 
       {pendingReviewBanner && (
         <Link
@@ -401,14 +426,16 @@ export function HomePage() {
         </Link>
       )}
 
-      <ProfileHoursCard
-        profile={profile}
-        workStatus={workStatus ?? "before-work"}
-        startedAt={workday?.started_at}
-        endedAt={workday?.ended_at}
-      />
+      <div ref={profileSectionRef}>
+        <ProfileHoursCard
+          profile={profile}
+          workStatus={workStatus ?? "before-work"}
+          startedAt={workday?.started_at}
+          endedAt={workday?.ended_at}
+        />
+      </div>
 
-      <section className="rounded-xl border border-border bg-surface p-5">
+      <section ref={statsSectionRef} className="rounded-xl border border-border bg-surface p-5">
         {/* 항목 수와 정확히 같은 개수의 1fr 칼럼 grid — 칼럼 폭이 수학적으로 완전히 동일해서
             마지막 칼럼의 오른쪽 끝이 컨테이너 padding과 항상 정확히 맞음(flex-grow 오차 없음) */}
         <div className={`grid grid-cols-1 gap-4 ${leaveBalance ? "sm:grid-cols-5" : "sm:grid-cols-3"}`}>
@@ -429,7 +456,7 @@ export function HomePage() {
 
 
       {workContext && (
-        <section className="rounded-xl border border-border bg-surface p-5">
+        <section ref={contextSectionRef} className="rounded-xl border border-border bg-surface p-5">
           <div className="flex items-start justify-between gap-3">
             <div>
               <h2 className="text-sm font-semibold text-foreground">오늘의 업무 상황</h2>
@@ -458,7 +485,7 @@ export function HomePage() {
         </section>
       )}
 
-      <section className="space-y-3">
+      <section ref={contactsSectionRef} className="space-y-3">
         <div className="flex items-center justify-between border-b border-border pb-2">
           <h2 className="text-sm font-medium text-foreground/70">
             오늘의 연락 ({todayItems.length})
@@ -489,6 +516,8 @@ export function HomePage() {
           <ShoutJarTodayRow />
         </div>
       </section>
+
+      <SectionTourGuide steps={tourSteps} />
 
       <QaControlPanel
         onDeliverNext={handleDeliverNext}

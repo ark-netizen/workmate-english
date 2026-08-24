@@ -287,14 +287,20 @@ export function OnboardingPage() {
       <div className="flex min-h-dvh flex-col">
         {/* pb는 하단 sticky 안내바(약 64px)에 콘텐츠가 가려지지 않도록 여유 있게 확보 */}
         <div
-          className={`flex flex-1 flex-col items-center px-4 pb-28 text-center transition-[justify-content] duration-500 ease-out ${
-            isDetailStep ? "justify-start gap-4 pt-8" : "justify-center gap-6"
+          className={`flex flex-1 flex-col items-center px-4 pb-28 text-center transition-all duration-500 ease-out ${
+            isDetailStep
+              ? "justify-start gap-6 pt-8 sm:flex-row sm:items-start sm:justify-center"
+              : "justify-center gap-6"
           }`}
         >
-          <h1 className="break-keep text-lg font-semibold">🎉 1분 무료체험을 위한 사원증 발급 완료!</h1>
-          <EmployeeIdCard profile={trialPreviewProfile} photoUrl={photoUrl} hideAvatarPicker />
+          {/* detail 단계 전엔 그냥 이 컨테이너의 직접 자식으로 두고(display:contents), detail
+              단계에서만 별도 열로 묶어서 오른쪽에 미리보기 폼이 나란히 붙을 수 있게 함 */}
+          <div className={isDetailStep ? "flex shrink-0 flex-col items-center gap-4" : "contents"}>
+            <h1 className="break-keep text-lg font-semibold">🎉 1분 무료체험을 위한 사원증 발급 완료!</h1>
+            <EmployeeIdCard profile={trialPreviewProfile} photoUrl={photoUrl} hideAvatarPicker />
+          </div>
           {isDetailStep && (
-            <div className="animate-slidein w-full">
+            <div className="animate-slidein w-full sm:w-auto sm:pt-9">
               <TrialOnboardingPreview />
             </div>
           )}
