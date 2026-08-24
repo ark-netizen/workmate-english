@@ -398,13 +398,13 @@ body {
    높이가 순간적으로 달라지는 경우 그림이 패널 글자 위까지 겹쳐 올라오는 문제가 재현됐다 —
    "살짝 겹쳐서 자연스럽게"보다 "무슨 상황에서도 절대 안 겹치는 것"이 우선이라, 음수 margin을
    버리고 작은 양수 여백으로 확실한 간격을 둔다 */
-.intro-game .intro-pixel-office-bg{display:block;position:relative;left:50%;width:100vw;margin:16px 0 0 -50vw;max-width:none;height:auto;image-rendering:pixelated;pointer-events:none}
+.intro-game .intro-pixel-office-bg{display:block;position:relative;left:50%;width:100vw;margin:0 0 0 -50vw;max-width:none;height:auto;image-rendering:pixelated;pointer-events:none}
 .intro-game .hero>.hero-system{width:100%;max-width:1600px;margin:0 auto;position:static;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;border:3px solid #28352f;background:#fff9e9;box-shadow:7px 7px 0 rgba(40,53,47,.25)}
-.intro-game .hero>.hero-system:before{content:"WORKMATE SYSTEM";grid-column:1/-1;padding:9px 12px;border-bottom:3px solid #28352f;background:#2f795d;color:#fff;font-size:15px;font-weight:900}
+.intro-game .hero>.hero-system:before{content:"WORKMATE SYSTEM";grid-column:1/-1;padding:11px 14px;border-bottom:3px solid #28352f;background:#2f795d;color:#fff;font-size:19px;font-weight:900}
 .intro-game .hero>.hero-system .feat{min-height:104px;padding:15px 14px;border:0;border-right:1px solid #cdbf9f;border-radius:0;background:#fff9e9;box-shadow:none}
-.intro-game .hero>.hero-system .feat b{color:#1f6d55;font-size:15px;font-weight:900}
-.intro-game .hero>.hero-system .feat span{color:#4d554f;font-size:14px;line-height:1.55;font-weight:700}
-.intro-game .hero>.hero-system:after{content:"POWERED BY SOLAR AI  ·  관계와 직무를 이해하는 실무 영어 시뮬레이션";grid-column:1/-1;padding:12px 14px;border-top:2px solid #28352f;background:#eaf5df;color:#24483b;font-size:15px;font-weight:900}
+.intro-game .hero>.hero-system .feat b{color:#1f6d55;font-size:18px;font-weight:900}
+.intro-game .hero>.hero-system .feat span{color:#4d554f;font-size:16px;line-height:1.55;font-weight:700}
+.intro-game .hero>.hero-system:after{content:"POWERED BY SOLAR AI  ·  관계와 직무를 이해하는 실무 영어 시뮬레이션";grid-column:1/-1;padding:13px 14px;border-top:2px solid #28352f;background:#eaf5df;color:#24483b;font-size:17px;font-weight:900}
 
 @media(max-width:900px){
   .intro-page .hero{padding:48px 20px 36px}
@@ -428,12 +428,33 @@ body {
 /* END INTRO-GAME-HERO-FLOW-V14 */
 
 
-/* BUSINESS-SECTION-BACKGROUND-CONSISTENCY-V15 */
+/* INTRO-TRIAL-SHOWCASE-RESTORED-V17 */
+.intro-trial-showcase{padding:88px 24px;background:#eaf5dc}
+.intro-trial-heading{max-width:900px;margin:0 auto 34px;text-align:center}
+.intro-trial-heading>span{display:inline-block;border:2px solid #315d53;background:#ffe28a;padding:7px 11px;box-shadow:2px 2px 0 #315d53;font-size:11px;font-weight:900}
+.intro-trial-heading h2{margin:18px 0 0;color:#183d37;font-size:34px;letter-spacing:-.035em}
+.intro-trial-frame{max-width:1120px;margin:auto;overflow:hidden;border:3px solid #315d53;border-radius:7px;background:#fffaf0;box-shadow:8px 8px 0 rgba(49,93,83,.22);padding-bottom:28px}
+.intro-trial-top{display:flex;align-items:center;gap:18px;border-bottom:3px solid #315d53;background:#2f795d;padding:14px 18px;color:#fff;font-size:11px;font-weight:900}
+.intro-trial-top i{height:16px;flex:1;border:2px solid #183d37;background:#fff}.intro-trial-top u{display:block;width:40%;height:100%;background:#ffe28a}
+.intro-trial-flow{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;padding:28px}
+.intro-trial-flow>div{position:relative;min-height:155px;border:2px solid #315d53;background:#fff;padding:20px 10px;text-align:center}
+.intro-trial-flow>div:not(:last-child):after{content:"▶";position:absolute;right:-18px;top:46%;z-index:2;color:#2f795d}
+.intro-trial-flow em{display:grid;width:30px;height:30px;margin:auto;place-items:center;border-radius:50%;background:#315d53;color:#fff;font-style:normal;font-weight:800}
+.intro-trial-flow b,.intro-trial-flow span{display:block;margin-top:14px;font-size:12px}.intro-trial-flow span{color:#6b746e}
+.intro-trial-main{display:block;margin:0 auto;border:3px solid #315d53;background:#f09a63;padding:14px 24px;box-shadow:4px 4px 0 #315d53;font-size:13px;font-weight:900}
 .intro-business .intro-trial-showcase,
-.intro-business .intro-reviews{
-  background:#eef3fb!important;
+.intro-business .intro-reviews{background:#eef3fb!important}
+.intro-business .intro-trial-heading>span{border:0;border-radius:999px;background:#e5edff;box-shadow:none;color:#1a56ff}
+.intro-business .intro-trial-heading h2{color:#172033}
+.intro-business .intro-trial-frame{border:1px solid #d8e2f1;border-radius:22px;background:#fff;box-shadow:0 20px 50px rgba(49,82,123,.10)}
+.intro-business .intro-trial-top{border:0;border-bottom:1px solid #d8e2f1;background:#1a56ff}
+.intro-business .intro-trial-flow>div{border:1px solid #dce5f2;border-radius:14px}.intro-business .intro-trial-flow em{background:#1a56ff}
+.intro-business .intro-trial-main{border:0;border-radius:12px;background:#1a56ff;color:#fff;box-shadow:none}
+@media(max-width:800px){
+  .intro-trial-flow{grid-template-columns:1fr}
+  .intro-trial-flow>div:not(:last-child):after{display:none}
 }
-/* END BUSINESS-SECTION-BACKGROUND-CONSISTENCY-V15 */
+/* END INTRO-TRIAL-SHOWCASE-RESTORED-V17 */
 
 
 /* INTRO-WIDE-SCALE-V16 */

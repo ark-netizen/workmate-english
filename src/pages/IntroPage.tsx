@@ -418,11 +418,6 @@ function FeatureWindowScrollList({ items }: { items: typeof features }) {
           backgroundSize: "14px 14px",
         }}
       />
-      <div
-        className="absolute inset-x-0 bottom-0 h-[70px] border-t-4 border-[#2f7a24]"
-        style={{ backgroundImage: "repeating-linear-gradient(45deg,#4fae3a 0px,#4fae3a 7px,#3f9530 7px,#3f9530 14px)" }}
-      />
-
       <div className="relative z-[1] mx-auto w-full max-w-3xl space-y-8 md:space-y-12">
         {items.map((f, i) => {
           const Icon = f.icon;
