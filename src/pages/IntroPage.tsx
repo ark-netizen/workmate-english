@@ -729,7 +729,9 @@ export function IntroPage({
 
       <ReviewsSection />
 
-      <section id="start" className="bg-gradient-to-r from-accent to-accent-2 px-4 py-16 text-center text-white">
+      {/* accent(teal)→accent-2(orange)가 정반대 색이라 그라데이션 중간이 탁한 카키색으로
+          섞여 보였음 — 색 섞임 없이 브랜드 컬러 하나로만 깔끔하게 */}
+      <section id="start" className="bg-accent px-4 py-16 text-center text-white">
         <h2 className="text-2xl font-bold tracking-tight">오늘부터 출근해보세요</h2>
         <p className="mt-2 text-sm text-white/80">로그인 없이 1분이면 시작할 수 있어요.</p>
         <button

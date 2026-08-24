@@ -52,8 +52,8 @@
   --shadow-2xl: 0 30px 60px rgba(20, 20, 20, 0.3);
   --shadow-inner: inset 0 2px 4px rgba(20, 20, 20, 0.08);
 
-  font-family: "Apple SD Gothic Neo", "Malgun Gothic", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial,
-    sans-serif;
+  font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Arial, sans-serif;
 }
 
 /* WorkMate 창(titlebar) 느낌의 상단 네비 + 그 아래 사선 스트라이프 디바이더 */
