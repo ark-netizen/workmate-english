@@ -658,7 +658,14 @@ export function IntroPage({
         <div className="wrap">
           <Reveal className="copy">
             <span className="eyebrow">WORKMATE ENGLISH</span>
-            <h1>영어를 배우는 대신,<br /><em>영어로 출근</em>해 보세요.</h1>
+            <h1>
+              영어를 배우는 대신,
+              <br />
+              <em>
+                영어로 출근<span className="typing-cursor" aria-hidden="true">|</span>
+              </em>
+              해 보세요.
+            </h1>
             <p>메신저와 이메일로 실제 업무를 처리하면, {withSolarHighlight("Solar")}가 관계별 표현과 문법을 첨삭하고 하루의 성장을 업무 리포트로 남겨요.</p>
             <div className="actions">
               <button type="button" onClick={handleTrialClick} disabled={startingTrial} className="primary">{startingTrial ? "체험 준비 중..." : "1분 가상 근무 체험하기"}</button>
