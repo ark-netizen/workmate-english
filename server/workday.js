@@ -202,12 +202,15 @@ export async function startWorkday(userId) {
     )
     const characterByRole = new Map(characters.map((ch) => [ch.role, ch]))
 
-    // 셋 다 한꺼번에 도착하면 시연 중(화면 설명하는 동안) 이메일까지 미리 다 보여버려서 어색하다 —
-    // 동료는 바로, 상사는 1분 30초 뒤, 거래처(이메일)는 3분 뒤로 순차 도착하게 예약해둔다.
-    // 다만 답장을 보내면(WorkdayContext의 자동 진행) 이 타이머를 기다리지 않고 바로 다음 연락이
-    // 오므로, 실제로는 "설명 다 끝나고 답장할 때쯤 딱 다음 게 온다"는 체감 타이밍이 된다
+    // 셋 다 한꺼번에 도착하면(심지어 동료는 즉시 도착이라) 홈 화면 투어로 화면을 설명하는
+    // 도중에도 이미 연락이 와 있어 정신없다 — 동료까지 포함해 셋 다 "예약(scheduled)"
+    // 상태로 시작해서 투어를 다 보기 전엔 아무도 안 보이게 하고, 투어를 마치면(SectionTourGuide
+    // dismiss) 그 순간 동료 연락을 바로 당겨온다. 상사·거래처는 그 뒤로 시차를 두되, 답장을
+    // 보내면(WorkdayContext의 자동 진행) 타이머를 기다리지 않고 바로 다음 연락이 오므로, 실제로는
+    // "투어 끝나면 동료가 오고, 답장할 때마다 다음 사람이 온다"는 체감 타이밍이 된다. scheduled_at
+    // 자체는 투어를 안 끝내거나 오래 걸릴 때를 대비한 최후의 안전장치 시간일 뿐이다.
     const now = Date.now()
-    const STAGGER_MS = { colleague: 0, manager: 90_000, client: 180_000 }
+    const STAGGER_MS = { colleague: 5 * 60_000, manager: 6.5 * 60_000, client: 8 * 60_000 }
     const scheduledAtByRole = Object.fromEntries(
       TRIAL_CHARACTERS.map((c) => [c.role, new Date(now + (STAGGER_MS[c.role] ?? 0)).toISOString()]),
     )
@@ -218,7 +221,7 @@ export async function startWorkday(userId) {
           character_id: characterByRole.get(c.role).id,
           channel: c.channel,
           subject: c.subject || null,
-          status: c.role === 'colleague' ? 'awaiting' : 'scheduled',
+          status: 'scheduled',
           scheduled_at: scheduledAtByRole[c.role],
         })),
       ).select(),
@@ -240,16 +243,15 @@ export async function startWorkday(userId) {
       await sb.from('notification_schedules').insert(
         TRIAL_CHARACTERS.map((c) => {
           const convo = convoByCharacterId.get(characterByRole.get(c.role).id)
-          const isFirst = c.role === 'colleague'
           return {
             workday_id: workday.id,
             conversation_id: convo.id,
             scheduled_at: scheduledAtByRole[c.role],
-            status: isFirst ? 'sent' : 'scheduled',
+            status: 'scheduled',
             title: `${c.name} · ${roleLabel(c.role)}`,
             preview: preview(c.firstMessage),
             route: routeFor(c.channel, convo.id),
-            sent_at: isFirst ? scheduledAtByRole[c.role] : null,
+            sent_at: null,
           }
         }),
       ),

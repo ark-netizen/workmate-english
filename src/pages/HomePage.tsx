@@ -572,7 +572,15 @@ export function HomePage() {
 
       {/* isTrial 확인이 비동기라, 확정되기 전에 마운트하면 SectionTourGuide 내부 localStorage
           체크가 (나중에 바뀔) persist=true 기준으로 먼저 굳어버린다 — 확정된 뒤에만 마운트 */}
-      {isTrial !== null && <SectionTourGuide steps={tourSteps} persist={!isTrial} />}
+      {isTrial !== null && (
+        <SectionTourGuide
+          steps={tourSteps}
+          persist={!isTrial}
+          // 체험판은 동료·상사·거래처 연락이 전부 예약 상태로 시작해서 투어 도중엔 아무도 안
+          // 보이다가, 투어를 다 보거나 닫는 순간 첫 연락(동료)이 바로 도착하게 함
+          onDismiss={isTrial ? () => { deliverNext().catch(() => {}); } : undefined}
+        />
+      )}
 
       <QaControlPanel
         onDeliverNext={handleDeliverNext}

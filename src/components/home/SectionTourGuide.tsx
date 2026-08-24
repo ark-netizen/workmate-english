@@ -56,7 +56,16 @@ function bringToFront(el: HTMLElement) {
 // 섹션을 하나씩 순서대로 테두리로 강조하면서 "여기가 뭐 하는 곳인지"를 카드로 설명해준다.
 // 다음/이전으로 넘기고, 닫으면 localStorage에 남아서 다음 방문부터는 다시 안 뜸 — 단, 체험판은
 // 계정이 매번 새로 시작되는 일회성이라 이 "기억" 자체가 의미 없어서 persist=false로 끈다.
-export function SectionTourGuide({ steps, persist = true }: { steps: TourStep[]; persist?: boolean }) {
+export function SectionTourGuide({
+  steps,
+  persist = true,
+  onDismiss,
+}: {
+  steps: TourStep[];
+  persist?: boolean;
+  /** 투어를 끝까지 보거나 중간에 닫을 때(둘 다) 호출됨 — 체험판에서 "투어 끝나면 첫 연락 도착" 같은 후속 동작에 씀 */
+  onDismiss?: () => void;
+}) {
   const [dismissed, setDismissed] = useState(() => {
     if (!persist) return false;
     try {
@@ -115,6 +124,7 @@ export function SectionTourGuide({ steps, persist = true }: { steps: TourStep[];
 
   const dismiss = () => {
     setDismissed(true);
+    onDismiss?.();
     if (!persist) return;
     try {
       localStorage.setItem(STORAGE_KEY, "1");
