@@ -44,9 +44,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           같은 타이밍에 뜨는 별도 알림 배너는 오히려 정신없어 보여서 끈다 */}
       {!isTrial && <InAppBanner />}
       <SurveyBanner />
-      {/* 채팅/메시지 화면 등 다른 버튼과 겹치는 걸 막기 위해, 떠다니는 진입 버튼은 홈에서만 보이고
-          다른 화면에서는 상단바의 "?" 버튼으로만 열 수 있게 함. 체험 계정은 하단 가이드 바와 겹치므로 아예 숨김 */}
-      <SupportChatWidget open={chatOpen} onOpenChange={setChatOpen} showTrigger={pathname === "/" && !isTrial} />
+      {/* 일반 계정과 체험 계정 모두 홈에서는 동일한 떠다니는 챗봇 진입 버튼을 보여주고,
+          다른 화면에서는 상단바의 "?" 버튼으로 챗봇을 열 수 있게 한다 */}
+      <SupportChatWidget open={chatOpen} onOpenChange={setChatOpen} showTrigger={pathname === "/"} />
     </div>
   );
 }
