@@ -82,13 +82,13 @@ function ToneExample() {
     { name: "Liam Carter", tag: "거래처 · 보수적", line: "We would kindly request your review by 3:00 PM." },
   ];
   return (
-    <div className="space-y-3 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+    <div className="space-y-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
       {rows.map((r) => (
         <div key={r.name}>
-          <p className="mb-1 text-xs font-medium text-foreground/40">
-            {r.name} <span className="text-purple-600">· {r.tag}</span>
+          <p className="mb-1.5 text-sm font-medium text-foreground/50">
+            {r.name} <span className="text-foreground/40">· {r.tag}</span>
           </p>
-          <div className="inline-block max-w-full rounded-2xl bg-black/[.04] px-4 py-2.5 text-sm text-foreground/80">
+          <div className="inline-block max-w-full rounded-2xl bg-black/[.04] px-4 py-3 text-base text-foreground/80">
             {r.line}
           </div>
         </div>
@@ -105,33 +105,33 @@ function ScenarioExample() {
     { initial: "LC", name: "Liam", role: "거래처", line: "Please confirm the integration timeline." },
   ];
   return (
-    <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
-      <p className="mb-3 text-xs font-medium text-foreground/40">온보딩 입력</p>
+    <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
+      <p className="mb-3 text-sm font-medium text-foreground/50">온보딩 입력</p>
       <div className="mb-4 flex flex-wrap gap-2">
-        <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700">
+        <span className="rounded-full border border-border bg-surface px-3.5 py-2 text-base font-medium text-foreground/70">
           IT/소프트웨어
         </span>
-        <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700">
+        <span className="rounded-full border border-border bg-surface px-3.5 py-2 text-base font-medium text-foreground/70">
           서비스 기획자
         </span>
       </div>
-      <div className="flex items-center gap-2 text-blue-300">
-        <span className="h-px flex-1 bg-blue-100" />
-        <span className="text-xs">자동 생성</span>
-        <span className="h-px flex-1 bg-blue-100" />
+      <div className="flex items-center gap-2 text-foreground/30">
+        <span className="h-px flex-1 bg-border" />
+        <span className="text-sm">자동 생성</span>
+        <span className="h-px flex-1 bg-border" />
       </div>
-      <p className="mt-4 mb-2 text-xs font-medium text-foreground/40">오늘의 연락 (3)</p>
-      <div className="space-y-2">
+      <p className="mt-4 mb-2 text-sm font-medium text-foreground/50">오늘의 연락 (3)</p>
+      <div className="space-y-2.5">
         {contacts.map((c) => (
-          <div key={c.name} className="flex items-center gap-3 rounded-xl border border-border bg-background px-3 py-2">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-700">
+          <div key={c.name} className="flex items-center gap-3 rounded-xl border border-border bg-background px-3.5 py-2.5">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-base font-semibold text-foreground/70">
               {c.initial}
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium">
+              <p className="text-base font-medium">
                 {c.name} <span className="font-normal text-foreground/40">· {c.role}</span>
               </p>
-              <p className="truncate text-xs text-foreground/50">{c.line}</p>
+              <p className="truncate text-sm text-foreground/50">{c.line}</p>
             </div>
           </div>
         ))}
@@ -143,19 +143,19 @@ function ScenarioExample() {
 // 기능 #3 시각자료 — 실제 브라우저 알림처럼
 function NotificationExample() {
   return (
-    <div className="rounded-2xl bg-white p-5 shadow-lg ring-1 ring-black/5">
+    <div className="rounded-2xl bg-white p-6 shadow-lg ring-1 ring-black/5">
       <div className="flex items-start gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-pink-100 text-lg">🔔</span>
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-foreground/10 text-xl">🔔</span>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold">Ellen · 상사</p>
-          <p className="mt-0.5 text-sm text-foreground/60">Could you please review this by 3pm today?</p>
+          <p className="text-base font-semibold">Ellen · 상사</p>
+          <p className="mt-0.5 text-base text-foreground/60">Could you please review this by 3pm today?</p>
         </div>
       </div>
       <div className="mt-4 flex gap-2 border-t border-border pt-4">
-        <span className="flex-1 rounded-full bg-pink-600 px-3 py-2 text-center text-sm font-medium text-white">
+        <span className="flex-1 rounded-full bg-accent px-3 py-2.5 text-center text-base font-medium text-white">
           메시지 작성하기
         </span>
-        <span className="flex-1 rounded-full bg-pink-50 px-3 py-2 text-center text-sm font-medium text-pink-700">
+        <span className="flex-1 rounded-full bg-foreground/5 px-3 py-2.5 text-center text-base font-medium text-foreground/60">
           외근 중 · 30분 후
         </span>
       </div>
@@ -166,21 +166,21 @@ function NotificationExample() {
 // 기능 #4 시각자료 — 실제 리포트 화면 스탯 카드
 function ReportExample() {
   return (
-    <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
-      <p className="mb-3 text-xs font-medium text-foreground/40">이번 주 업무일지</p>
+    <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
+      <p className="mb-3 text-sm font-medium text-foreground/50">이번 주 업무일지</p>
       <div className="grid grid-cols-3 gap-3">
         {[
           { label: "잘한 점", value: "3건" },
           { label: "교정 내용", value: "2건" },
           { label: "필수 암기", value: "4건" },
         ].map((s) => (
-          <div key={s.label} className="rounded-xl bg-indigo-50 p-3 text-center">
-            <p className="text-xs text-indigo-600/70">{s.label}</p>
-            <p className="mt-1 text-lg font-bold text-indigo-700">{s.value}</p>
+          <div key={s.label} className="rounded-xl bg-foreground/5 p-3.5 text-center">
+            <p className="text-sm text-foreground/50">{s.label}</p>
+            <p className="mt-1 text-xl font-bold text-foreground/80">{s.value}</p>
           </div>
         ))}
       </div>
-      <p className="mt-4 text-sm leading-relaxed text-foreground/60">
+      <p className="mt-4 text-base leading-relaxed text-foreground/60">
         "이번 주는 이메일 격식 표현이 눈에 띄게 자연스러워졌어요."
       </p>
     </div>
@@ -190,19 +190,19 @@ function ReportExample() {
 // 기능 #5 시각자료 — "고함항아리": 유저가 먼저 말 걸고, 동료가 위로+표현을 함께 건네는 캐주얼 채팅
 function VentExample() {
   return (
-    <div className="space-y-3 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
-      <p className="mb-1 flex items-center gap-1.5 text-xs font-medium text-foreground/40">
-        🫙 고함항아리 <span className="text-violet-600">· 업무 스트레스 풀기</span>
+    <div className="space-y-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
+      <p className="mb-1 flex items-center gap-1.5 text-sm font-medium text-foreground/50">
+        🫙 고함항아리 <span className="text-foreground/40">· 업무 스트레스 풀기</span>
       </p>
       <div className="flex justify-end">
-        <div className="max-w-[85%] rounded-2xl bg-accent px-4 py-2.5 text-sm text-white">
+        <div className="max-w-[85%] rounded-2xl bg-accent px-4 py-3 text-base text-white">
           Ugh, today was so busy... 오늘 진짜 바빴어
         </div>
       </div>
       <div className="flex justify-start">
-        <div className="max-w-[85%] space-y-1 rounded-2xl bg-violet-50 px-4 py-2.5 text-sm text-foreground/80">
+        <div className="max-w-[85%] space-y-1.5 rounded-2xl bg-foreground/5 px-4 py-3 text-base text-foreground/80">
           <p>Same here! 😫 You've earned your rest tonight.</p>
-          <p className="text-xs text-violet-600">
+          <p className="text-sm text-foreground/50">
             (P.S. &apos;Swamped&apos; = 일에 파묻히다 — 오늘 이거 딱이네!)
           </p>
         </div>
