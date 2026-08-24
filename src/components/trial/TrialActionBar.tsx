@@ -29,11 +29,13 @@ export function TrialActionBar({
   const barRef = useRef<HTMLDivElement>(null);
   const [showNudge, setShowNudge] = useState(false);
   // 처음 뜰 때 자리에 이미 있던 것처럼 뚝 나타나면 어색해서, 마운트 직후 살짝 옆에서
-  // 밀려들어오며 페이드인 되게 함(라우트 이동으로 다시 마운트될 때도 같은 효과)
+  // 밀려들어오며 페이드인 되게 함(라우트 이동으로 다시 마운트될 때도 같은 효과). 온보딩
+  // 화면에서는 사원증이 먼저 자리 잡고(1) 그다음 이 카드가 따라오는(2) 순서로 보여야 하는데,
+  // 둘 다 마운트 즉시 시작하면 이 카드 쪽 트랜지션이 더 짧아 먼저 끝나 보였다 — 살짝 늦게 시작한다
   const [entered, setEntered] = useState(false);
   useEffect(() => {
-    const raf = requestAnimationFrame(() => setEntered(true));
-    return () => cancelAnimationFrame(raf);
+    const timer = setTimeout(() => setEntered(true), 300);
+    return () => clearTimeout(timer);
   }, []);
 
   // 진행 버튼이 있는 동안(=아직 눌러야 할 액션이 남아있는 동안) 카드 바깥을 클릭/입력하려 하면

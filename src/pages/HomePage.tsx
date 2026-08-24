@@ -365,7 +365,9 @@ export function HomePage() {
   // 붙는 말풍선 하나에 8개 항목 설명을 전부 한 번에 목록으로 보여주고 끝낸다(클릭 1번).
   // 데스크톱 사이드바/모바일 하단바는 반응형으로 항상 한쪽만 보이므로, 후보를 둘 다 넣어두면
   // 실제로 보이는 쪽만 걸러써준다
-  const navTourItems = navItems.map((item) => ({ label: item.labelKo, desc: item.desc }));
+  // 메뉴 자체엔 영어 라벨(Home/Messenger/...)이 보이는데 설명은 한글 라벨로 적으면 대조해서
+  // 읽기 어려우니, 실제 메뉴에 보이는 것과 같은 영어 라벨을 그대로 써서 바로 매칭되게 한다
+  const navTourItems = navItems.map((item) => ({ label: item.label, desc: item.desc }));
   const navTourSteps: TourStep[] = [
     {
       selector: "#tour-nav-desktop",
