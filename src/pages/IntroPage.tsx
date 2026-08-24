@@ -647,12 +647,12 @@ export function IntroPage({
               <div className="mailcard">
                 <div className="mailhead"><b>오늘의 업무 연락</b><span className="live">SOLAR LIVE</span></div>
                 {[
-                  { rank:"사원", name:"Jake", role:"동료", line:"Can you check the new build by 3? 🙏", tone:"캐주얼" },
-                  { rank:"과장", name:"Ellen", role:"상사", line:"Could you please review the proposal?", tone:"격식" },
-                  { rank:"부장", name:"Liam", role:"거래처", line:"We would kindly request your confirmation.", tone:"보수적" },
+                  { initial:"J", rank:"사원", name:"Jake", role:"동료", line:"Can you check the new build by 3? 🙏", tone:"캐주얼" },
+                  { initial:"E", rank:"과장", name:"Ellen", role:"상사", line:"Could you please review the proposal?", tone:"격식" },
+                  { initial:"LC", rank:"부장", name:"Liam", role:"거래처", line:"We would kindly request your confirmation.", tone:"보수적" },
                 ].map((person) => (
                   <div className="person" key={person.name}>
-                    <span className="avatar"><RankAvatar rank={person.rank} /></span>
+                    <span className="avatar">{businessMode ? <RankAvatar rank={person.rank} /> : <span className="business-initial">{person.initial}</span>}</span>
                     <div><strong>{person.name} · {person.role}</strong><small>{person.line}</small></div>
                     <span className="tone">{person.tone}</span>
                   </div>
@@ -742,6 +742,7 @@ export function IntroPage({
     </div>
   );
 }
+
 
 
 

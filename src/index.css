@@ -575,3 +575,9 @@ body {
   .intro-game .hero .tone{margin-left:4px!important}
 }
 /* END PIXEL-OFFICE-INTRINSIC-RESPONSIVE-V9 */
+
+/* BUSINESS-HERO-INITIALS-V10 */
+.intro-business .hero .avatar{width:42px!important;height:42px!important;flex:0 0 42px!important;border:0!important;border-radius:50%!important;overflow:hidden!important;background:#e7efff!important;box-shadow:none!important}
+.intro-business .hero .business-initial{display:grid;width:100%;height:100%;place-items:center;color:#1a56ff;font-size:14px;font-weight:900}
+.intro-game .hero .business-initial{display:none}
+/* END BUSINESS-HERO-INITIALS-V10 */
