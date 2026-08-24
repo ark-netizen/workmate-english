@@ -327,3 +327,55 @@ body {
   .intro-game .intro-preview-window { margin-top: 8px; }
 }
 /* END INTRO-VISUAL-REDESIGN-V1 */
+/* INTRO-PIXEL-OFFICE-V2 */
+.intro-game .intro-hero {
+  min-height: 820px !important;
+  padding-bottom: 300px !important;
+  background: linear-gradient(180deg,#9eddf6 0%,#d8f2fb 52%,#eaf5dc 82%,#eaf5dc 100%) !important;
+}
+.intro-game .intro-hero::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: auto 0 0;
+  height: 410px;
+  background: url("/intro/workmate-pixel-office-strip.png") center bottom / 100% auto no-repeat;
+  opacity: 1;
+  image-rendering: pixelated;
+}
+.intro-game .intro-hero::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 16% 14%,rgba(255,255,255,.82) 0 28px,transparent 29px),
+    radial-gradient(circle at 85% 18%,rgba(255,255,255,.76) 0 24px,transparent 25px),
+    linear-gradient(180deg,transparent 0 58%,rgba(234,245,220,.08) 76%,#eaf5dc 100%);
+}
+.intro-game .intro-preview { max-width: 480px; padding-top: 36px; }
+.intro-game .intro-preview::before {
+  content: "GAME MODE  |  DAY 01";
+  position: absolute;
+  top: -8px;
+  right: 8px;
+  z-index: 3;
+  border: 2px solid #244f3d;
+  border-radius: 5px;
+  background: #ffe28a;
+  padding: 8px 11px;
+  color: #173d35;
+  font-size: 11px;
+  font-weight: 800;
+  box-shadow: 3px 3px 0 #244f3d;
+}
+.intro-game .intro-preview-window { position: relative; }
+.intro-game .intro-preview-window > p::before { content: "TODAY'S QUEST (3)  ·  "; color: #ffe28a; }
+.intro-game .intro-preview-window > p::after { content: "  —  □  ×"; float: right; color: #fff; letter-spacing: .12em; }
+@media (max-width: 767px) {
+  .intro-game .intro-hero { padding-bottom: 210px !important; }
+  .intro-game .intro-hero::before { height: 270px; background-size: auto 250px; }
+  .intro-game .intro-preview { padding-top: 42px; }
+}
+/* END INTRO-PIXEL-OFFICE-V2 */
