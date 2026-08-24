@@ -510,3 +510,41 @@ body {
 /* END GAME-NAV-BOTTOM-LINE-V7 */
 
 
+
+/* RESPONSIVE-FEATURES-CANVAS-V8 */
+.intro-game .intro-game-features{border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;padding:10px 0 24px!important;overflow:visible!important}
+.intro-game .intro-game-features>.pointer-events-none,
+.intro-game .intro-game-features>.absolute.inset-x-0{display:none!important}
+.intro-game .intro-game-features>.relative{width:min(100%,900px)!important;max-width:900px!important;padding:0 clamp(0px,1.5vw,18px)}
+.intro-game .intro-game-feature-window{width:100%!important}
+.intro-page .hero{min-height:clamp(620px,58vw,820px)!important}
+.intro-page .hero .wrap{width:min(100%,1180px)!important;gap:clamp(24px,3vw,64px)!important}
+.intro-game .hero .wrap{min-height:clamp(560px,52vw,735px)!important;padding-bottom:clamp(190px,19vw,235px)!important}
+.intro-page .hero .copy h1{font-size:clamp(34px,3.35vw,48px)!important}
+.intro-game .hero .copy h1{font-size:clamp(34px,3.2vw,46px)!important}
+.intro-game .hero:before{height:clamp(250px,25vw,360px)!important;bottom:clamp(145px,13vw,185px)!important;background-size:100% auto!important}
+.intro-page .hero .mailcard{width:100%;max-width:100%}
+@media(max-width:1100px) and (min-width:851px){
+  .intro-page .hero{padding-right:clamp(18px,3vw,34px)!important;padding-left:clamp(18px,3vw,34px)!important}
+  .intro-game .hero .features .feat{padding:8px!important}
+  .intro-game .hero .feat b{font-size:8px!important}
+  .intro-game .hero .feat span{font-size:9px!important}
+}
+@media(max-width:850px){
+  .intro-page .hero{min-height:auto!important}
+  .intro-game .hero .wrap{min-height:auto!important;padding-bottom:0!important}
+  .intro-game .hero:before{bottom:0!important;height:45%!important;background-size:cover!important;opacity:.28!important}
+  .intro-game .hero .features{position:relative!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .intro-page .hero .mailcard{overflow:hidden!important}
+  .intro-game .intro-game-features>.relative{padding:0 4px}
+}
+@media(max-width:560px){
+  .intro-page .hero{padding:34px 16px 38px!important}
+  .intro-page .hero .copy h1,.intro-game .hero .copy h1{font-size:clamp(29px,9vw,36px)!important}
+  .intro-page .hero .copy p{font-size:14px!important}
+  .intro-page .hero .actions{flex-direction:column}
+  .intro-page .hero .actions button{width:100%}
+  .intro-game .hero .features{grid-template-columns:1fr!important}
+  .intro-game .intro-game-feature-window>div:last-child{padding:18px!important}
+}
+/* END RESPONSIVE-FEATURES-CANVAS-V8 */
