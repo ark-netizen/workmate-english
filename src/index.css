@@ -503,3 +503,8 @@ body {
 .intro-process-heading p{margin:12px 0 0;color:#647069;font-size:14px}
 .intro-business .intro-process-heading>span{border:0;border-radius:999px;background:#eef3ff;box-shadow:none;color:#1855c9}
 /* END FINAL-MOCKUP-CORRECTIONS-V6 */
+
+/* GAME-NAV-BOTTOM-LINE-V7 */
+.intro-game .intro-nav{border-bottom:3px solid #28352f!important;box-shadow:none!important}
+.intro-business .intro-nav{border-bottom:1px solid #dfe5ef!important}
+/* END GAME-NAV-BOTTOM-LINE-V7 */
