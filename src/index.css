@@ -334,9 +334,12 @@ body {
   gap:clamp(36px,4vw,64px);
 }
 .intro-page .hero .copy{opacity:1;text-align:left}
+.intro-page .solar-mark{background-image:linear-gradient(180deg,transparent 60%,#ffe28a 60%,#ffe28a 88%,transparent 88%);padding:0 1px}
 .intro-page .hero .eyebrow{display:inline-block;border:1px solid #bed0ff;background:#fff;color:#1a56ff;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:900;letter-spacing:.15em}
 .intro-page .hero .copy h1{margin:24px 0 18px;color:#11213a;font-size:clamp(44px,3.6vw,60px);font-weight:800;line-height:1.12;letter-spacing:-.045em}
-.intro-page .hero .copy h1 em{color:#1a56ff;font-style:normal}
+.intro-page .hero .copy h1 em{color:#1a56ff;font-style:normal;animation:intro-headline-blink 2.4s ease-in-out infinite}
+@keyframes intro-headline-blink{0%,45%,100%{opacity:1}55%,90%{opacity:.35}}
+@media(prefers-reduced-motion:reduce){.intro-page .hero .copy h1 em{animation:none}}
 .intro-page .hero .copy p{margin:0;color:#657187;font-size:18px;line-height:1.75}
 .intro-page .hero .actions{display:flex;gap:13px;margin-top:30px}
 .intro-page .hero .actions button{padding:15px 22px;border-radius:999px;font-family:inherit;font-size:15px;font-weight:900}
@@ -362,6 +365,7 @@ body {
 .intro-business .hero>.hero-system .feat{padding:18px 16px;border:1px solid #dfe5ef;border-radius:16px;background:#fff;box-shadow:0 12px 30px rgba(71,98,142,.08)}
 .intro-business .hero>.hero-system .feat b{color:#1a56ff;font-size:15px;font-weight:900;letter-spacing:.03em}
 .intro-business .hero>.hero-system .feat span{display:block;margin-top:7px;color:#5b6b85;font-size:14px;line-height:1.55}
+.intro-business .hero>.hero-system .hero-system-footer{grid-column:1/-1;margin-top:4px;padding-top:14px;border-top:1px solid #dfe5ef;text-align:center;color:#5b6b85;font-size:13px;font-weight:700}
 .intro-business .hero .avatar{display:grid;width:42px;height:42px;flex:0 0 42px;place-items:center;overflow:hidden;border:0;border-radius:50%;background:#e7efff;box-shadow:none}
 .intro-business .hero .business-initial{display:grid;width:100%;height:100%;place-items:center;color:#1a56ff;font-size:15px;font-weight:900}
 
@@ -376,7 +380,7 @@ body {
 .intro-game .hero .secondary{border:2px solid #28352f;border-radius:4px;background:#fffaf0;color:#28352f;box-shadow:3px 3px 0 #28352f}
 .intro-game .hero .mailcard{padding:0;overflow:hidden;border:3px solid #28352f;border-radius:5px;background:#fff9e9;box-shadow:7px 7px 0 rgba(40,53,47,.33)}
 .intro-game .hero .mailhead{padding:10px 13px;border-bottom:3px solid #28352f;background:#2f795d;color:#fff}
-.intro-game .hero .mailhead b:before{content:"!TODAY'S QUEST · ";color:#ffe28a}
+.intro-game .hero .mailhead b:before{content:"TODAY'S QUEST · ";color:#ffe28a}
 .intro-game .hero .mailhead .live{border:2px solid #28352f;border-radius:2px;background:#ffe28a;color:#28352f}
 .intro-game .hero .person{margin:0 11px;padding:11px 3px;border-bottom:2px solid #d8cba9}
 .intro-game .hero .avatar{width:52px;height:60px;flex:0 0 52px;overflow:visible;border:2px solid #28352f;border-radius:3px;background:#bce5dc;box-shadow:2px 2px 0 #28352f}
@@ -399,7 +403,7 @@ body {
 .intro-game .hero>.hero-system .feat{min-height:104px;padding:15px 14px;border:0;border-right:1px solid #cdbf9f;border-radius:0;background:#fff9e9;box-shadow:none}
 .intro-game .hero>.hero-system .feat b{color:#1f6d55;font-size:18px;font-weight:900}
 .intro-game .hero>.hero-system .feat span{color:#4d554f;font-size:16px;line-height:1.55;font-weight:700}
-.intro-game .hero>.hero-system:after{content:"POWERED BY SOLAR AI  ·  관계와 직무를 이해하는 실무 영어 시뮬레이션";grid-column:1/-1;padding:13px 14px;border-top:2px solid #28352f;background:#eaf5df;color:#24483b;font-size:17px;font-weight:900}
+.intro-game .hero>.hero-system .hero-system-footer{grid-column:1/-1;padding:13px 14px;border-top:2px solid #28352f;background:#eaf5df;color:#24483b;font-size:17px;font-weight:900}
 
 @media(max-width:900px){
   .intro-page .hero{padding:48px 20px 36px}

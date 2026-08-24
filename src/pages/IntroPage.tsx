@@ -486,10 +486,29 @@ const heroSystemItems = [
   ["WORK REPORT", "퇴근 리포트부터 매주·매달 성장 흐름까지 정리"],
 ] as const;
 
+// "Solar"/"SOLAR"가 들어간 문구에서 그 부분만 형광펜 표시로 강조
+function withSolarHighlight(text: string) {
+  return text.split(/(solar)/gi).map((part, i) =>
+    /^solar$/i.test(part) ? (
+      <span className="solar-mark" key={i}>
+        {part}
+      </span>
+    ) : (
+      part
+    ),
+  );
+}
+
 function HeroSystem() {
   return (
     <div className="features hero-system">
-      {heroSystemItems.map(([title, body]) => <div className="feat" key={title}><b>{title}</b><span>{body}</span></div>)}
+      {heroSystemItems.map(([title, body]) => (
+        <div className="feat" key={title}>
+          <b>{withSolarHighlight(title)}</b>
+          <span>{body}</span>
+        </div>
+      ))}
+      <div className="hero-system-footer">{withSolarHighlight("POWERED BY SOLAR AI  ·  관계와 직무를 이해하는 실무 영어 시뮬레이션")}</div>
     </div>
   );
 }
@@ -640,7 +659,7 @@ export function IntroPage({
           <Reveal className="copy">
             <span className="eyebrow">WORKMATE ENGLISH</span>
             <h1>영어를 배우는 대신,<br /><em>영어로 출근</em>해 보세요.</h1>
-            <p>메신저와 이메일로 실제 업무를 처리하면, Solar가 관계별 표현과 문법을 첨삭하고 하루의 성장을 업무 리포트로 남겨요.</p>
+            <p>메신저와 이메일로 실제 업무를 처리하면, {withSolarHighlight("Solar")}가 관계별 표현과 문법을 첨삭하고 하루의 성장을 업무 리포트로 남겨요.</p>
             <div className="actions">
               <button type="button" onClick={handleTrialClick} disabled={startingTrial} className="primary">{startingTrial ? "체험 준비 중..." : "1분 가상 근무 체험하기"}</button>
               <button type="button" onClick={() => scrollToSection("features")} className="secondary">핵심 기능 보기 ↓</button>
@@ -665,7 +684,14 @@ export function IntroPage({
             </div>
           </Reveal>
         </div>
-        <img className="intro-pixel-office-bg" src="/intro/workmate-pixel-office-strip.png" alt="" aria-hidden="true" />
+        <img
+          className="intro-pixel-office-bg"
+          src="/intro/workmate-pixel-office-strip.png"
+          alt=""
+          aria-hidden="true"
+          width={1913}
+          height={344}
+        />
         <HeroSystem />
       </section>
       <section id="features" className="intro-features-section border-t border-border bg-surface px-4 py-16 md:px-8">
@@ -689,7 +715,7 @@ export function IntroPage({
         <div className="intro-trial-frame">
           <div className="intro-trial-top"><b>DAY 01 · 09:00 AM</b><span>QUEST PROGRESS</span><i><u /></i><strong>2 / 5</strong></div>
           <div className="intro-trial-flow">
-            {[["새 연락 확인","메신저·이메일 도착"],["관계 파악","동료·상사·거래처"],["힌트 활용","단어 → 뼈대 → 답안"],["답장과 첨삭","Solar 즉시 피드백"],["업무 완료","업무 리포트 확인"]].map(([title, copy], i) => <div key={title}><em>{i + 1}</em><b>{title}</b><span>{copy}</span></div>)}
+            {[["새 연락 확인","메신저·이메일 도착"],["관계 파악","동료·상사·거래처"],["힌트 활용","단어 → 뼈대 → 답안"],["답장과 첨삭","Solar 즉시 피드백"],["업무 완료","업무 리포트 확인"]].map(([title, copy], i) => <div key={title}><em>{i + 1}</em><b>{title}</b><span>{withSolarHighlight(copy)}</span></div>)}
           </div>
           <button type="button" onClick={handleTrialClick} disabled={startingTrial} className="intro-trial-main">{startingTrial ? "체험 준비 중..." : "무료로 1분 체험하기"}</button>
         </div>
