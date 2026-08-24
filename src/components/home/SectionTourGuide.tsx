@@ -222,7 +222,7 @@ export function SectionTourGuide({
               곧 다음 화면으로 이동해요...
             </p>
           ) : (
-            <div className="flex h-full items-center justify-end gap-1.5 px-3">
+            <div className="flex h-full items-center justify-between gap-1.5 px-3">
               <button
                 type="button"
                 onClick={() => setIndex((i) => Math.max(0, i - 1))}
@@ -347,7 +347,7 @@ export function SectionTourGuide({
               ))}
             </ul>
           )}
-          <div className="mt-3 flex items-center justify-end gap-1.5">
+          <div className="mt-3 flex items-center justify-between gap-1.5">
             <button
               type="button"
               onClick={() => setIndex((i) => Math.max(0, i - 1))}
