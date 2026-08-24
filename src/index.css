@@ -613,3 +613,32 @@ body {
   background-color:#ecefed!important;
 }
 /* END FEATURE-CARD-NEUTRAL-CONTENT-V11 */
+
+/* FEATURE-CARD-NEUTRAL-CONTENT-FIX-V12 */
+.intro-game-feature-window .intro-game-feature-visual,
+.intro-business-feature-card>div:last-child{
+  filter:none!important;
+}
+.intro-game-feature-window .intro-game-feature-visual [class*="bg-"],
+.intro-game-feature-window>div:last-child>div:first-child [class*="bg-"]{
+  background-color:#fffaf0!important;
+}
+.intro-business-feature-card [class*="bg-"]{
+  background-color:#fff!important;
+}
+.intro-game-feature-window .intro-game-feature-visual *,
+.intro-business-feature-card>div:last-child *,
+.intro-game-feature-window>div:last-child>div:first-child [class*="text-"],
+.intro-business-feature-card>div:first-child [class*="text-"]{
+  color:#303633!important;
+}
+.intro-game-feature-window .intro-game-feature-visual svg,
+.intro-business-feature-card svg{
+  color:#59605c!important;
+  stroke:#59605c!important;
+}
+.intro-game-feature-window .intro-game-feature-visual [class*="border-"],
+.intro-business-feature-card [class*="border-"]{
+  border-color:#c9cecb!important;
+}
+/* END FEATURE-CARD-NEUTRAL-CONTENT-FIX-V12 */
