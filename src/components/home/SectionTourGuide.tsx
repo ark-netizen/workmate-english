@@ -11,9 +11,11 @@ export interface TourStep {
   selector: string;
   /** 있으면 "다음" 대신 이 버튼을 보여주고, 누르면 onClick 실행 후 투어를 닫는다(예: "동료에게 가기") */
   cta?: { label: string; onClick: () => void };
-  /** 있으면 고정된 카드 대신, 강조된 요소 바로 옆(right)이나 위(top)에 작은 말풍선으로 설명을 띄운다
-   *  — 메뉴 항목처럼 "이게 뭔지"가 그 항목 자체와 붙어 있어야 이해되는 경우에 씀 */
+  /** 있으면 고정된 카드 대신, 강조된 요소 바로 옆(right)이나 위(top)에 말풍선으로 설명을 띄운다
+   *  — 메뉴처럼 "이게 뭔지"가 그 요소 자체와 붙어 있어야 이해되는 경우에 씀 */
   anchor?: "right" | "top";
+  /** 메뉴처럼 강조 영역 안에 항목이 여러 개일 때, 하나씩 넘기지 않고 전부 한 번에 목록으로 보여줌 */
+  items?: { label: string; desc: string }[];
 }
 
 // ring-inset을 썼더니, 프로필 카드처럼 안쪽에 배경이 꽉 찬 자식 요소가 있는 경우 그 자식의
@@ -22,8 +24,8 @@ export interface TourStep {
 // 쓰면 자식에게 덮일 일도 없고, 뷰포트 가장자리에서도 2px 정도는 거의 안 잘려 보인다.
 const HIGHLIGHT_CLASSES = ["ring-2", "ring-accent", "rounded-xl"];
 
-const ANCHOR_WIDTH = 224; // 앵커 말풍선 너비(w-56) — 화면 밖으로 안 나가게 클램프할 때 사용
-const ANCHOR_HEIGHT_GUESS = 130; // 실제 렌더 전 높이를 모르니, 클램프용으로 넉넉히 잡은 예상치
+const ANCHOR_WIDTH = 272; // 앵커 말풍선 너비(w-68) — 메뉴 항목 목록도 한 번에 담기게 넉넉히
+const ANCHOR_HEIGHT_GUESS = 260; // 실제 렌더 전 높이를 모르니, 클램프용으로 넉넉히 잡은 예상치(항목 목록 포함)
 
 function isVisible(el: HTMLElement) {
   return el.offsetParent !== null;
@@ -143,7 +145,7 @@ export function SectionTourGuide({ steps, persist = true }: { steps: TourStep[];
   }
 
   const cardClassName = anchor
-    ? "fixed z-30 w-56 rounded-xl border border-accent/30 bg-surface p-3 shadow-xl transition-[top,left,bottom] duration-200 ease-out"
+    ? "fixed z-30 w-[17rem] max-w-[calc(100vw-1rem)] rounded-xl border border-accent/30 bg-surface p-3 shadow-xl transition-[top,left,bottom] duration-200 ease-out"
     : "fixed inset-x-4 top-1/2 z-30 mx-auto max-w-sm -translate-y-1/2 rounded-xl border border-accent/30 bg-surface p-4 shadow-xl md:inset-x-auto md:right-6 md:w-80";
 
   return (
@@ -162,6 +164,16 @@ export function SectionTourGuide({ steps, persist = true }: { steps: TourStep[];
         </button>
       </div>
       <p className="mt-2 text-sm text-foreground/80">{current.step.text}</p>
+      {current.step.items && (
+        <ul className="mt-2.5 max-h-52 space-y-1.5 overflow-y-auto border-t border-border pt-2.5">
+          {current.step.items.map((item) => (
+            <li key={item.label} className="flex items-baseline gap-2 text-xs">
+              <span className="shrink-0 font-medium text-foreground/70">{item.label}</span>
+              <span className="text-foreground/50">{item.desc}</span>
+            </li>
+          ))}
+        </ul>
+      )}
       <div className="mt-3 flex items-center justify-end gap-1.5">
         <button
           type="button"

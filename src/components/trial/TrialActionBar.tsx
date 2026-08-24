@@ -16,7 +16,6 @@ export function TrialActionBar({
   primaryDisabled,
   onEnd,
   endPrimary,
-  stepNumber,
 }: {
   message: string;
   dotsTotal?: number;
@@ -26,8 +25,6 @@ export function TrialActionBar({
   primaryDisabled?: boolean;
   onEnd: () => void;
   endPrimary?: boolean;
-  /** 있으면 카드 좌상단에 작은 순번 배지를 붙임(예: 온보딩에서 "사원증(1) → 이 카드(2)" 흐름 안내) */
-  stepNumber?: number;
 }) {
   const barRef = useRef<HTMLDivElement>(null);
   const [showNudge, setShowNudge] = useState(false);
@@ -64,11 +61,6 @@ export function TrialActionBar({
         entered ? "translate-x-0 opacity-100" : "translate-x-6 opacity-0"
       }`}
     >
-      {stepNumber != null && (
-        <span className="absolute -left-3 -top-3 flex size-7 items-center justify-center rounded-full bg-accent text-sm font-bold text-white shadow-md">
-          {stepNumber}
-        </span>
-      )}
       {showNudge && (
         <div className="absolute inset-x-0 -top-10 flex justify-center px-4">
           <div className="animate-bounce rounded-full bg-accent px-4 py-2 text-xs font-medium text-white shadow-lg">

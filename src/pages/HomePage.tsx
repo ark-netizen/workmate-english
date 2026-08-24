@@ -361,32 +361,30 @@ export function HomePage() {
     }
   };
 
-  // 먼저 메뉴 전체를 사각 테두리로 한 번 짚어주며 "여기가 메뉴 영역이에요"를 보여준 다음(개요),
-  // 다음을 누르면 그 개요 설명은 사라지고 항목 하나하나를 옆에 붙는 말풍선으로 순서대로 짚어준다.
+  // 항목을 하나씩 클릭해서 넘기게 했더니 "누가 그걸 다 누르고 앉아있냐"는 피드백 — 메뉴 옆에
+  // 붙는 말풍선 하나에 8개 항목 설명을 전부 한 번에 목록으로 보여주고 끝낸다(클릭 1번).
   // 데스크톱 사이드바/모바일 하단바는 반응형으로 항상 한쪽만 보이므로, 후보를 둘 다 넣어두면
   // 실제로 보이는 쪽만 걸러써준다
-  const navOverviewSteps: TourStep[] = [
-    { selector: "#tour-nav-desktop", title: "메뉴", text: "메뉴에서 볼 수 있는 기능들이에요." },
-    { selector: "#tour-nav-mobile", title: "메뉴", text: "메뉴에서 볼 수 있는 기능들이에요." },
+  const navTourItems = navItems.map((item) => ({ label: item.labelKo, desc: item.desc }));
+  const navTourSteps: TourStep[] = [
+    {
+      selector: "#tour-nav-desktop",
+      title: "메뉴",
+      text: "메뉴에서 볼 수 있는 기능들이에요.",
+      items: navTourItems,
+      anchor: "right",
+    },
+    {
+      selector: "#tour-nav-mobile",
+      title: "메뉴",
+      text: "메뉴에서 볼 수 있는 기능들이에요.",
+      items: navTourItems,
+      anchor: "top",
+    },
   ];
-  const navItemSteps: TourStep[] = navItems.flatMap((item) => [
-    {
-      selector: `#tour-nav-desktop [data-tour-navitem="${item.href}"]`,
-      title: item.labelKo,
-      text: item.desc,
-      anchor: "right" as const,
-    },
-    {
-      selector: `#tour-nav-mobile [data-tour-navitem="${item.href}"]`,
-      title: item.labelKo,
-      text: item.desc,
-      anchor: "top" as const,
-    },
-  ]);
 
   const tourSteps: TourStep[] = [
-    ...navOverviewSteps,
-    ...navItemSteps,
+    ...navTourSteps,
     {
       selector: "#tour-profile",
       title: "프로필 · 근무시간",

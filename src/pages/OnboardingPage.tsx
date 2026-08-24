@@ -299,11 +299,7 @@ export function OnboardingPage() {
           {/* sm: 이상에서는 gap을 컨테이너에 주지 않고 각 항목의 좌측 여백으로 개별 부여한다 —
               접힌(0폭) 항목도 flex gap은 그대로 차지해서, 카드만 있을 때 중앙이 살짝 밀려 보였음 */}
           <div className="flex w-full flex-col items-center gap-3 sm:flex-row sm:items-center sm:justify-center sm:gap-0">
-            <div className="relative flex flex-col items-center gap-2">
-              {/* 사원증(1) → 우측 안내 카드(2) 순서로 자연스럽게 이어지는 흐름임을 보여주는 순번 배지 */}
-              <span className="absolute -left-3 -top-3 flex size-7 items-center justify-center rounded-full bg-accent text-sm font-bold text-white shadow-md">
-                1
-              </span>
+            <div className="flex flex-col items-center gap-2">
               <EmployeeIdCard profile={trialPreviewProfile} photoUrl={photoUrl} hideAvatarPicker />
               {/* 카드 발급 상태 안내는 카드 바로 아래 붙여서 보여주고, 다음 단계로 넘어가면
                   오른쪽에 나타나는 화살표+안내 문구가 그 역할을 이어받으므로 페이드아웃한다.
@@ -340,7 +336,6 @@ export function OnboardingPage() {
           {error && <p className="text-sm text-red-600">{error}</p>}
         </div>
         <TrialActionBar
-          stepNumber={2}
           message={isDetailStep ? "이 프로필로 오늘 하루를 체험해요" : "다음을 눌러 실제 폼도 미리 볼까요?"}
           primaryLabel={submitting ? "불러오는 중..." : "다음"}
           primaryDisabled={submitting}
