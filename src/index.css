@@ -581,3 +581,35 @@ body {
 .intro-business .hero .business-initial{display:grid;width:100%;height:100%;place-items:center;color:#1a56ff;font-size:14px;font-weight:900}
 .intro-game .hero .business-initial{display:none}
 /* END BUSINESS-HERO-INITIALS-V10 */
+
+/* FEATURE-CARD-NEUTRAL-CONTENT-V11 */
+.intro-game-feature-window>div:last-child,
+.intro-business-feature-card{
+  color:#303633!important;
+}
+.intro-game-feature-window>div:last-child *,
+.intro-business-feature-card *{
+  font-family:Pretendard,"Malgun Gothic",sans-serif!important;
+}
+.intro-game-feature-window .intro-game-feature-visual,
+.intro-business-feature-card>div:last-child{
+  filter:grayscale(1) saturate(0)!important;
+}
+.intro-game-feature-window .intro-game-feature-visual *,
+.intro-business-feature-card>div:last-child *{
+  color:#3f4542!important;
+  border-color:#c9cecb!important;
+}
+.intro-game-feature-window .intro-game-feature-visual [class*="bg-"],
+.intro-business-feature-card>div:last-child [class*="bg-"]{
+  background-color:#f3f4f3!important;
+}
+.intro-game-feature-window>div:last-child>div:first-child [class*="text-"],
+.intro-business-feature-card>div:first-child [class*="text-"]{
+  color:#4e5652!important;
+}
+.intro-game-feature-window>div:last-child>div:first-child [class*="bg-"],
+.intro-business-feature-card>div:first-child [class*="bg-"]{
+  background-color:#ecefed!important;
+}
+/* END FEATURE-CARD-NEUTRAL-CONTENT-V11 */
