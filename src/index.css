@@ -394,11 +394,11 @@ body {
    바닥에 고정하고, 100vw 트릭으로 부모의 padding/max-width와 무관하게 항상 화면 끝까지 꽉 차게
    해서 화면 크기가 바뀌어도 다시 맞출 필요가 없게 함. 이미지 자체도 위쪽 투명 여백을 잘라내서
    더 이상 큰 음수 margin으로 끌어올릴 필요가 없다 */
-/* bottom:0으로 히어로 바닥에 고정했더니, 히어로 높이가 WORKMATE SYSTEM 패널 때문에 화면 폭마다
-   많이 달라져서 그림이 패널 글자 위로 겹쳐 올라오는 경우가 생겼다(정도가 화면 폭마다 다름) —
-   absolute를 버리고 다시 일반 흐름(패널 바로 다음)에 두어 절대 겹치지 않게 하고, 나무 끝만 살짝
-   패널 헤더 바 쪽으로 올라와 보이는 정도로만 아주 작게 겹친다 */
-.intro-game .intro-pixel-office-bg{display:block;position:relative;left:50%;width:100vw;margin:-24px 0 0 -50vw;max-width:none;height:auto;image-rendering:pixelated;pointer-events:none}
+/* 음수 margin으로 살짝 겹치게 했더니, 폰트 로딩 타이밍이나 리빌 애니메이션 때문에 패널
+   높이가 순간적으로 달라지는 경우 그림이 패널 글자 위까지 겹쳐 올라오는 문제가 재현됐다 —
+   "살짝 겹쳐서 자연스럽게"보다 "무슨 상황에서도 절대 안 겹치는 것"이 우선이라, 음수 margin을
+   버리고 작은 양수 여백으로 확실한 간격을 둔다 */
+.intro-game .intro-pixel-office-bg{display:block;position:relative;left:50%;width:100vw;margin:16px 0 0 -50vw;max-width:none;height:auto;image-rendering:pixelated;pointer-events:none}
 .intro-game .hero>.hero-system{width:100%;max-width:1600px;margin:0 auto;position:static;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;border:3px solid #28352f;background:#fff9e9;box-shadow:7px 7px 0 rgba(40,53,47,.25)}
 .intro-game .hero>.hero-system:before{content:"WORKMATE SYSTEM";grid-column:1/-1;padding:9px 12px;border-bottom:3px solid #28352f;background:#2f795d;color:#fff;font-size:15px;font-weight:900}
 .intro-game .hero>.hero-system .feat{min-height:104px;padding:15px 14px;border:0;border-right:1px solid #cdbf9f;border-radius:0;background:#fff9e9;box-shadow:none}
