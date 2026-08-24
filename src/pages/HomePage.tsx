@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import * as api from "@/lib/api";
 import { useWorkday } from "@/context/useWorkday";
 import { TodayItemRow } from "@/components/home/TodayItemRow";
@@ -14,6 +14,7 @@ import { RANKS } from "@/components/promotion/rankArt";
 import { isAutoAdvanceEnabled, setAutoAdvance } from "@/lib/qaAutoAdvance";
 import { SectionTourGuide, type TourStep } from "@/components/home/SectionTourGuide";
 import { isAnonymousSession } from "@/lib/session";
+import { TRIAL_ROLE_LABEL, useTrialTargets } from "@/lib/trialTargets";
 
 // 심사 기간 등 외부에 라이브 사이트를 공개하는 동안은, 데이터를 실제로 지우거나 조작하는
 // 위험한 QA 버튼(초기화/승급 게이트 채우기 등)은 숨긴다 — 실수로 눌러도 안전한 "연락 바로
@@ -216,16 +217,20 @@ export function HomePage() {
     workStatus,
     workday,
     todayItems,
+    contacts,
     conversations,
     emailThreads,
     deliverNext,
     finishWorkday,
     refresh,
     highlightedMessageId,
+    highlightMessage,
     pendingReviewBanner,
     leaveBalance,
     workContext,
   } = useWorkday();
+  const navigate = useNavigate();
+  const { activeTarget: trialActiveTarget } = useTrialTargets();
   const [deliveringNext, setDeliveringNext] = useState(false);
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
   const [confirmFinish, setConfirmFinish] = useState(false);
@@ -389,6 +394,24 @@ export function HomePage() {
       text: "여기서 받은 메시지에 답장하면 하루가 진행되고, 다 처리한 뒤 퇴근하면 리포트가 만들어져요.",
     },
   ];
+
+  // 체험판은 마지막에 "새 메시지가 왔어요" 안내를 같은 카드 안에 이어서 보여주고, 버튼을 누르면
+  // 바로 그 연락으로 이동한다 — 예전엔 화면 하단에 별도 바로 떠서 이 카드와 겹쳐 보였음
+  if (isTrial && trialActiveTarget) {
+    const activeContactName = contacts.find((c) => c.role === trialActiveTarget.role)?.name;
+    tourSteps.push({
+      selector: "#tour-contacts",
+      title: "새 메시지",
+      text: `${activeContactName ?? TRIAL_ROLE_LABEL[trialActiveTarget.role]}님에게 새 메시지가 왔어요! 아래 버튼을 눌러 답장해보세요.`,
+      cta: {
+        label: `${TRIAL_ROLE_LABEL[trialActiveTarget.role]}에게 가기`,
+        onClick: () => {
+          if (trialActiveTarget.messageId) highlightMessage(trialActiveTarget.messageId);
+          navigate(trialActiveTarget.path);
+        },
+      },
+    });
+  }
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-6 md:px-8 md:py-8">

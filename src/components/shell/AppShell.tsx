@@ -19,12 +19,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     conversations.reduce((sum, conversation) => sum + conversation.unreadCount, 0) +
     emailThreads.reduce((sum, thread) => sum + thread.unreadCount, 0);
 
-  // 체험 계정은 하단 가이드 바가 화면 일부를 가리지 않도록, 오버레이가 아니라 실제 레이아웃 공간을
-  // 차지하게 하고(뷰포트 높이 고정 + 내부 스크롤) 나머지는 원래 페이지 스크롤 방식 그대로 둔다
+  // 체험 계정의 안내 카드(TrialGuideBar)는 이제 오버레이(화면 우측 중앙에 떠 있는 카드)라서
+  // 실제 레이아웃 공간을 차지하지 않으므로, 일반 계정과 동일한 스크롤 방식을 그대로 쓴다
   return (
-    <div className={`flex w-full ${isTrial ? "h-screen overflow-hidden" : "min-h-screen"}`}>
+    <div className="flex w-full min-h-screen">
       <Sidebar />
-      <div className={`flex flex-1 flex-col min-w-0 ${isTrial ? "overflow-hidden" : ""}`}>
+      <div className="flex flex-1 flex-col min-w-0">
         <TopBar
           workStatus={workStatus ?? "before-work"}
           unreadCount={unreadCount}
@@ -36,7 +36,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {businessMode && (
           <div className="business-divider-strip sticky top-16 z-10" aria-hidden="true" />
         )}
-        <main className={`flex-1 min-w-0 ${isTrial ? "overflow-y-auto" : "pb-16 md:pb-0"}`}>{children}</main>
+        <main className="flex-1 min-w-0 pb-16 md:pb-0">{children}</main>
         {isTrial && <TrialGuideBar />}
       </div>
       <MobileTabBar />

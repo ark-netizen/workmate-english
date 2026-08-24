@@ -278,20 +278,20 @@ export function OnboardingPage() {
     const isDetailStep = trialStep === "detail";
     return (
       <div className="flex min-h-dvh flex-col">
-        {/* pb는 하단 sticky 안내바(약 64px)에 콘텐츠가 가려지지 않도록 여유 있게 확보 */}
         <div
-          className={`flex flex-1 flex-col items-center px-4 pb-28 text-center transition-all duration-500 ease-out ${
+          className={`flex flex-1 flex-col items-center px-4 pb-10 text-center transition-all duration-500 ease-out ${
             isDetailStep ? "justify-start gap-6 pt-8" : "justify-center gap-6"
           }`}
         >
           <h1 className="break-keep text-lg font-semibold">🎉 1분 무료체험을 위한 사원증 발급 완료!</h1>
           {/* 화살표+미리보기 칸을 항상 DOM에 두고 max-width/opacity만 트랜지션해서, "다음"을 눌렀을 때
-              사원증이 순간이동하듯 옮겨가지 않고 자연스럽게 옆으로 밀리듯 보이게 함 */}
+              사원증이 순간이동하듯 옮겨가지 않고 자연스럽게 옆으로 밀리듯 보이게 함. max-h는 실제
+              캡션 텍스트가 여러 줄로 접힐 때도 잘리지 않도록 넉넉하게 잡는다 */}
           <div className="flex w-full flex-col items-center gap-3 sm:flex-row sm:items-center sm:justify-center">
             <EmployeeIdCard profile={trialPreviewProfile} photoUrl={photoUrl} hideAvatarPicker />
             <div
               className={`flex flex-col items-center gap-1.5 overflow-hidden text-foreground/40 transition-all duration-500 ease-out sm:px-2 ${
-                isDetailStep ? "max-h-16 opacity-100 sm:max-w-[10rem]" : "max-h-0 opacity-0 sm:max-w-0"
+                isDetailStep ? "max-h-32 opacity-100 sm:max-w-[10rem]" : "max-h-0 opacity-0 sm:max-w-0"
               }`}
             >
               <ArrowDown className="size-5 shrink-0 sm:hidden" />
@@ -310,15 +310,13 @@ export function OnboardingPage() {
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
         </div>
-        <div className="sticky bottom-0 z-10">
-          <TrialActionBar
-            message={isDetailStep ? "이 프로필로 오늘 하루를 체험해요" : "1분 무료체험용 사원증이 발급됐어요"}
-            primaryLabel={submitting ? "불러오는 중..." : "다음"}
-            primaryDisabled={submitting}
-            onPrimary={isDetailStep ? handleTrialContinue : () => setTrialStep("detail")}
-            onEnd={handleEndTrial}
-          />
-        </div>
+        <TrialActionBar
+          message={isDetailStep ? "이 프로필로 오늘 하루를 체험해요" : "1분 무료체험용 사원증이 발급됐어요"}
+          primaryLabel={submitting ? "불러오는 중..." : "다음"}
+          primaryDisabled={submitting}
+          onPrimary={isDetailStep ? handleTrialContinue : () => setTrialStep("detail")}
+          onEnd={handleEndTrial}
+        />
       </div>
     );
   }
