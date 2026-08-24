@@ -1248,7 +1248,9 @@ export async function getTodaySnapshot(userId) {
     if (c.kind === 'vent' || c.workday_id !== workday.id) return
     const ch = c.characters
     ensureContact(ch)
-    const last = mapped[mapped.length - 1]
+    // 아직 도착 전(status: 'scheduled')인 대화는 체험판처럼 메시지가 미리 준비돼 있어도
+    // 내용을 미리 보여주지 않는다 — "○○ 연락 예정" 정도의 예고만 노출한다
+    const last = c.status === 'scheduled' ? undefined : mapped[mapped.length - 1]
     todayItems.push({
       id: c.id,
       contactId: ch.id,
