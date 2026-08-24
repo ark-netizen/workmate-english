@@ -19,9 +19,11 @@ function isVisible(el: HTMLElement) {
 
 // 정식 스포트라이트 투어(요소를 어둡게 가리고 구멍 뚫어 짚어주는 방식)는 아니지만, 화면의 실제
 // 섹션을 하나씩 순서대로 테두리로 강조하면서 "여기가 뭐 하는 곳인지"를 카드로 설명해준다.
-// 다음/이전으로 넘기고, 닫으면 localStorage에 남아서 다음 방문부터는 다시 안 뜸.
-export function SectionTourGuide({ steps }: { steps: TourStep[] }) {
+// 다음/이전으로 넘기고, 닫으면 localStorage에 남아서 다음 방문부터는 다시 안 뜸 — 단, 체험판은
+// 계정이 매번 새로 시작되는 일회성이라 이 "기억" 자체가 의미 없어서 persist=false로 끈다.
+export function SectionTourGuide({ steps, persist = true }: { steps: TourStep[]; persist?: boolean }) {
   const [dismissed, setDismissed] = useState(() => {
+    if (!persist) return false;
     try {
       return localStorage.getItem(STORAGE_KEY) === "1";
     } catch {
@@ -65,6 +67,7 @@ export function SectionTourGuide({ steps }: { steps: TourStep[] }) {
 
   const dismiss = () => {
     setDismissed(true);
+    if (!persist) return;
     try {
       localStorage.setItem(STORAGE_KEY, "1");
     } catch {

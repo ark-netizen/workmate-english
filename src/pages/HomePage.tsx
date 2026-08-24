@@ -13,6 +13,7 @@ import type { PromotionStatus } from "@/lib/api";
 import { RANKS } from "@/components/promotion/rankArt";
 import { isAutoAdvanceEnabled, setAutoAdvance } from "@/lib/qaAutoAdvance";
 import { SectionTourGuide, type TourStep } from "@/components/home/SectionTourGuide";
+import { isAnonymousSession } from "@/lib/session";
 
 // 심사 기간 등 외부에 라이브 사이트를 공개하는 동안은, 데이터를 실제로 지우거나 조작하는
 // 위험한 QA 버튼(초기화/승급 게이트 채우기 등)은 숨긴다 — 실수로 눌러도 안전한 "연락 바로
@@ -234,6 +235,11 @@ export function HomePage() {
   const [advancingDay, setAdvancingDay] = useState(false);
   const [resettingAccount, setResettingAccount] = useState(false);
   const [promotion, setPromotion] = useState<PromotionStatus | null>(null);
+  const [isTrial, setIsTrial] = useState(false);
+
+  useEffect(() => {
+    isAnonymousSession().then(setIsTrial).catch(() => {});
+  }, []);
 
   useEffect(() => {
     api.getProfile().then(setProfile).catch(() => setProfile(null));
@@ -525,7 +531,7 @@ export function HomePage() {
         </div>
       </section>
 
-      <SectionTourGuide steps={tourSteps} />
+      <SectionTourGuide steps={tourSteps} persist={!isTrial} />
 
       <QaControlPanel
         onDeliverNext={handleDeliverNext}
