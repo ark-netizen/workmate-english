@@ -675,7 +675,7 @@ export function IntroPage({
               영어를 배우는 대신,
               <br />
               <em>
-                영어로 출근<span className="typing-cursor" aria-hidden="true">|</span>
+                <span className="headline-wiggle">영어로 출근</span>
               </em>
               해 보세요.
             </h1>
