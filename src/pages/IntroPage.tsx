@@ -685,28 +685,44 @@ export function IntroPage({
       </nav>
       {businessMode && <div className="business-divider-strip" aria-hidden="true" />}
 
-      <section id="preview" className="intro-hero intro-mock-hero">
-        <div className="intro-mock-wrap">
-          <Reveal className="intro-hero-copy intro-mock-copy">
-            <span className="intro-mock-eyebrow">WORKMATE ENGLISH</span>
-            <h1 className="intro-hero-title">영어를 배우는 대신,<br /><em>영어로 출근</em>해 보세요.</h1>
-            <p className="intro-hero-description">메신저와 이메일로 실제 업무를 처리하면, Solar가 관계별 표현과 문법을 첨삭하고 하루의 성장을 업무 리포트로 남겨요.</p>
-            <div className="intro-mock-actions">
-              <button type="button" onClick={handleTrialClick} disabled={startingTrial} className="intro-hero-trial">{startingTrial ? "체험 준비 중..." : "1분 가상 근무 체험하기"}</button>
-              <button type="button" onClick={() => scrollToSection("features")} className="intro-hero-features">핵심 기능 보기 ↓</button>
+      <section id="preview" className="intro-hero hero">
+        <div className="wrap">
+          <Reveal className="copy">
+            <span className="eyebrow">WORKMATE ENGLISH</span>
+            <h1>영어를 배우는 대신,<br /><em>영어로 출근</em>해 보세요.</h1>
+            <p>메신저와 이메일로 실제 업무를 처리하면, Solar가 관계별 표현과 문법을 첨삭하고 하루의 성장을 업무 리포트로 남겨요.</p>
+            <div className="actions">
+              <button type="button" onClick={handleTrialClick} disabled={startingTrial} className="primary">{startingTrial ? "체험 준비 중..." : "1분 가상 근무 체험하기"}</button>
+              <button type="button" onClick={() => scrollToSection("features")} className="secondary">핵심 기능 보기 ↓</button>
             </div>
           </Reveal>
-          <Reveal delayMs={150} className="intro-mock-preview">
-            {businessMode ? (
-              <div className="intro-game-office">
-                <div className="intro-game-titlebar"><span>WORKMATE_OS.EXE</span><span>_　□　×</span></div>
-                <div className="intro-game-scene">
-                  <span className="intro-game-map">MAP: GLOBAL OFFICE · NEW QUEST ×3</span>
-                  <div className="intro-game-quest"><RankAvatar rank="과장" className="intro-game-avatar" /><div><b>NEW QUEST · ELLEN 팀장</b><p>“오후 3시 전까지 기획안을 검토해 주세요.”</p></div></div>
-                  <div className="intro-game-hud"><span>QUEST 01 / 03</span><span>HINT ●●○ · COMPLETE 0%</span></div>
-                </div>
+          <Reveal delayMs={150} className="preview">
+            <div className="businesspreview">
+              <div className="mailcard">
+                <div className="mailhead"><b>오늘의 업무 연락</b><span className="live">SOLAR LIVE</span></div>
+                {[
+                  { rank:"사원", name:"Jake", role:"동료", line:"Can you check the new build by 3? 🙏", tone:"캐주얼" },
+                  { rank:"과장", name:"Ellen", role:"상사", line:"Could you please review the proposal?", tone:"격식" },
+                  { rank:"부장", name:"Liam", role:"거래처", line:"We would kindly request your confirmation.", tone:"보수적" },
+                ].map((person) => (
+                  <div className="person" key={person.name}>
+                    <span className="avatar"><RankAvatar rank={person.rank} /></span>
+                    <div><strong>{person.name} · {person.role}</strong><small>{person.line}</small></div>
+                    <span className="tone">{person.tone}</span>
+                  </div>
+                ))}
               </div>
-            ) : <MockPreview gameMode={false} />}
+              <div className="features">
+                {[
+                  ["MESSENGER · EMAIL","실제 업무처럼 답장하고 메일 쓰기"],
+                  ["RELATIONSHIP TONE","동료 · 상사 · 거래처별 표현"],
+                  ["3-STEP HINT","단어 → 문장 뼈대 → 예시 답안"],
+                  ["SOLAR FEEDBACK","문법 · 표현 · 관계별 뉘앙스 첨삭"],
+                  ["AWAY MODE","외근 중이면 30분 뒤 다시 알림"],
+                  ["WORK REPORT","퇴근 리포트부터 매주·매달 성장 흐름까지 정리"],
+                ].map(([title, body]) => <div className="feat" key={title}><b>{title}</b><span>{body}</span></div>)}
+              </div>
+            </div>
           </Reveal>
         </div>
       </section>
@@ -779,4 +795,5 @@ export function IntroPage({
     </div>
   );
 }
+
 
