@@ -17,6 +17,9 @@ export interface TourStep {
   /** 메뉴처럼 강조 영역 안에 항목이 여러 개일 때, 하나씩 넘기지 않고 설명만 한 번에 목록으로
    *  보여줌 — 라벨은 실제 메뉴에 이미 보이므로 반복하지 않는다 */
   items?: string[];
+  /** items와 달리, 설명 한 줄 한 줄을 그 항목의 실제 화면 위치(행)에 맞춰 정렬해서 보여준다
+   *  — "표의 행"처럼 왼쪽 메뉴와 오른쪽 설명이 같은 높이에 나란히 보이게 함(extendPanel 전용) */
+  rowItems?: { selector: string; desc: string }[];
   /** 있으면 흰 카드(테두리·그림자) 대신, 강조된 요소와 같은 배경색으로 틈 없이 이어붙여서
    *  "그 요소 자체가 옆으로 늘어난 것"처럼 보이게 한다 — 메뉴처럼 별도 말풍선보다는 사이드바
    *  자체의 연장처럼 보이는 게 자연스러운 경우에 씀(anchor: "right" 전용) */
@@ -95,6 +98,8 @@ export function SectionTourGuide({
   const [availableSteps, setAvailableSteps] = useState<{ step: TourStep; el: HTMLElement }[]>([]);
   // anchor 단계에서 말풍선을 강조 요소 옆에 붙이기 위한 위치 — 스크롤/리사이즈에도 다시 계산함
   const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
+  // rowItems 단계에서 각 설명을 그 항목의 실제 행 위치에 맞추기 위한 좌표들
+  const [rowRects, setRowRects] = useState<{ desc: string; rect: DOMRect }[]>([]);
   // 마지막 단계에서 onDismiss가 있으면(=곧 다른 화면으로 넘어감), 말없이 확 이동하지 않고
   // "이동해요" 안내를 잠깐 보여준 뒤 넘어간다
   const [leaving, setLeaving] = useState(false);
@@ -124,7 +129,21 @@ export function SectionTourGuide({
     el.classList.add(...HIGHLIGHT_CLASSES);
     const restore = bringToFront(el);
     el.scrollIntoView({ behavior: "smooth", block: "center" });
-    const updateRect = () => setAnchorRect(el.getBoundingClientRect());
+    const updateRect = () => {
+      setAnchorRect(el.getBoundingClientRect());
+      const rowItems = current.step.rowItems;
+      if (rowItems) {
+        const rects = rowItems
+          .map((r) => {
+            const target = document.querySelector<HTMLElement>(r.selector);
+            return target && isVisible(target) ? { desc: r.desc, rect: target.getBoundingClientRect() } : null;
+          })
+          .filter((v): v is { desc: string; rect: DOMRect } => v !== null);
+        setRowRects(rects);
+      } else {
+        setRowRects([]);
+      }
+    };
     updateRect();
     // 스크롤 애니메이션이 끝난 뒤 최종 위치로 한 번 더 맞춰줌
     const settleTimer = setTimeout(updateRect, 350);
@@ -167,6 +186,87 @@ export function SectionTourGuide({
   };
 
   const extendPanel = current.step.extendPanel;
+
+  // rowItems + extendPanel 조합: 설명 한 줄 한 줄을 그 항목의 실제 행 위치에 맞춰 그리는
+  // 전용 레이아웃 — "표의 행처럼 나란히" 보여야 해서 일반 카드 렌더링과는 완전히 다르게 그린다
+  if (current.step.rowItems && extendPanel && anchorRect && rowRects.length > 0 && typeof window !== "undefined") {
+    const HEADER_H = 34;
+    const FOOTER_H = 40;
+    const PAD = 8;
+    const firstRect = rowRects[0].rect;
+    const lastRect = rowRects[rowRects.length - 1].rect;
+    const panelLeft = clamp(anchorRect.right, 8, window.innerWidth - ANCHOR_WIDTH - 8);
+    const panelTop = clamp(firstRect.top - HEADER_H - PAD, 8, window.innerHeight - 100);
+    const panelHeight = lastRect.bottom + FOOTER_H + PAD - panelTop;
+
+    return (
+      <>
+        <div
+          className={`fixed z-30 w-[17rem] max-w-[calc(100vw-1rem)] rounded-r-xl transition-[top,left,height] duration-200 ease-out ${extendPanel.bg}`}
+          style={{ top: panelTop, left: panelLeft, height: panelHeight }}
+        />
+        {leaving ? (
+          <p
+            className={`fixed z-30 flex items-center gap-2 px-3 text-sm ${extendPanel.body}`}
+            style={{ top: panelTop + panelHeight / 2 - 10, left: panelLeft, width: ANCHOR_WIDTH }}
+          >
+            <span className="size-3.5 shrink-0 animate-spin rounded-full border-2 border-current/30 border-t-current" />
+            곧 다음 화면으로 이동해요...
+          </p>
+        ) : (
+          <>
+            <div
+              className="fixed z-30 flex items-center justify-between px-3"
+              style={{ top: panelTop + 8, left: panelLeft, width: ANCHOR_WIDTH }}
+            >
+              <p className={`text-xs font-semibold ${extendPanel.title}`}>
+                {index + 1} / {availableSteps.length} · {current.step.title}
+              </p>
+              <button
+                type="button"
+                onClick={dismiss}
+                aria-label="안내 닫기"
+                className={`shrink-0 rounded p-0.5 ${extendPanel.close}`}
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+            {rowRects.map(({ desc, rect }, i) => (
+              <p
+                key={i}
+                className={`fixed z-30 truncate px-3 text-xs leading-none ${extendPanel.item}`}
+                style={{ top: rect.top + rect.height / 2 - 6, left: panelLeft, width: ANCHOR_WIDTH }}
+              >
+                {desc}
+              </p>
+            ))}
+            <div
+              className="fixed z-30 flex items-center justify-end gap-1.5 px-3"
+              style={{ top: lastRect.bottom + PAD, left: panelLeft, width: ANCHOR_WIDTH }}
+            >
+              <button
+                type="button"
+                onClick={() => setIndex((i) => Math.max(0, i - 1))}
+                disabled={index === 0}
+                aria-label="이전"
+                className={`flex h-7 w-7 items-center justify-center rounded-full border disabled:opacity-30 ${extendPanel.prevBtn}`}
+              >
+                <ChevronLeft className="size-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => (isLast ? handleFinalConfirm() : setIndex((i) => i + 1))}
+                className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium hover:opacity-90 ${extendPanel.nextBtn}`}
+              >
+                {isLast ? "확인했어요" : "다음"}
+                {!isLast && <ChevronRight className="size-3.5" />}
+              </button>
+            </div>
+          </>
+        )}
+      </>
+    );
+  }
 
   let anchorStyle: { top?: number; bottom?: number; left: number } | null = null;
   if (anchor && anchorRect && typeof window !== "undefined") {

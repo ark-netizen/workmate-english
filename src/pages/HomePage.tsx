@@ -392,9 +392,13 @@ export function HomePage() {
       selector: "#tour-nav-desktop",
       title: "메뉴",
       text: "메뉴에서 볼 수 있는 기능들이에요.",
-      items: navTourItems,
       anchor: "right",
       extendPanel: menuPanelTheme,
+      // 설명 한 줄 한 줄을 그 메뉴 항목의 실제 화면 위치(행)에 맞춰 나란히 정렬해서 보여줌
+      rowItems: navItems.map((item) => ({
+        selector: `#tour-nav-desktop [data-tour-navitem="${item.href}"]`,
+        desc: item.desc,
+      })),
     },
     {
       selector: "#tour-nav-mobile",
