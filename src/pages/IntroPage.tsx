@@ -489,6 +489,23 @@ function FeatureWindowScrollList({ items }: { items: typeof features }) {
   );
 }
 
+
+const heroSystemItems = [
+  ["MESSENGER · EMAIL", "실제 업무처럼 답장하고 메일 쓰기"],
+  ["RELATIONSHIP TONE", "동료 · 상사 · 거래처별 표현"],
+  ["3-STEP HINT", "단어 → 문장 뼈대 → 예시 답안"],
+  ["SOLAR FEEDBACK", "문법 · 표현 · 관계별 뉘앙스 첨삭"],
+  ["AWAY MODE", "외근 중이면 30분 뒤 다시 알림"],
+  ["WORK REPORT", "퇴근 리포트부터 매주·매달 성장 흐름까지 정리"],
+] as const;
+
+function HeroSystem() {
+  return (
+    <div className="features hero-system">
+      {heroSystemItems.map(([title, body]) => <div className="feat" key={title}><b>{title}</b><span>{body}</span></div>)}
+    </div>
+  );
+}
 export function IntroPage({
   onContinueWithoutLogin,
   onLoggedIn,
@@ -658,20 +675,13 @@ export function IntroPage({
                   </div>
                 ))}
               </div>
-              <div className="features">
-                {[
-                  ["MESSENGER · EMAIL","실제 업무처럼 답장하고 메일 쓰기"],
-                  ["RELATIONSHIP TONE","동료 · 상사 · 거래처별 표현"],
-                  ["3-STEP HINT","단어 → 문장 뼈대 → 예시 답안"],
-                  ["SOLAR FEEDBACK","문법 · 표현 · 관계별 뉘앙스 첨삭"],
-                  ["AWAY MODE","외근 중이면 30분 뒤 다시 알림"],
-                  ["WORK REPORT","퇴근 리포트부터 매주·매달 성장 흐름까지 정리"],
-                ].map(([title, body]) => <div className="feat" key={title}><b>{title}</b><span>{body}</span></div>)}
-              </div>
+              {!businessMode && <HeroSystem />}
+
             </div>
           </Reveal>
         </div>
         <img className="intro-pixel-office-bg" src="/intro/workmate-pixel-office-strip.png" alt="" aria-hidden="true" />
+        {businessMode && <HeroSystem />}
       </section>
       <section id="features" className="intro-features-section border-t border-border bg-surface px-4 py-16 md:px-8">
         <div className="mx-auto max-w-5xl">
@@ -742,6 +752,7 @@ export function IntroPage({
     </div>
   );
 }
+
 
 
 
