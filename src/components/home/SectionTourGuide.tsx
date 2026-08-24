@@ -206,12 +206,14 @@ export function SectionTourGuide({
 
     return (
       <>
+        {/* 왼쪽 변은 사이드바와 맞닿는 선이라 위쪽도 아래쪽도 항상 각지게 두고, 오른쪽만
+            둥글게 해서 "각졌다 둥글었다" 뒤섞이지 않고 한 가지 규칙으로 통일한다 */}
         <div
-          className={`fixed z-30 w-[17rem] max-w-[calc(100vw-1rem)] rounded-t-xl transition-[top,left,height] duration-200 ease-out ${extendPanel.bg}`}
+          className={`fixed z-30 w-[17rem] max-w-[calc(100vw-1rem)] rounded-tr-xl transition-[top,left,height] duration-200 ease-out ${extendPanel.bg}`}
           style={{ top: panelTop, left: panelLeft, height: tealHeight }}
         />
         <div
-          className="fixed z-30 w-[17rem] max-w-[calc(100vw-1rem)] rounded-b-xl border border-t-0 border-border bg-surface shadow-lg transition-[top,left] duration-200 ease-out"
+          className="fixed z-30 w-[17rem] max-w-[calc(100vw-1rem)] rounded-br-xl border border-t-0 border-border bg-surface shadow-lg transition-[top,left] duration-200 ease-out"
           style={{ top: rowsBottom, left: panelLeft, height: CONTROL_H }}
         >
           {leaving ? (
