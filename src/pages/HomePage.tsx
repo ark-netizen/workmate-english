@@ -361,25 +361,26 @@ export function HomePage() {
     }
   };
 
-  // 메뉴 단계에서 항목 하나하나가 뭘 하는 곳인지 몰라 헤맨다는 피드백 — 8개 항목을 각각 별도
-  // 투어 단계로 쪼개면 클릭이 너무 많아지니, 같은 카드 안에 항목별 한 줄 설명을 목록으로 붙인다
-  const navTourItems = navItems.map((item) => ({ label: item.labelKo, desc: item.desc }));
+  // 메뉴 전체를 한 카드에 목록으로 몰아넣었더니 "이게 뭘 어쩌라는 거냐"는 피드백 — 항목 하나하나를
+  // 그 메뉴 옆에 붙는 작은 말풍선으로 순서대로 짚어주는 방식으로 바꿈. 데스크톱 사이드바/모바일
+  // 하단바는 반응형으로 항상 한쪽만 보이므로, 항목마다 두 후보를 넣어두면 보이는 쪽만 걸러써준다
+  const navTourSteps: TourStep[] = navItems.flatMap((item) => [
+    {
+      selector: `#tour-nav-desktop [data-tour-navitem="${item.href}"]`,
+      title: item.labelKo,
+      text: item.desc,
+      anchor: "right" as const,
+    },
+    {
+      selector: `#tour-nav-mobile [data-tour-navitem="${item.href}"]`,
+      title: item.labelKo,
+      text: item.desc,
+      anchor: "top" as const,
+    },
+  ]);
 
   const tourSteps: TourStep[] = [
-    // 데스크톱 사이드바/모바일 하단바는 반응형으로 항상 한쪽만 화면에 보이므로, 둘 다 후보로
-    // 넣어두면 SectionTourGuide가 실제로 보이는(display:none 아닌) 쪽만 걸러서 써준다
-    {
-      selector: "#tour-nav-desktop",
-      title: "메뉴",
-      text: "다른 화면은 여기서 이동해요.",
-      items: navTourItems,
-    },
-    {
-      selector: "#tour-nav-mobile",
-      title: "메뉴",
-      text: "다른 화면은 여기서 이동해요.",
-      items: navTourItems,
-    },
+    ...navTourSteps,
     {
       selector: "#tour-profile",
       title: "프로필 · 근무시간",

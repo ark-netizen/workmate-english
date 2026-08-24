@@ -53,6 +53,7 @@ export function Sidebar() {
                 key={item.href}
                 to={item.href}
                 title={item.labelKo}
+                data-tour-navitem={item.href}
                 className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors ${
                   businessMode
                     ? active

@@ -11,8 +11,9 @@ export interface TourStep {
   selector: string;
   /** 있으면 "다음" 대신 이 버튼을 보여주고, 누르면 onClick 실행 후 투어를 닫는다(예: "동료에게 가기") */
   cta?: { label: string; onClick: () => void };
-  /** 메뉴처럼 하나의 강조 영역 안에 항목이 여러 개일 때, 항목별 한 줄 설명을 카드 안에 목록으로 보여줌 */
-  items?: { label: string; desc: string }[];
+  /** 있으면 고정된 카드 대신, 강조된 요소 바로 옆(right)이나 위(top)에 작은 말풍선으로 설명을 띄운다
+   *  — 메뉴 항목처럼 "이게 뭔지"가 그 항목 자체와 붙어 있어야 이해되는 경우에 씀 */
+  anchor?: "right" | "top";
 }
 
 // ring-offset을 쓰면 링이 요소 바깥으로 2~4px 삐져나오는데, 사이드바/상단 탭바처럼 화면 맨
@@ -20,8 +21,15 @@ export interface TourStep {
 // 요소 안쪽에 그려서 어떤 위치에서도 안 잘리게 함
 const HIGHLIGHT_CLASSES = ["ring-2", "ring-inset", "ring-accent", "rounded-xl"];
 
+const ANCHOR_WIDTH = 224; // 앵커 말풍선 너비(w-56) — 화면 밖으로 안 나가게 클램프할 때 사용
+const ANCHOR_HEIGHT_GUESS = 130; // 실제 렌더 전 높이를 모르니, 클램프용으로 넉넉히 잡은 예상치
+
 function isVisible(el: HTMLElement) {
   return el.offsetParent !== null;
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), Math.max(min, max));
 }
 
 // 강조할 요소가 Sidebar/MobileTabBar(fixed, z-20)처럼 이미 쌓임 맥락을 가진 요소이거나, 반대로
@@ -57,6 +65,8 @@ export function SectionTourGuide({ steps, persist = true }: { steps: TourStep[];
   const [index, setIndex] = useState(0);
   // 반응형이라 데스크톱/모바일 중 실제로 화면에 보이는(display:none 아닌) 요소가 있는 단계만
   const [availableSteps, setAvailableSteps] = useState<{ step: TourStep; el: HTMLElement }[]>([]);
+  // anchor 단계에서 말풍선을 강조 요소 옆에 붙이기 위한 위치 — 스크롤/리사이즈에도 다시 계산함
+  const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
 
   useEffect(() => {
     if (dismissed) return;
@@ -83,9 +93,18 @@ export function SectionTourGuide({ steps, persist = true }: { steps: TourStep[];
     el.classList.add(...HIGHLIGHT_CLASSES);
     const restore = bringToFront(el);
     el.scrollIntoView({ behavior: "smooth", block: "center" });
+    const updateRect = () => setAnchorRect(el.getBoundingClientRect());
+    updateRect();
+    // 스크롤 애니메이션이 끝난 뒤 최종 위치로 한 번 더 맞춰줌
+    const settleTimer = setTimeout(updateRect, 350);
+    window.addEventListener("resize", updateRect);
+    window.addEventListener("scroll", updateRect, true);
     return () => {
       el.classList.remove(...HIGHLIGHT_CLASSES);
       restore();
+      clearTimeout(settleTimer);
+      window.removeEventListener("resize", updateRect);
+      window.removeEventListener("scroll", updateRect, true);
     };
   }, [dismissed, index, availableSteps]);
 
@@ -103,9 +122,31 @@ export function SectionTourGuide({ steps, persist = true }: { steps: TourStep[];
 
   const current = availableSteps[Math.min(index, availableSteps.length - 1)];
   const isLast = index >= availableSteps.length - 1;
+  const anchor = current.step.anchor;
+
+  let anchorStyle: { top?: number; bottom?: number; left: number } | null = null;
+  if (anchor && anchorRect && typeof window !== "undefined") {
+    if (anchor === "right") {
+      anchorStyle = {
+        top: clamp(anchorRect.top, 8, window.innerHeight - ANCHOR_HEIGHT_GUESS - 8),
+        left: clamp(anchorRect.right + 12, 8, window.innerWidth - ANCHOR_WIDTH - 8),
+      };
+    } else {
+      // top: 모바일 하단 탭바 위에 붙이는 용도라, 뷰포트 바닥 기준(bottom)으로 띄워야
+      // 탭바 높이가 달라져도 항상 탭바 바로 위에 자연스럽게 붙는다
+      anchorStyle = {
+        bottom: window.innerHeight - anchorRect.top + 10,
+        left: clamp(anchorRect.left + anchorRect.width / 2 - ANCHOR_WIDTH / 2, 8, window.innerWidth - ANCHOR_WIDTH - 8),
+      };
+    }
+  }
+
+  const cardClassName = anchor
+    ? "fixed z-30 w-56 rounded-xl border border-accent/30 bg-surface p-3 shadow-xl transition-[top,left,bottom] duration-200 ease-out"
+    : "fixed inset-x-4 top-1/2 z-30 mx-auto max-w-sm -translate-y-1/2 rounded-xl border border-accent/30 bg-surface p-4 shadow-xl md:inset-x-auto md:right-6 md:w-80";
 
   return (
-    <div className="fixed inset-x-4 top-1/2 z-30 mx-auto max-w-sm -translate-y-1/2 rounded-xl border border-accent/30 bg-surface p-4 shadow-xl md:inset-x-auto md:right-6 md:w-80">
+    <div className={cardClassName} style={anchorStyle ?? undefined}>
       <div className="flex items-start justify-between gap-2">
         <p className="text-xs font-semibold text-accent">
           {index + 1} / {availableSteps.length} · {current.step.title}
@@ -120,16 +161,6 @@ export function SectionTourGuide({ steps, persist = true }: { steps: TourStep[];
         </button>
       </div>
       <p className="mt-2 text-sm text-foreground/80">{current.step.text}</p>
-      {current.step.items && (
-        <ul className="mt-2.5 max-h-40 space-y-1.5 overflow-y-auto border-t border-border pt-2.5">
-          {current.step.items.map((item) => (
-            <li key={item.label} className="flex items-baseline gap-2 text-xs">
-              <span className="shrink-0 font-medium text-foreground/70">{item.label}</span>
-              <span className="text-foreground/50">{item.desc}</span>
-            </li>
-          ))}
-        </ul>
-      )}
       <div className="mt-3 flex items-center justify-end gap-1.5">
         <button
           type="button"

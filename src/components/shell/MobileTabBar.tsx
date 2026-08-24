@@ -26,6 +26,7 @@ export function MobileTabBar() {
               <Link
                 to={item.href}
                 title={item.labelKo}
+                data-tour-navitem={item.href}
                 className={`flex items-center justify-center px-1 py-2.5 text-center text-[11px] ${
                   businessMode
                     ? active

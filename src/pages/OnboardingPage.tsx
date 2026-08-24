@@ -297,10 +297,21 @@ export function OnboardingPage() {
               사원증이 순간이동하듯 옮겨가지 않고 자연스럽게 옆으로 밀리듯 보이게 함. max-h는 실제
               캡션 텍스트가 여러 줄로 접힐 때도 잘리지 않도록 넉넉하게 잡는다 */}
           <div className="flex w-full flex-col items-center gap-3 sm:flex-row sm:items-center sm:justify-center">
-            <EmployeeIdCard profile={trialPreviewProfile} photoUrl={photoUrl} hideAvatarPicker />
+            <div className="flex flex-col items-center gap-2">
+              <EmployeeIdCard profile={trialPreviewProfile} photoUrl={photoUrl} hideAvatarPicker />
+              {/* 카드 발급 상태 안내는 카드 바로 아래 붙여서 보여주고, 다음 단계로 넘어가면
+                  오른쪽에 나타나는 화살표+안내 문구가 그 역할을 이어받으므로 접어서 치운다 */}
+              <p
+                className={`overflow-hidden whitespace-nowrap text-xs font-medium text-accent transition-all duration-500 ease-out ${
+                  isDetailStep ? "max-h-0 opacity-0" : "max-h-6 opacity-100"
+                }`}
+              >
+                🎉 1분 무료체험용 사원증이 발급됐어요
+              </p>
+            </div>
             <div
-              className={`flex flex-col items-center gap-1.5 overflow-hidden text-foreground/40 transition-all duration-500 ease-out sm:px-2 ${
-                isDetailStep ? "max-h-56 opacity-100 sm:max-w-[10rem]" : "max-h-0 opacity-0 sm:max-w-0"
+              className={`flex flex-col items-center gap-1.5 overflow-hidden text-foreground/40 transition-all duration-500 ease-out ${
+                isDetailStep ? "max-h-56 opacity-100 sm:max-w-[10rem] sm:px-2" : "max-h-0 opacity-0 sm:max-w-0 sm:px-0"
               }`}
             >
               <ArrowDown className="size-5 shrink-0 sm:hidden" />
@@ -320,7 +331,7 @@ export function OnboardingPage() {
           {error && <p className="text-sm text-red-600">{error}</p>}
         </div>
         <TrialActionBar
-          message={isDetailStep ? "이 프로필로 오늘 하루를 체험해요" : "1분 무료체험용 사원증이 발급됐어요"}
+          message={isDetailStep ? "이 프로필로 오늘 하루를 체험해요" : "다음을 눌러 실제 폼도 미리 볼까요?"}
           primaryLabel={submitting ? "불러오는 중..." : "다음"}
           primaryDisabled={submitting}
           onPrimary={isDetailStep ? handleTrialContinue : () => setTrialStep("detail")}
