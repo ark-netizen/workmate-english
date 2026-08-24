@@ -173,12 +173,21 @@ export function OnboardingPage() {
   const [trialStep, setTrialStep] = useState<"card" | "detail">("card");
   const [advancing, setAdvancing] = useState(false);
   const { photoUrl } = useAvatarPhoto();
+  // 사원증이 뚝 하고 갑자기 나타나는 느낌을 줄이려고, 체험판 화면임이 확정된 다음 프레임에
+  // 살짝 위로 밀려 올라오며 페이드인 되게 함
+  const [trialEntered, setTrialEntered] = useState(false);
 
   useEffect(() => {
     isAnonymousSession().then((isTrial) => {
       if (isTrial) setIsTrialSession(true);
     });
   }, []);
+
+  useEffect(() => {
+    if (!isTrialSession) return;
+    const raf = requestAnimationFrame(() => setTrialEntered(true));
+    return () => cancelAnimationFrame(raf);
+  }, [isTrialSession]);
 
   const resolvedIndustry = industry === "기타" ? customIndustry.trim() : industry;
   const canSubmit =
@@ -281,7 +290,7 @@ export function OnboardingPage() {
         <div
           className={`flex flex-1 flex-col items-center px-4 pb-10 text-center transition-all duration-500 ease-out ${
             isDetailStep ? "justify-start gap-6 pt-8" : "justify-center gap-6"
-          }`}
+          } ${trialEntered ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"}`}
         >
           <h1 className="break-keep text-lg font-semibold">🎉 1분 무료체험을 위한 사원증 발급 완료!</h1>
           {/* 화살표+미리보기 칸을 항상 DOM에 두고 max-width/opacity만 트랜지션해서, "다음"을 눌렀을 때

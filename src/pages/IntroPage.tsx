@@ -541,7 +541,7 @@ export function IntroPage({
   onContinueWithoutLogin,
   onLoggedIn,
 }: {
-  onContinueWithoutLogin: () => void;
+  onContinueWithoutLogin: () => Promise<void>;
   onLoggedIn: () => void;
 }) {
   const [showLogin, setShowLogin] = useState(false);
@@ -549,15 +549,24 @@ export function IntroPage({
   // 안내만 띄우고 막는다. 소개 페이지 자체는 반응형으로 볼 수 있게 둠.
   const [showMobileNotice, setShowMobileNotice] = useState(false);
   const { businessMode, setBusinessMode } = useBusinessMode();
+  // 체험 세션 생성이 끝날 때까지 클릭 반응이 없어 "먹통"처럼 보이던 문제 — 누른 즉시
+  // 버튼을 비활성화하고 로딩 문구로 바꿔서 진행 중임을 알려준다
+  const [startingTrial, setStartingTrial] = useState(false);
 
   const isMobileViewport = () => typeof window !== "undefined" && window.innerWidth < 768;
 
-  const handleTrialClick = () => {
+  const handleTrialClick = async () => {
     if (isMobileViewport()) {
       setShowMobileNotice(true);
       return;
     }
-    onContinueWithoutLogin();
+    if (startingTrial) return;
+    setStartingTrial(true);
+    try {
+      await onContinueWithoutLogin();
+    } catch {
+      setStartingTrial(false);
+    }
   };
 
   const handleLoginClick = () => {
@@ -616,11 +625,12 @@ export function IntroPage({
             <button
               type="button"
               onClick={handleTrialClick}
-              className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium hover:opacity-90 sm:px-4 sm:text-sm ${
+              disabled={startingTrial}
+              className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium hover:opacity-90 disabled:opacity-60 sm:px-4 sm:text-sm ${
                 businessMode ? "bg-white text-[#2a2620]" : "bg-accent text-white"
               }`}
             >
-              1분 체험하기
+              {startingTrial ? "준비 중..." : "1분 체험하기"}
             </button>
             <div
               role="group"
@@ -688,9 +698,10 @@ export function IntroPage({
               <button
                 type="button"
                 onClick={handleTrialClick}
-                className="rounded-full bg-accent px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-accent/20 hover:opacity-90"
+                disabled={startingTrial}
+                className="rounded-full bg-accent px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-accent/20 hover:opacity-90 disabled:opacity-60"
               >
-                1분 가상 근무 체험하기 (로그인 불필요)
+                {startingTrial ? "체험 준비 중..." : "1분 가상 근무 체험하기 (로그인 불필요)"}
               </button>
               <button
                 type="button"
@@ -737,9 +748,10 @@ export function IntroPage({
         <button
           type="button"
           onClick={handleTrialClick}
-          className="mt-6 rounded-full bg-white px-8 py-3 text-sm font-semibold text-accent shadow-lg hover:opacity-90"
+          disabled={startingTrial}
+          className="mt-6 rounded-full bg-white px-8 py-3 text-sm font-semibold text-accent shadow-lg hover:opacity-90 disabled:opacity-60"
         >
-          지금 바로 체험하기
+          {startingTrial ? "체험 준비 중..." : "지금 바로 체험하기"}
         </button>
       </section>
 

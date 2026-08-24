@@ -15,6 +15,7 @@ import { isAutoAdvanceEnabled, setAutoAdvance } from "@/lib/qaAutoAdvance";
 import { SectionTourGuide, type TourStep } from "@/components/home/SectionTourGuide";
 import { isAnonymousSession } from "@/lib/session";
 import { TRIAL_ROLE_LABEL, useTrialTargets } from "@/lib/trialTargets";
+import { navItems } from "@/components/shell/nav-items";
 
 // 심사 기간 등 외부에 라이브 사이트를 공개하는 동안은, 데이터를 실제로 지우거나 조작하는
 // 위험한 QA 버튼(초기화/승급 게이트 채우기 등)은 숨긴다 — 실수로 눌러도 안전한 "연락 바로
@@ -360,18 +361,24 @@ export function HomePage() {
     }
   };
 
+  // 메뉴 단계에서 항목 하나하나가 뭘 하는 곳인지 몰라 헤맨다는 피드백 — 8개 항목을 각각 별도
+  // 투어 단계로 쪼개면 클릭이 너무 많아지니, 같은 카드 안에 항목별 한 줄 설명을 목록으로 붙인다
+  const navTourItems = navItems.map((item) => ({ label: item.labelKo, desc: item.desc }));
+
   const tourSteps: TourStep[] = [
     // 데스크톱 사이드바/모바일 하단바는 반응형으로 항상 한쪽만 화면에 보이므로, 둘 다 후보로
     // 넣어두면 SectionTourGuide가 실제로 보이는(display:none 아닌) 쪽만 걸러서 써준다
     {
       selector: "#tour-nav-desktop",
       title: "메뉴",
-      text: "메신저·이메일·근태·업무일지·인사평가 등 다른 화면은 여기서 이동해요.",
+      text: "다른 화면은 여기서 이동해요.",
+      items: navTourItems,
     },
     {
       selector: "#tour-nav-mobile",
       title: "메뉴",
-      text: "메신저·이메일·근태·업무일지·인사평가 등 다른 화면은 여기서 이동해요.",
+      text: "다른 화면은 여기서 이동해요.",
+      items: navTourItems,
     },
     {
       selector: "#tour-profile",

@@ -56,17 +56,56 @@ export const TRIAL_REPLY = {
   word_hints: [],
 }
 
+// 실제 리포트가 상대별(동료/상사/거래처) 톤을 어떻게 비교·교정해주는지 체험만으로도 느낄 수
+// 있도록, 세 명 모두와의 대화를 반영한 예시 내용으로 채운다(실제 서비스는 매일 다른 상황·문장으로 생성됨)
 export const TRIAL_DAILY_REPORT = {
   workday_summary:
-    '체험판에서는 Jake·Ellen·Liam Carter 중 한 명과 짧게 대화를 나눠봤어요. 실제 서비스에서는 매일 세 명 모두와 대화하며 훨씬 풍부한 리포트를 받아볼 수 있어요.',
+    '오늘은 Jake(동료)·Ellen(상사)·Liam Carter(거래처) 모두에게 DVD 배송 지연 상황을 전달했어요. 상대에 따라 캐주얼·격식체·비즈니스 격식으로 톤을 구분해서 답장했고, 전반적으로 자연스러웠어요. 실제 서비스에서는 매일 다른 업무 상황으로 이런 리포트가 쌓여가요.',
   good_expressions: [
-    { text: 'Sure, I can check it by 3!', note: '요청에 자연스럽게 응답하는 캐주얼 표현이에요.' },
+    { text: 'Sure, I can check it by 3!', note: 'Jake(동료)에게 캐주얼하게 응답 — 짧고 친근한 톤을 잘 살렸어요.' },
+    { text: "Of course, I'll have it reviewed by 3pm.", note: 'Ellen(상사)에게는 격식체로 전환해서 정중하게 답변했어요.' },
+    {
+      text: 'Thank you for reaching out. We will complete the review by 3:00 PM.',
+      note: 'Liam Carter(거래처)에게는 가장 격식 있는 표현을 사용해 신뢰감을 줬어요.',
+    },
   ],
-  corrections: [],
-  register_feedback: { colleague: '캐주얼한 톤을 잘 사용했어요.', manager: '-', client: '-' },
-  recurring_issues: [],
+  corrections: [
+    {
+      before: "Of course, I'll have it reviewed by 3pm.",
+      after: 'Of course, I will have it reviewed by 3 p.m.',
+      note: "구어체 축약형(I'll)보다 상사에게는 완전한 형태(I will)가 더 격식 있게 느껴져요. 시간 표기도 'pm' 대신 'p.m.'으로 쓰면 더 정중한 톤이 돼요.",
+    },
+  ],
+  register_feedback: [
+    {
+      role: 'colleague',
+      their_quote: 'Hey, can you take a look by 3? 🙏',
+      their_quote_ko: '3시까지 봐줄 수 있어? 🙏',
+      user_quote: 'Sure, I can check it by 3!',
+      note: '동료 사이에는 느낌표와 짧은 문장으로 캐주얼하게 응답하는 게 자연스러워요. 이모지도 부담 없이 써도 좋아요.',
+    },
+    {
+      role: 'manager',
+      their_quote: 'Could you please review this by 3pm today?',
+      their_quote_ko: '오늘 3시까지 검토해주실 수 있을까요?',
+      user_quote: "Of course, I'll have it reviewed by 3pm.",
+      note: '상사의 정중한 요청에는 "Of course" 정도로 응답하면 예의 바르면서도 자연스러워요.',
+    },
+    {
+      role: 'client',
+      their_quote: 'We would kindly request your review by 3:00 PM.',
+      their_quote_ko: '3시까지 검토를 정중히 요청드립니다.',
+      user_quote: 'Thank you for reaching out. We will complete the review by 3:00 PM.',
+      note: '거래처의 완곡하고 격식 있는 표현엔 "We will complete" 식으로 받아 응답하면 프로페셔널하게 느껴져요.',
+    },
+  ],
+  recurring_issues: [
+    "축약형(I'll, We're 등)은 캐주얼한 대화엔 자연스럽지만, 상사·거래처 대상 격식체에서는 완전한 형태로 풀어 쓰는 연습이 필요해요.",
+  ],
   recommended_expressions: [
-    { en: 'I will have it ready by 3pm.', ko: '3시까지 준비해두겠습니다.', note: '상사·거래처에게 시간 약속을 명확히 전달할 때 유용해요.' },
+    { en: 'I will have it ready by 3 p.m.', ko: '오후 3시까지 준비해두겠습니다.', note: '상사·거래처에게 시간 약속을 명확히 전달할 때 유용해요.' },
+    { en: 'Thank you for your patience.', ko: '기다려주셔서 감사합니다.', note: '지연 상황을 전달할 때 상대를 배려하는 느낌을 더해줘요.' },
+    { en: "I'll keep you posted.", ko: '진행 상황 계속 알려드릴게요.', note: '동료 사이의 캐주얼한 후속 안내 표현이에요.' },
   ],
   next_day_context: null,
 }

@@ -11,9 +11,14 @@ export interface TourStep {
   selector: string;
   /** 있으면 "다음" 대신 이 버튼을 보여주고, 누르면 onClick 실행 후 투어를 닫는다(예: "동료에게 가기") */
   cta?: { label: string; onClick: () => void };
+  /** 메뉴처럼 하나의 강조 영역 안에 항목이 여러 개일 때, 항목별 한 줄 설명을 카드 안에 목록으로 보여줌 */
+  items?: { label: string; desc: string }[];
 }
 
-const HIGHLIGHT_CLASSES = ["ring-2", "ring-accent", "ring-offset-2", "rounded-xl"];
+// ring-offset을 쓰면 링이 요소 바깥으로 2~4px 삐져나오는데, 사이드바/상단 탭바처럼 화면 맨
+// 가장자리(y=0)에 붙은 요소는 그 여백이 뷰포트 밖이라 링 윗부분이 잘려 보인다 — ring-inset으로
+// 요소 안쪽에 그려서 어떤 위치에서도 안 잘리게 함
+const HIGHLIGHT_CLASSES = ["ring-2", "ring-inset", "ring-accent", "rounded-xl"];
 
 function isVisible(el: HTMLElement) {
   return el.offsetParent !== null;
@@ -115,6 +120,16 @@ export function SectionTourGuide({ steps, persist = true }: { steps: TourStep[];
         </button>
       </div>
       <p className="mt-2 text-sm text-foreground/80">{current.step.text}</p>
+      {current.step.items && (
+        <ul className="mt-2.5 max-h-40 space-y-1.5 overflow-y-auto border-t border-border pt-2.5">
+          {current.step.items.map((item) => (
+            <li key={item.label} className="flex items-baseline gap-2 text-xs">
+              <span className="shrink-0 font-medium text-foreground/70">{item.label}</span>
+              <span className="text-foreground/50">{item.desc}</span>
+            </li>
+          ))}
+        </ul>
+      )}
       <div className="mt-3 flex items-center justify-end gap-1.5">
         <button
           type="button"

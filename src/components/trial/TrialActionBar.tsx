@@ -28,6 +28,13 @@ export function TrialActionBar({
 }) {
   const barRef = useRef<HTMLDivElement>(null);
   const [showNudge, setShowNudge] = useState(false);
+  // 처음 뜰 때 자리에 이미 있던 것처럼 뚝 나타나면 어색해서, 마운트 직후 살짝 옆에서
+  // 밀려들어오며 페이드인 되게 함(라우트 이동으로 다시 마운트될 때도 같은 효과)
+  const [entered, setEntered] = useState(false);
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setEntered(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
 
   // 진행 버튼이 있는 동안(=아직 눌러야 할 액션이 남아있는 동안) 카드 바깥을 클릭/입력하려 하면
   // 이 카드를 놓치기 쉬워서, 바깥 클릭을 감지해 잠깐 안내 문구를 띄워준다
@@ -50,7 +57,9 @@ export function TrialActionBar({
   return (
     <div
       ref={barRef}
-      className="fixed inset-x-4 top-1/2 z-30 mx-auto max-w-sm -translate-y-1/2 rounded-xl border border-accent/30 bg-surface p-4 shadow-xl md:inset-x-auto md:right-6 md:w-80"
+      className={`fixed inset-x-4 top-1/2 z-30 mx-auto max-w-sm -translate-y-1/2 rounded-xl border border-accent/30 bg-surface p-4 shadow-xl transition-all duration-300 ease-out md:inset-x-auto md:right-6 md:w-80 ${
+        entered ? "translate-x-0 opacity-100" : "translate-x-4 opacity-0 md:translate-x-6"
+      }`}
     >
       {showNudge && (
         <div className="absolute inset-x-0 -top-10 flex justify-center px-4">
