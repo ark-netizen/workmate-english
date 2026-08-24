@@ -285,28 +285,28 @@ export function OnboardingPage() {
           }`}
         >
           <h1 className="break-keep text-lg font-semibold">🎉 1분 무료체험을 위한 사원증 발급 완료!</h1>
-          <div
-            className={
-              isDetailStep
-                ? "flex w-full flex-col items-center gap-3 sm:flex-row sm:items-center sm:justify-center"
-                : "contents"
-            }
-          >
+          {/* 화살표+미리보기 칸을 항상 DOM에 두고 max-width/opacity만 트랜지션해서, "다음"을 눌렀을 때
+              사원증이 순간이동하듯 옮겨가지 않고 자연스럽게 옆으로 밀리듯 보이게 함 */}
+          <div className="flex w-full flex-col items-center gap-3 sm:flex-row sm:items-center sm:justify-center">
             <EmployeeIdCard profile={trialPreviewProfile} photoUrl={photoUrl} hideAvatarPicker />
-            {isDetailStep && (
-              <>
-                <div className="flex flex-col items-center gap-1.5 text-foreground/40 sm:px-2">
-                  <ArrowDown className="size-5 sm:hidden" />
-                  <ArrowRight className="hidden size-5 sm:block" />
-                  <p className="max-w-[10rem] break-keep text-[11px] leading-snug text-foreground/50">
-                    실제 서비스에서는 업종과 직무를 직접 설정할 수 있어요. 출퇴근 시간까지 반영해 나만의 사원증을 만들어요.
-                  </p>
-                </div>
-                <div className="animate-slidein w-full sm:w-auto">
-                  <TrialOnboardingPreview />
-                </div>
-              </>
-            )}
+            <div
+              className={`flex flex-col items-center gap-1.5 overflow-hidden text-foreground/40 transition-all duration-500 ease-out sm:px-2 ${
+                isDetailStep ? "max-h-16 opacity-100 sm:max-w-[10rem]" : "max-h-0 opacity-0 sm:max-w-0"
+              }`}
+            >
+              <ArrowDown className="size-5 shrink-0 sm:hidden" />
+              <ArrowRight className="hidden size-5 shrink-0 sm:block" />
+              <p className="max-w-[10rem] break-keep text-[11px] leading-snug text-foreground/50">
+                실제 서비스에서는 업종과 직무를 직접 설정할 수 있어요. 출퇴근 시간까지 반영해 나만의 사원증을 만들어요.
+              </p>
+            </div>
+            <div
+              className={`w-full overflow-hidden transition-all duration-500 ease-out sm:w-auto ${
+                isDetailStep ? "max-h-[40rem] opacity-100 sm:max-w-xs" : "max-h-0 opacity-0 sm:max-w-0"
+              }`}
+            >
+              <TrialOnboardingPreview />
+            </div>
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
         </div>
