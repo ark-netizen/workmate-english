@@ -548,3 +548,30 @@ body {
   .intro-game .intro-game-feature-window>div:last-child{padding:18px!important}
 }
 /* END RESPONSIVE-FEATURES-CANVAS-V8 */
+
+/* PIXEL-OFFICE-INTRINSIC-RESPONSIVE-V9 */
+.intro-pixel-office-bg{display:none}
+.intro-game .hero{position:relative!important;isolation:isolate!important;overflow:hidden!important;min-height:clamp(680px,43vw,820px)!important;background:linear-gradient(180deg,#83cef1 0%,#cdeeff 72%,#eaf5dc 100%)!important}
+.intro-game .hero:before,.intro-game .hero:after{display:none!important;content:none!important;background:none!important}
+.intro-game .hero .wrap{position:relative!important;z-index:2!important;width:min(100%,1180px)!important;min-height:clamp(610px,39vw,735px)!important}
+.intro-game .intro-pixel-office-bg{display:block;position:absolute;z-index:0;left:0;right:0;bottom:0;width:100%;height:auto;max-width:none;object-fit:contain;object-position:center bottom;image-rendering:pixelated;pointer-events:none}
+.intro-game .hero .copy,.intro-game .hero .preview{position:relative;z-index:3}
+.intro-game .hero .features{z-index:3}
+@media(max-width:1100px) and (min-width:851px){
+  .intro-game .hero{min-height:clamp(650px,68vw,790px)!important}
+  .intro-game .hero .wrap{min-height:clamp(590px,62vw,710px)!important}
+}
+@media(max-width:850px){
+  .intro-game .hero{min-height:auto!important;padding-bottom:0!important}
+  .intro-game .hero .wrap{min-height:auto!important}
+  .intro-game .intro-pixel-office-bg{position:relative;z-index:1;left:auto;right:auto;bottom:auto;width:calc(100% + 48px);margin:28px -24px 0}
+  .intro-game .hero .features{position:relative!important;z-index:3}
+}
+@media(max-width:560px){
+  .intro-game .intro-pixel-office-bg{width:calc(100% + 32px);margin:24px -16px 0}
+  .intro-game .hero .person{gap:8px!important}
+  .intro-game .hero .avatar{width:44px!important;height:51px!important;flex-basis:44px!important}
+  .intro-game .hero .avatar>svg{width:44px!important;height:51px!important}
+  .intro-game .hero .tone{margin-left:4px!important}
+}
+/* END PIXEL-OFFICE-INTRINSIC-RESPONSIVE-V9 */
