@@ -685,48 +685,31 @@ export function IntroPage({
       </nav>
       {businessMode && <div className="business-divider-strip" aria-hidden="true" />}
 
-      <section id="preview" className="intro-hero relative overflow-hidden bg-gradient-to-b from-accent/[.06] to-transparent px-4 py-14 md:py-20">
-        <div className="intro-hero-grid mx-auto grid max-w-5xl grid-cols-1 items-center gap-12 md:grid-cols-2 md:px-8">
-          <Reveal className="intro-hero-copy space-y-5 text-center md:text-left">
-            <h1 className="intro-hero-title text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl md:text-4xl">
-              <span className="block whitespace-nowrap">영어를 공부하지 마세요.</span>
-              <span className="block whitespace-nowrap">
-                <span className="text-accent">영어로 일하는 하루</span>를
-              </span>
-              <span className="block whitespace-nowrap">경험하세요.</span>
-            </h1>
-            <p className="intro-hero-description mx-auto max-w-md text-sm leading-relaxed text-foreground/70 md:mx-0">
-              하나의 상황도 캐주얼·격식체·비즈니스 메일 버전으로 배우며
-              <br className="hidden sm:block" /> 톤과 뉘앙스를 몸으로 익혀요.
-            </p>
-            <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center md:justify-start">
-              <button
-                type="button"
-                onClick={handleTrialClick}
-                disabled={startingTrial}
-                className="intro-hero-trial rounded-full bg-accent px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-accent/20 hover:opacity-90 disabled:opacity-60"
-              >
-                {startingTrial ? "체험 준비 중..." : "1분 가상 근무 체험하기 (로그인 불필요)"}
-              </button>
-              <button
-                type="button"
-                onClick={() => scrollToSection("features")}
-                className="intro-hero-features text-sm font-medium text-foreground/50 hover:text-foreground"
-              >
-                기능 살펴보기 ↓
-              </button>
+      <section id="preview" className="intro-hero intro-mock-hero">
+        <div className="intro-mock-wrap">
+          <Reveal className="intro-hero-copy intro-mock-copy">
+            <span className="intro-mock-eyebrow">WORKMATE ENGLISH</span>
+            <h1 className="intro-hero-title">영어를 배우는 대신,<br /><em>영어로 출근</em>해 보세요.</h1>
+            <p className="intro-hero-description">메신저와 이메일로 실제 업무를 처리하면, Solar가 관계별 표현과 문법을 첨삭하고 하루의 성장을 업무 리포트로 남겨요.</p>
+            <div className="intro-mock-actions">
+              <button type="button" onClick={handleTrialClick} disabled={startingTrial} className="intro-hero-trial">{startingTrial ? "체험 준비 중..." : "1분 가상 근무 체험하기"}</button>
+              <button type="button" onClick={() => scrollToSection("features")} className="intro-hero-features">핵심 기능 보기 ↓</button>
             </div>
-            <p className="intro-powered text-xs font-medium text-foreground/40">
-              Powered by <span className="font-semibold text-foreground/60">Upstage Solar</span> — 동료·상사·거래처의 모든 대화를 Solar가 만들어요
-            </p>
           </Reveal>
-
-          <Reveal delayMs={150}>
-            <MockPreview gameMode={businessMode} />
+          <Reveal delayMs={150} className="intro-mock-preview">
+            {businessMode ? (
+              <div className="intro-game-office">
+                <div className="intro-game-titlebar"><span>WORKMATE_OS.EXE</span><span>_　□　×</span></div>
+                <div className="intro-game-scene">
+                  <span className="intro-game-map">MAP: GLOBAL OFFICE · NEW QUEST ×3</span>
+                  <div className="intro-game-quest"><RankAvatar rank="과장" className="intro-game-avatar" /><div><b>NEW QUEST · ELLEN 팀장</b><p>“오후 3시 전까지 기획안을 검토해 주세요.”</p></div></div>
+                  <div className="intro-game-hud"><span>QUEST 01 / 03</span><span>HINT ●●○ · COMPLETE 0%</span></div>
+                </div>
+              </div>
+            ) : <MockPreview gameMode={false} />}
           </Reveal>
         </div>
       </section>
-
       <section id="features" className="intro-features-section border-t border-border bg-surface px-4 py-16 md:px-8">
         <div className="mx-auto max-w-5xl">
           <h2 className="intro-section-title text-center text-2xl font-bold tracking-tight md:text-3xl">이런 기능들이 있어요</h2>
@@ -743,20 +726,31 @@ export function IntroPage({
         </div>
       </section>
 
+      <section className="intro-trial-showcase">
+        <div className="intro-trial-heading"><span>1-MINUTE FREE TRIAL</span><h2>설명 대신, 1분 동안 직접 출근해 보세요.</h2></div>
+        <div className="intro-trial-frame">
+          <div className="intro-trial-top"><b>DAY 01 · 09:00 AM</b><span>QUEST PROGRESS</span><i><u /></i><strong>2 / 5</strong></div>
+          <div className="intro-trial-flow">
+            {[["새 연락 확인","메신저·이메일 도착"],["관계 파악","동료·상사·거래처"],["힌트 활용","단어 → 뼈대 → 답안"],["답장과 첨삭","Solar 즉시 피드백"],["업무 완료","업무 리포트 확인"]].map(([title, copy], i) => <div key={title}><em>{i + 1}</em><b>{title}</b><span>{copy}</span></div>)}
+          </div>
+          <button type="button" onClick={handleTrialClick} disabled={startingTrial} className="intro-trial-main">{startingTrial ? "체험 준비 중..." : "무료로 1분 체험하기"}</button>
+        </div>
+      </section>
+
       <ReviewsSection />
 
       {/* accent(teal)→accent-2(orange)가 정반대 색이라 그라데이션 중간이 탁한 카키색으로
           섞여 보였음 — 색 섞임 없이 브랜드 컬러 하나로만 깔끔하게 */}
       <section id="start" className="intro-final-cta bg-accent px-4 py-16 text-center text-white">
-        <h2 className="text-2xl font-bold tracking-tight">오늘부터 출근해보세요</h2>
-        <p className="intro-final-copy mt-2 text-sm text-white/80">로그인 없이 1분이면 시작할 수 있어요.</p>
+        <span className="intro-final-kicker">READY FOR WORK?</span>
+        <h2 className="text-2xl font-bold tracking-tight">오늘부터 영어로 출근하세요.</h2>
+        <p className="intro-final-copy mt-2 text-sm text-white/80">하루 한 건의 업무가 쌓여 실무 영어가 됩니다.</p>
         <button
           type="button"
-          onClick={handleTrialClick}
-          disabled={startingTrial}
+          onClick={handleLoginClick}
           className="intro-final-button mt-6 rounded-full bg-white px-8 py-3 text-sm font-semibold text-accent shadow-lg hover:opacity-90 disabled:opacity-60"
         >
-          {startingTrial ? "체험 준비 중..." : "지금 바로 체험하기"}
+          로그인 / 회원가입
         </button>
       </section>
 
@@ -785,3 +779,4 @@ export function IntroPage({
     </div>
   );
 }
+

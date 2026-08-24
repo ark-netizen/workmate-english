@@ -379,3 +379,61 @@ body {
   .intro-game .intro-preview { padding-top: 42px; }
 }
 /* END INTRO-PIXEL-OFFICE-V2 */
+
+/* INTRO-MOCKUP-STRUCTURE-V3 */
+.intro-page{font-family:Pretendard,"Malgun Gothic",sans-serif}
+.intro-mock-hero{overflow:hidden;padding:76px 24px 90px;background:#eef3fb}
+.intro-mock-wrap{max-width:1120px;margin:auto;display:grid;grid-template-columns:.92fr 1.08fr;gap:64px;align-items:center}
+.intro-mock-copy{opacity:1!important;text-align:left}
+.intro-mock-eyebrow{display:inline-block;margin-bottom:16px;color:#1757c8;font-size:12px;font-weight:800;letter-spacing:.08em}
+.intro-mock-copy .intro-hero-title{margin:0;color:#11213a;font-size:43px;line-height:1.23;letter-spacing:-.045em}
+.intro-mock-copy .intro-hero-title em{color:#1a56ff;font-style:normal}
+.intro-mock-copy .intro-hero-description{max-width:510px;margin:24px 0 0;color:#5f6d82;font-size:16px;line-height:1.75}
+.intro-mock-actions{display:flex;gap:12px;margin-top:32px}
+.intro-mock-actions button{height:52px;padding:0 24px;border-radius:12px;font-size:14px;font-weight:800}
+.intro-mock-actions .intro-hero-trial{border:0;background:#1a56ff;color:#fff}
+.intro-mock-actions .intro-hero-features{border:1px solid #d5dfec;background:#fff;color:#26384f}
+.intro-mock-preview{opacity:1!important}
+.intro-business .intro-mock-preview .intro-preview{max-width:580px}
+.intro-business .intro-preview-window{padding:20px!important}
+.intro-game .intro-mock-hero{min-height:720px;padding-bottom:300px;background:#bfe7f3 url("/intro/workmate-pixel-office-strip.png") center bottom/100% auto no-repeat}
+.intro-game .intro-mock-eyebrow{border:2px solid #244f3d;background:#ffe28a;padding:7px 10px;color:#173d35;box-shadow:3px 3px 0 #244f3d;font:800 11px Pretendard,sans-serif}
+.intro-game .intro-mock-copy .intro-hero-title{color:#173d35;text-shadow:2px 2px 0 rgba(255,255,255,.65)}
+.intro-game .intro-mock-copy .intro-hero-title em{color:#2f795d}
+.intro-game .intro-mock-copy .intro-hero-description{color:#315d53}
+.intro-game-office{overflow:hidden;border:3px solid #28352f;border-radius:7px;background:#fffaf0;box-shadow:8px 8px 0 rgba(40,53,47,.25)}
+.intro-game-titlebar{display:flex;justify-content:space-between;padding:11px 14px;border-bottom:3px solid #28352f;background:#2f795d;color:#fff;font-size:11px;font-weight:900}
+.intro-game-scene{position:relative;min-height:350px;padding:76px 24px 58px;background:rgba(255,250,240,.91)}
+.intro-game-map{position:absolute;top:16px;left:18px;border:2px solid #28352f;background:#fffaf0;padding:8px 10px;box-shadow:2px 2px 0 #28352f;font-size:10px;font-weight:900}
+.intro-game-quest{display:flex;align-items:center;gap:16px;border:3px solid #28352f;background:#e7f6ef;padding:18px}
+.intro-game-avatar{width:68px;height:78px;image-rendering:pixelated}
+.intro-game-quest b{font-size:12px;color:#2f795d}.intro-game-quest p{margin:8px 0 0;font-size:15px;font-weight:800}
+.intro-game-hud{position:absolute;right:16px;bottom:15px;left:16px;display:flex;justify-content:space-between;border:2px solid #28352f;background:#2f795d;padding:11px;color:#fff;font-size:10px;font-weight:900}
+.intro-features-section{padding-top:84px!important;padding-bottom:84px!important}
+.intro-game .intro-features-section{background:#eaf5dc!important}
+.intro-business .intro-features-section{background:#f7f9fc!important}
+.intro-trial-showcase{padding:88px 24px;background:#eaf5dc}
+.intro-business .intro-trial-showcase{background:#eef3fb}
+.intro-trial-heading{max-width:900px;margin:0 auto 34px;text-align:center}
+.intro-trial-heading>span{display:inline-block;border:2px solid #315d53;background:#ffe28a;padding:7px 11px;box-shadow:2px 2px 0 #315d53;font-size:11px;font-weight:900}
+.intro-trial-heading h2{margin:18px 0 0;color:#183d37;font-size:34px;letter-spacing:-.035em}
+.intro-trial-frame{max-width:1120px;margin:auto;overflow:hidden;border:3px solid #315d53;border-radius:7px;background:#fffaf0;box-shadow:8px 8px 0 rgba(49,93,83,.22);padding-bottom:28px}
+.intro-trial-top{display:flex;align-items:center;gap:18px;border-bottom:3px solid #315d53;background:#2f795d;padding:14px 18px;color:#fff;font-size:11px;font-weight:900}
+.intro-trial-top i{height:16px;flex:1;border:2px solid #183d37;background:#fff}.intro-trial-top u{display:block;width:40%;height:100%;background:#ffe28a}
+.intro-trial-flow{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;padding:28px}
+.intro-trial-flow>div{position:relative;min-height:155px;border:2px solid #315d53;background:#fff;padding:20px 10px;text-align:center}
+.intro-trial-flow>div:not(:last-child):after{content:"▶";position:absolute;right:-18px;top:46%;z-index:2;color:#2f795d}
+.intro-trial-flow em{display:grid;width:30px;height:30px;margin:auto;place-items:center;border-radius:50%;background:#315d53;color:#fff;font-style:normal;font-weight:800}
+.intro-trial-flow b,.intro-trial-flow span{display:block;margin-top:14px;font-size:12px}.intro-trial-flow span{color:#6b746e}
+.intro-trial-main{display:block;margin:0 auto;border:3px solid #315d53;background:#f09a63;padding:14px 24px;box-shadow:4px 4px 0 #315d53;font-size:13px;font-weight:900}
+.intro-business .intro-trial-heading>span{border:0;border-radius:999px;background:#e5edff;box-shadow:none;color:#1a56ff}
+.intro-business .intro-trial-heading h2{color:#172033}
+.intro-business .intro-trial-frame{border:1px solid #d8e2f1;border-radius:22px;background:#fff;box-shadow:0 20px 50px rgba(49,82,123,.10)}
+.intro-business .intro-trial-top{border:0;border-bottom:1px solid #d8e2f1;background:#1a56ff}
+.intro-business .intro-trial-flow>div{border:1px solid #dce5f2;border-radius:14px}.intro-business .intro-trial-flow em{background:#1a56ff}
+.intro-business .intro-trial-main{border:0;border-radius:12px;background:#1a56ff;color:#fff;box-shadow:none}
+.intro-reviews{padding-top:72px!important;padding-bottom:72px!important}
+.intro-game .intro-reviews{background:#eaf5dc!important}.intro-business .intro-reviews{background:#f7f9fc!important}
+.intro-final-kicker{display:block;margin-bottom:14px;color:#ffe28a;font-size:11px;font-weight:900}
+@media(max-width:800px){.intro-mock-wrap{grid-template-columns:1fr;gap:38px}.intro-mock-copy{text-align:center}.intro-mock-copy .intro-hero-title{font-size:34px}.intro-mock-actions{justify-content:center;flex-wrap:wrap}.intro-game .intro-mock-hero{padding-bottom:220px;background-size:auto 210px}.intro-trial-flow{grid-template-columns:1fr}.intro-trial-flow>div:not(:last-child):after{display:none}}
+/* END INTRO-MOCKUP-STRUCTURE-V3 */
