@@ -66,9 +66,11 @@ export function ConversationView({ conversation }: { conversation: Conversation 
   const [sending, setSending] = useState(false);
   // 이 대화의 답장이 어디서 트리거됐든(본인 화면 또는 체험판 하단 안내 바) "입력 중" 표시가 뜨도록 공유 상태도 함께 반영
   const showSending = sending || sendingIds.has(conversation.id);
+  // 메시지는 원래대로 위에서부터 쌓이게 두고(순서 유지), 입력창 패널 자체를 기본값부터
+  // 넉넉하게 키워서 시작점이 화면 아래로 멀리 떨어져 보이지 않게 함
   const { size: inputHeight, onDragStart: onInputResizeStart, onResetToDefault: onInputResizeReset } = useResizable({
     storageKey: "messenger-input-height",
-    defaultSize: 40,
+    defaultSize: 120,
     min: 40,
     max: 280,
     axis: "y",
@@ -167,10 +169,7 @@ export function ConversationView({ conversation }: { conversation: Conversation 
         </p>
       )}
 
-      {/* 메시지가 몇 개 안 될 때 위에 텅 빈 공간만 크게 남고 입력창이 화면 맨 아래로 멀리
-          떨어져 보인다는 평가가 있었음 — flex-col + justify-end로 메시지를 입력창 바로
-          위에 붙여서, 대화가 쌓일수록 위로 밀려 올라가는 자연스러운 채팅 UI로 바꿈 */}
-      <div className="flex flex-1 flex-col justify-end gap-3 overflow-y-auto px-4 py-4">
+      <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
         {displayMessages.map((message) => (
           <div
             key={message.id}

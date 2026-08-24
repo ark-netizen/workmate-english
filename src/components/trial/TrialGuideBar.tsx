@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useWorkday } from "@/context/useWorkday";
 import { endGuestTrial } from "@/lib/session";
@@ -38,6 +38,20 @@ export function TrialGuideBar() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allDone, report, finishing]);
+
+  // "○○에게 가기" 버튼을 눌러야만 다음 대화로 이동하는 게 번거롭다는 피드백 — 새 대상이
+  // 나타나면(직전 대상과 다르면) 자동으로 그 대화로 이동한다. 한 번 자동 이동한 대상으로는
+  // 다시 강제로 데려가지 않아서, 사용자가 스스로 다른 화면을 둘러보는 것까지 막지는 않는다
+  const autoNavigatedIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!activeTarget) return;
+    if (autoNavigatedIdRef.current === activeTarget.id) return;
+    autoNavigatedIdRef.current = activeTarget.id;
+    if (location.pathname !== activeTarget.path) {
+      navigate(activeTarget.path);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTarget?.id]);
 
   const handleEnd = async () => {
     await endGuestTrial();

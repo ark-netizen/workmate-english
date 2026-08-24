@@ -367,9 +367,7 @@ export function EmailView({ thread }: { thread: EmailThread }) {
         )}
       </div>
 
-      {/* 메시지 뷰와 동일하게, 메일이 몇 통 안 될 때 입력창이 화면 맨 아래로 멀리 떨어져
-          보이는 문제 — flex-col + justify-end로 메일 목록을 작성창 바로 위에 붙인다 */}
-      <div className="flex flex-1 flex-col justify-end gap-2 overflow-y-auto px-6 py-5">
+      <div className="flex-1 space-y-2 overflow-y-auto px-6 py-5">
         {displayEmails.map((email) => (
           <EmailMessage
             key={email.id}

@@ -14,15 +14,22 @@ export interface TourStep {
   /** 있으면 고정된 카드 대신, 강조된 요소 바로 옆(right)이나 위(top)에 말풍선으로 설명을 띄운다
    *  — 메뉴처럼 "이게 뭔지"가 그 요소 자체와 붙어 있어야 이해되는 경우에 씀 */
   anchor?: "right" | "top";
-  /** 메뉴처럼 강조 영역 안에 항목이 여러 개일 때, 하나씩 넘기지 않고 전부 한 번에 목록으로 보여줌 */
+  /** 화면이 좁아 항목 옆에 개별 배치할 자리가 없을 때(모바일 하단 탭바 등), 라벨을 반복하지
+   *  않고 설명만 목록으로 한 번에 보여줌 */
   items?: { label: string; desc: string }[];
+  /** 데스크톱처럼 세로로 자리가 있을 때, 각 항목 옆에 그 항목 높이에 맞춰 설명만 개별적으로
+   *  띄운다(라벨은 반복하지 않음 — 실제 메뉴에 이미 보이므로) */
+  sideLabels?: { selector: string; desc: string }[];
 }
 
 // ring-inset을 썼더니, 프로필 카드처럼 안쪽에 배경이 꽉 찬 자식 요소가 있는 경우 그 자식의
 // 배경이 안쪽으로 그려지는 링을 그대로 덮어버려 거의 안 보이는 문제가 있었다(자식은 항상 부모의
 // 테두리보다 나중에 칠해짐). ring-offset 없이 바깥으로만 살짝(2px) 튀어나오는 기본 outset 링을
 // 쓰면 자식에게 덮일 일도 없고, 뷰포트 가장자리에서도 2px 정도는 거의 안 잘려 보인다.
-const HIGHLIGHT_CLASSES = ["ring-2", "ring-accent", "rounded-xl"];
+// rounded-xl은 넣지 않는다 — 사이드바처럼 화면 가장자리에 딱 붙어 원래 각진 요소에 강제로
+// 둥근 모서리를 씌우면 화면 끝이 이상하게 잘려나간 것처럼 보인다. 카드형 섹션들은 이미 자기
+// className에 rounded-xl이 있어서 안 넣어도 그대로 둥글게 보임.
+const HIGHLIGHT_CLASSES = ["ring-2", "ring-accent"];
 
 const ANCHOR_WIDTH = 272; // 앵커 말풍선 너비(w-68) — 메뉴 항목 목록도 한 번에 담기게 넉넉히
 const ANCHOR_HEIGHT_GUESS = 260; // 실제 렌더 전 높이를 모르니, 클램프용으로 넉넉히 잡은 예상치(항목 목록 포함)
@@ -79,6 +86,8 @@ export function SectionTourGuide({
   const [availableSteps, setAvailableSteps] = useState<{ step: TourStep; el: HTMLElement }[]>([]);
   // anchor 단계에서 말풍선을 강조 요소 옆에 붙이기 위한 위치 — 스크롤/리사이즈에도 다시 계산함
   const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
+  // sideLabels 단계에서 각 항목 옆에 개별로 띄우는 설명들의 위치
+  const [sideLabelRects, setSideLabelRects] = useState<{ desc: string; rect: DOMRect }[]>([]);
 
   useEffect(() => {
     if (dismissed) return;
@@ -105,7 +114,21 @@ export function SectionTourGuide({
     el.classList.add(...HIGHLIGHT_CLASSES);
     const restore = bringToFront(el);
     el.scrollIntoView({ behavior: "smooth", block: "center" });
-    const updateRect = () => setAnchorRect(el.getBoundingClientRect());
+    const updateRect = () => {
+      setAnchorRect(el.getBoundingClientRect());
+      const sideLabels = current.step.sideLabels;
+      if (sideLabels) {
+        const rects = sideLabels
+          .map((s) => {
+            const target = document.querySelector<HTMLElement>(s.selector);
+            return target && isVisible(target) ? { desc: s.desc, rect: target.getBoundingClientRect() } : null;
+          })
+          .filter((v): v is { desc: string; rect: DOMRect } => v !== null);
+        setSideLabelRects(rects);
+      } else {
+        setSideLabelRects([]);
+      }
+    };
     updateRect();
     // 스크롤 애니메이션이 끝난 뒤 최종 위치로 한 번 더 맞춰줌
     const settleTimer = setTimeout(updateRect, 350);
@@ -140,8 +163,14 @@ export function SectionTourGuide({
   let anchorStyle: { top?: number; bottom?: number; left: number } | null = null;
   if (anchor && anchorRect && typeof window !== "undefined") {
     if (anchor === "right") {
+      // sideLabels가 있으면 항목별 설명을 옆에 이미 개별로 띄우므로, 이 카드(제목·다음 버튼)는
+      // 그 라벨들과 안 겹치게 마지막 라벨 아래로 내려서 배치한다
+      const topBase =
+        current.step.sideLabels && sideLabelRects.length > 0
+          ? sideLabelRects[sideLabelRects.length - 1].rect.bottom + 12
+          : anchorRect.top;
       anchorStyle = {
-        top: clamp(anchorRect.top, 8, window.innerHeight - ANCHOR_HEIGHT_GUESS - 8),
+        top: clamp(topBase, 8, window.innerHeight - ANCHOR_HEIGHT_GUESS - 8),
         left: clamp(anchorRect.right + 12, 8, window.innerWidth - ANCHOR_WIDTH - 8),
       };
     } else {
@@ -159,22 +188,36 @@ export function SectionTourGuide({
     : "fixed inset-x-4 top-1/2 z-30 mx-auto max-w-sm -translate-y-1/2 rounded-xl border border-accent/30 bg-surface p-4 shadow-xl md:inset-x-auto md:right-6 md:w-80";
 
   return (
-    <div className={cardClassName} style={anchorStyle ?? undefined}>
-      <div className="flex items-start justify-between gap-2">
-        <p className="text-xs font-semibold text-accent">
-          {index + 1} / {availableSteps.length} · {current.step.title}
-        </p>
-        <button
-          type="button"
-          onClick={dismiss}
-          aria-label="안내 닫기"
-          className="shrink-0 rounded p-0.5 text-foreground/40 hover:bg-black/[.05] hover:text-foreground/70"
-        >
-          <X className="size-4" />
-        </button>
-      </div>
-      <p className="mt-2 text-sm text-foreground/80">{current.step.text}</p>
-      {current.step.items && (
+    <>
+      {/* 항목 하나하나를 그 항목 높이에 맞춰 옆에 개별로 띄움 — 라벨은 실제 메뉴에 이미
+          보이므로 반복하지 않고 설명만 나란히 보여줌(가독성을 위해 라벨-설명을 다시 나열하는
+          목록형 카드 대신 이 방식을 씀) */}
+      {current.step.sideLabels &&
+        sideLabelRects.map(({ desc, rect }, i) => (
+          <div
+            key={i}
+            className="fixed z-30 max-w-[13rem] rounded-md border border-accent/20 bg-surface/95 px-2.5 py-1 text-xs text-foreground/70 shadow-sm"
+            style={{ top: rect.top + rect.height / 2 - 12, left: rect.right + 12 }}
+          >
+            {desc}
+          </div>
+        ))}
+      <div className={cardClassName} style={anchorStyle ?? undefined}>
+        <div className="flex items-start justify-between gap-2">
+          <p className="text-xs font-semibold text-accent">
+            {index + 1} / {availableSteps.length} · {current.step.title}
+          </p>
+          <button
+            type="button"
+            onClick={dismiss}
+            aria-label="안내 닫기"
+            className="shrink-0 rounded p-0.5 text-foreground/40 hover:bg-black/[.05] hover:text-foreground/70"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+        <p className="mt-2 text-sm text-foreground/80">{current.step.text}</p>
+        {current.step.items && (
         <ul className="mt-2.5 max-h-52 space-y-1.5 overflow-y-auto border-t border-border pt-2.5">
           {current.step.items.map((item) => (
             <li key={item.label} className="flex items-baseline gap-2 text-xs">
@@ -216,7 +259,8 @@ export function SectionTourGuide({
             {!isLast && <ChevronRight className="size-3.5" />}
           </button>
         )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -14,7 +14,6 @@ import { RANKS } from "@/components/promotion/rankArt";
 import { isAutoAdvanceEnabled, setAutoAdvance } from "@/lib/qaAutoAdvance";
 import { SectionTourGuide, type TourStep } from "@/components/home/SectionTourGuide";
 import { isAnonymousSession } from "@/lib/session";
-import { TRIAL_ROLE_LABEL, useTrialTargets } from "@/lib/trialTargets";
 import { navItems } from "@/components/shell/nav-items";
 
 // 심사 기간 등 외부에 라이브 사이트를 공개하는 동안은, 데이터를 실제로 지우거나 조작하는
@@ -218,20 +217,17 @@ export function HomePage() {
     workStatus,
     workday,
     todayItems,
-    contacts,
     conversations,
     emailThreads,
     deliverNext,
     finishWorkday,
     refresh,
     highlightedMessageId,
-    highlightMessage,
     pendingReviewBanner,
     leaveBalance,
     workContext,
   } = useWorkday();
   const navigate = useNavigate();
-  const { activeTarget: trialActiveTarget } = useTrialTargets();
   const [deliveringNext, setDeliveringNext] = useState(false);
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
   const [confirmFinish, setConfirmFinish] = useState(false);
@@ -365,22 +361,27 @@ export function HomePage() {
   // 붙는 말풍선 하나에 8개 항목 설명을 전부 한 번에 목록으로 보여주고 끝낸다(클릭 1번).
   // 데스크톱 사이드바/모바일 하단바는 반응형으로 항상 한쪽만 보이므로, 후보를 둘 다 넣어두면
   // 실제로 보이는 쪽만 걸러써준다
-  // 메뉴 자체엔 영어 라벨(Home/Messenger/...)이 보이는데 설명은 한글 라벨로 적으면 대조해서
-  // 읽기 어려우니, 실제 메뉴에 보이는 것과 같은 영어 라벨을 그대로 써서 바로 매칭되게 한다
-  const navTourItems = navItems.map((item) => ({ label: item.label, desc: item.desc }));
+  // 메뉴 자체엔 이미 라벨(Home/Messenger/...)이 보이므로, 설명 쪽에 라벨을 또 적으면 "메뉴에도
+  // Home, 설명에도 Home"처럼 중복돼 오히려 헷갈린다는 피드백 — 데스크톱은 화면에 세로 여유가
+  // 있으니 각 메뉴 항목 높이에 맞춰 설명만 그 옆에 개별로 띄운다(sideLabels). 모바일 하단
+  // 탭바는 가로로 촘촘히 붙어 있어 항목별로 개별 배치할 자리가 없으므로, 그쪽만 예전처럼
+  // 라벨+설명 목록 한 덩어리로 보여준다(items)
   const navTourSteps: TourStep[] = [
     {
       selector: "#tour-nav-desktop",
       title: "메뉴",
       text: "메뉴에서 볼 수 있는 기능들이에요.",
-      items: navTourItems,
       anchor: "right",
+      sideLabels: navItems.map((item) => ({
+        selector: `#tour-nav-desktop [data-tour-navitem="${item.href}"]`,
+        desc: item.desc,
+      })),
     },
     {
       selector: "#tour-nav-mobile",
       title: "메뉴",
       text: "메뉴에서 볼 수 있는 기능들이에요.",
-      items: navTourItems,
+      items: navItems.map((item) => ({ label: item.label, desc: item.desc })),
       anchor: "top",
     },
   ];
@@ -409,23 +410,9 @@ export function HomePage() {
     },
   ];
 
-  // 체험판은 마지막에 "새 메시지가 왔어요" 안내를 같은 카드 안에 이어서 보여주고, 버튼을 누르면
-  // 바로 그 연락으로 이동한다 — 예전엔 화면 하단에 별도 바로 떠서 이 카드와 겹쳐 보였음
-  if (isTrial && trialActiveTarget) {
-    const activeContactName = contacts.find((c) => c.role === trialActiveTarget.role)?.name;
-    tourSteps.push({
-      selector: "#tour-contacts",
-      title: "새 메시지",
-      text: `${activeContactName ?? TRIAL_ROLE_LABEL[trialActiveTarget.role]}님에게 새 메시지가 왔어요! 아래 버튼을 눌러 답장해보세요.`,
-      cta: {
-        label: `${TRIAL_ROLE_LABEL[trialActiveTarget.role]}에게 가기`,
-        onClick: () => {
-          if (trialActiveTarget.messageId) highlightMessage(trialActiveTarget.messageId);
-          navigate(trialActiveTarget.path);
-        },
-      },
-    });
-  }
+  // 체험판은 동료·상사·거래처가 전부 예약 상태로 시작해서(홈 투어 도중엔 아무도 안 보임),
+  // 투어 중엔 항상 trialActiveTarget이 없다 — "새 메시지" 카드 단계는 더 이상 안 씀. 투어가
+  // 끝나면 onDismiss에서 첫 연락을 받아와 바로 그 화면으로 자동 이동시킨다(아래 참고).
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-6 md:px-8 md:py-8">
@@ -577,8 +564,22 @@ export function HomePage() {
           steps={tourSteps}
           persist={!isTrial}
           // 체험판은 동료·상사·거래처 연락이 전부 예약 상태로 시작해서 투어 도중엔 아무도 안
-          // 보이다가, 투어를 다 보거나 닫는 순간 첫 연락(동료)이 바로 도착하게 함
-          onDismiss={isTrial ? () => { deliverNext().catch(() => {}); } : undefined}
+          // 보이다가, 투어를 다 보거나 닫는 순간 첫 연락(동료)이 도착함과 동시에 그 화면으로
+          // 바로 이동시킨다("~에게 가기" 버튼을 따로 누르게 하지 않음)
+          onDismiss={
+            isTrial
+              ? () => {
+                  deliverNext()
+                    .then((result) => {
+                      const r = result as { delivered?: boolean; conversationId?: string; channel?: string } | null;
+                      if (r?.delivered && r.conversationId) {
+                        navigate(r.channel === "email" ? `/email/${r.conversationId}` : `/messenger/${r.conversationId}`);
+                      }
+                    })
+                    .catch(() => {});
+                }
+              : undefined
+          }
         />
       )}
 
