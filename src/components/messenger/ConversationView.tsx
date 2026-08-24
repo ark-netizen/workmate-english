@@ -167,7 +167,10 @@ export function ConversationView({ conversation }: { conversation: Conversation 
         </p>
       )}
 
-      <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+      {/* 메시지가 몇 개 안 될 때 위에 텅 빈 공간만 크게 남고 입력창이 화면 맨 아래로 멀리
+          떨어져 보인다는 평가가 있었음 — flex-col + justify-end로 메시지를 입력창 바로
+          위에 붙여서, 대화가 쌓일수록 위로 밀려 올라가는 자연스러운 채팅 UI로 바꿈 */}
+      <div className="flex flex-1 flex-col justify-end gap-3 overflow-y-auto px-4 py-4">
         {displayMessages.map((message) => (
           <div
             key={message.id}

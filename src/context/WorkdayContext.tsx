@@ -218,10 +218,13 @@ export function WorkdayProvider({ children }: { children: ReactNode }) {
           return next;
         });
         await refresh();
-        // 시연 영상용 QA 토글 — 켜져 있으면 다음 예정 연락도 기다리지 않고 바로 발송.
+        // 시연 영상용 QA 토글이 켜져 있거나(수동), 체험판 계정이면(자동) 다음 예정 연락도
+        // 기다리지 않고 바로 발송한다 — 체험판은 동료·상사·거래처가 실제 시간차를 두고
+        // 도착하도록 예약돼 있는데(화면 설명하는 동안 다 와버리지 않게), 답장을 보내면 그
+        // 타이머를 기다리지 않고 바로 다음 사람이 오게 해서 시연 흐름이 끊기지 않게 한다.
         // 여기서 await하면 이 대화의 "작성 중" 표시가 다른 대화 발송이 끝날 때까지 늘어져
         // 마치 이 상대가 계속 답장 중인 것처럼 보이므로, 별도로 흘려보낸다(fire-and-forget)
-        if (isAutoAdvanceEnabled()) {
+        if (isAutoAdvanceEnabled() || data.isTrial) {
           api.deliverNext().then(() => refresh()).catch(() => {});
         }
       } finally {
@@ -237,7 +240,7 @@ export function WorkdayProvider({ children }: { children: ReactNode }) {
         });
       }
     },
-    [refresh],
+    [refresh, data.isTrial],
   );
 
   const markRead = useCallback(

@@ -202,7 +202,15 @@ export async function startWorkday(userId) {
     )
     const characterByRole = new Map(characters.map((ch) => [ch.role, ch]))
 
-    const scheduledAt = new Date().toISOString()
+    // 셋 다 한꺼번에 도착하면 시연 중(화면 설명하는 동안) 이메일까지 미리 다 보여버려서 어색하다 —
+    // 동료는 바로, 상사는 1분 30초 뒤, 거래처(이메일)는 3분 뒤로 순차 도착하게 예약해둔다.
+    // 다만 답장을 보내면(WorkdayContext의 자동 진행) 이 타이머를 기다리지 않고 바로 다음 연락이
+    // 오므로, 실제로는 "설명 다 끝나고 답장할 때쯤 딱 다음 게 온다"는 체감 타이밍이 된다
+    const now = Date.now()
+    const STAGGER_MS = { colleague: 0, manager: 90_000, client: 180_000 }
+    const scheduledAtByRole = Object.fromEntries(
+      TRIAL_CHARACTERS.map((c) => [c.role, new Date(now + (STAGGER_MS[c.role] ?? 0)).toISOString()]),
+    )
     const conversations = unwrap(
       await sb.from('conversations').insert(
         TRIAL_CHARACTERS.map((c) => ({
@@ -210,8 +218,8 @@ export async function startWorkday(userId) {
           character_id: characterByRole.get(c.role).id,
           channel: c.channel,
           subject: c.subject || null,
-          status: 'awaiting',
-          scheduled_at: scheduledAt,
+          status: c.role === 'colleague' ? 'awaiting' : 'scheduled',
+          scheduled_at: scheduledAtByRole[c.role],
         })),
       ).select(),
     )
@@ -232,15 +240,16 @@ export async function startWorkday(userId) {
       await sb.from('notification_schedules').insert(
         TRIAL_CHARACTERS.map((c) => {
           const convo = convoByCharacterId.get(characterByRole.get(c.role).id)
+          const isFirst = c.role === 'colleague'
           return {
             workday_id: workday.id,
             conversation_id: convo.id,
-            scheduled_at: scheduledAt,
-            status: 'sent',
+            scheduled_at: scheduledAtByRole[c.role],
+            status: isFirst ? 'sent' : 'scheduled',
             title: `${c.name} · ${roleLabel(c.role)}`,
             preview: preview(c.firstMessage),
             route: routeFor(c.channel, convo.id),
-            sent_at: scheduledAt,
+            sent_at: isFirst ? scheduledAtByRole[c.role] : null,
           }
         }),
       ),
@@ -248,7 +257,7 @@ export async function startWorkday(userId) {
 
     const created = TRIAL_CHARACTERS.map((c) => {
       const convo = convoByCharacterId.get(characterByRole.get(c.role).id)
-      return { id: convo.id, role: c.role, name: c.name, channel: c.channel, scheduled_at: scheduledAt }
+      return { id: convo.id, role: c.role, name: c.name, channel: c.channel, scheduled_at: scheduledAtByRole[c.role] }
     })
 
     return { workday, scenario, conversations: created }
@@ -559,9 +568,11 @@ export async function deliverConversation(conversationId) {
 
   const character = unwrap(await sb.from('characters').select('*').eq('id', convo.character_id).single())
   const workday = unwrap(await sb.from('workdays').select('user_id').eq('id', convo.workday_id).single())
+  const profile = await loadProfile(workday.user_id)
 
-  // '복습'/'후속 체크인' 대화는 생성 시점에 이미 메시지를 넣어뒀으므로, LLM 재생성 없이 상태만 넘긴다
-  if (convo.kind === 'review' || convo.kind === 'checkin') {
+  // '복습'/'후속 체크인' 대화, 그리고 체험판 대화는 생성 시점에 이미 메시지를 넣어뒀으므로,
+  // LLM 재생성 없이 상태만 넘긴다 — 체험판은 특히 LLM 비용을 쓰지 않는 고정 콘텐츠라야 함
+  if (convo.kind === 'review' || convo.kind === 'checkin' || profile.is_trial) {
     const existing = unwrap(await sb.from('messages').select('*').eq('conversation_id', convo.id).order('seq')) || []
     const firstMsg = existing[0]
     const label = convo.kind === 'review' ? '복습' : roleLabel(character.role)
@@ -578,7 +589,6 @@ export async function deliverConversation(conversationId) {
   }
 
   const scenario = unwrap(await sb.from('scenarios').select('*').eq('id', character.scenario_id).single())
-  const profile = await loadProfile(workday.user_id)
 
   // 크론 발송과 "연락 바로 받기" 수동 클릭이 같은 대화를 동시에 집으면 메시지가 중복되거나,
   // LLM 생성 도중 하나가 실패해도 status만 넘어가 메시지 없이 'awaiting'으로 남는 문제가 생길 수 있다 —

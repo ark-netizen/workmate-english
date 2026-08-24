@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useWorkday } from "@/context/useWorkday";
 import { endGuestTrial } from "@/lib/session";
 import { TRIAL_REPLY_TEXT } from "@/lib/trialReplies";
-import { TRIAL_ROLE_LABEL, useTrialTargets } from "@/lib/trialTargets";
+import { TRIAL_ROLE_LABEL, TRIAL_ROLE_ORDER, useTrialTargets } from "@/lib/trialTargets";
 import { TrialActionBar } from "./TrialActionBar";
 
 // "1분 체험하기" 게스트 전용 — 실제 화면(메신저/이메일/리포트)은 그대로 두고, 화면 우측 중앙에
@@ -67,7 +67,9 @@ export function TrialGuideBar() {
   // 홈 화면은 SectionTourGuide 쪽 "새 메시지" 단계가 대신 안내하므로 여기서는 표시하지 않는다
   if (onHomePage || targets.length === 0) return null;
 
-  const progressDots = targets.length + 1; // 답장 3개 + 리포트
+  // 동료·상사·거래처가 시차를 두고 도착해서 targets.length가 처음엔 1, 2로 작게 잡힌다 —
+  // 점 개수가 그때그때 늘었다 줄었다 하면 이상해 보이니 항상 고정된 전체 인원 기준으로 그린다
+  const progressDots = TRIAL_ROLE_ORDER.length + 1; // 답장 3개 + 리포트
   const filledDots = doneCount + (report ? 1 : 0);
 
   const primaryLabel = !activeTarget
@@ -92,7 +94,8 @@ export function TrialGuideBar() {
         : isManagerStep
           ? "이걸 토대로 답변을 작성할게요"
           : `${TRIAL_ROLE_LABEL[activeTarget.role]}에게 온 연락에 답장해보세요`
-      : "";
+      // 다음 대상이 아직 도착 전(시차 발송 중) — 곧 오니 잠깐 기다려달라는 안내
+      : "곧 다음 연락이 도착해요...";
 
   return (
     <TrialActionBar

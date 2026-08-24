@@ -53,7 +53,11 @@ export function useTrialTargets() {
   }, [contacts, conversations, emailThreads]);
 
   const doneCount = targets.filter((t) => t.done).length;
-  const allDone = targets.length > 0 && doneCount === targets.length;
+  // 동료·상사·거래처 순서로 시차를 두고 도착하게 바뀌어서, 아직 배달 안 된 대상은 targets에
+  // 아예 안 잡힌다(예: 상사가 도착 전이면 targets.length===1) — targets.length만 보면 "1명뿐이니
+  // 다 끝났다"고 오판해서 아직 안 온 대상이 있는데도 조기 퇴근 처리가 됐었다. 반드시 3명 전원이
+  // 도착(targets에 다 잡힘)하고 전원 답장까지 마쳤을 때만 끝난 것으로 본다
+  const allDone = targets.length === TRIAL_ROLE_ORDER.length && doneCount === TRIAL_ROLE_ORDER.length;
   const activeTarget = targets.find((t) => !t.done) ?? null;
 
   return { targets, doneCount, allDone, activeTarget };
