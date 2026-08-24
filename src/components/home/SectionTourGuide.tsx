@@ -188,32 +188,60 @@ export function SectionTourGuide({
   const extendPanel = current.step.extendPanel;
 
   // rowItems + extendPanel 조합: 설명 한 줄 한 줄을 그 항목의 실제 행 위치에 맞춰 그리는
-  // 전용 레이아웃 — "표의 행처럼 나란히" 보여야 해서 일반 카드 렌더링과는 완전히 다르게 그린다
+  // 전용 레이아웃 — "표의 행처럼 나란히" 보여야 해서 일반 카드 렌더링과는 완전히 다르게 그린다.
+  // 위쪽(설명 목록)은 사이드바와 같은 색으로 이어붙이되, 실제로 눌러야 하는 이전/다음 버튼은
+  // 거기 섞여 있으면 "여기가 조작 가능한 곳"이라는 게 안 보인다는 피드백 — 버튼 영역만 흰
+  // 카드로 분리해서 색이 바뀌는 지점 자체가 "여기부터 누르는 곳"이라는 신호가 되게 한다.
+  // 흰 카드는 설명 목록 바로 아래에 틈 없이 이어붙여서, 괜히 안 쓰는 여백이 생기지 않게 한다.
   if (current.step.rowItems && extendPanel && anchorRect && rowRects.length > 0 && typeof window !== "undefined") {
     const HEADER_H = 34;
-    const FOOTER_H = 40;
     const PAD = 8;
+    const CONTROL_H = 56;
     const firstRect = rowRects[0].rect;
     const lastRect = rowRects[rowRects.length - 1].rect;
     const panelLeft = clamp(anchorRect.right, 8, window.innerWidth - ANCHOR_WIDTH - 8);
     const panelTop = clamp(firstRect.top - HEADER_H - PAD, 8, window.innerHeight - 100);
-    const panelHeight = lastRect.bottom + FOOTER_H + PAD - panelTop;
+    const rowsBottom = lastRect.bottom + PAD;
+    const tealHeight = rowsBottom - panelTop;
 
     return (
       <>
         <div
-          className={`fixed z-30 w-[17rem] max-w-[calc(100vw-1rem)] rounded-r-xl transition-[top,left,height] duration-200 ease-out ${extendPanel.bg}`}
-          style={{ top: panelTop, left: panelLeft, height: panelHeight }}
+          className={`fixed z-30 w-[17rem] max-w-[calc(100vw-1rem)] rounded-t-xl transition-[top,left,height] duration-200 ease-out ${extendPanel.bg}`}
+          style={{ top: panelTop, left: panelLeft, height: tealHeight }}
         />
-        {leaving ? (
-          <p
-            className={`fixed z-30 flex items-center gap-2 px-3 text-sm ${extendPanel.body}`}
-            style={{ top: panelTop + panelHeight / 2 - 10, left: panelLeft, width: ANCHOR_WIDTH }}
-          >
-            <span className="size-3.5 shrink-0 animate-spin rounded-full border-2 border-current/30 border-t-current" />
-            곧 다음 화면으로 이동해요...
-          </p>
-        ) : (
+        <div
+          className="fixed z-30 w-[17rem] max-w-[calc(100vw-1rem)] rounded-b-xl border border-t-0 border-border bg-surface shadow-lg transition-[top,left] duration-200 ease-out"
+          style={{ top: rowsBottom, left: panelLeft, height: CONTROL_H }}
+        >
+          {leaving ? (
+            <p className="flex h-full items-center gap-2 px-3 text-sm text-foreground/70">
+              <span className="size-3.5 shrink-0 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
+              곧 다음 화면으로 이동해요...
+            </p>
+          ) : (
+            <div className="flex h-full items-center justify-end gap-1.5 px-3">
+              <button
+                type="button"
+                onClick={() => setIndex((i) => Math.max(0, i - 1))}
+                disabled={index === 0}
+                aria-label="이전"
+                className="flex h-7 w-7 items-center justify-center rounded-full border border-border text-foreground/60 hover:bg-black/[.03] disabled:opacity-30"
+              >
+                <ChevronLeft className="size-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => (isLast ? handleFinalConfirm() : setIndex((i) => i + 1))}
+                className="flex items-center gap-1 rounded-full bg-accent px-3 py-1.5 text-xs font-medium text-white hover:opacity-90"
+              >
+                {isLast ? "확인했어요" : "다음"}
+                {!isLast && <ChevronRight className="size-3.5" />}
+              </button>
+            </div>
+          )}
+        </div>
+        {!leaving && (
           <>
             <div
               className="fixed z-30 flex items-center justify-between px-3"
@@ -240,28 +268,6 @@ export function SectionTourGuide({
                 {desc}
               </p>
             ))}
-            <div
-              className="fixed z-30 flex items-center justify-end gap-1.5 px-3"
-              style={{ top: lastRect.bottom + PAD, left: panelLeft, width: ANCHOR_WIDTH }}
-            >
-              <button
-                type="button"
-                onClick={() => setIndex((i) => Math.max(0, i - 1))}
-                disabled={index === 0}
-                aria-label="이전"
-                className={`flex h-7 w-7 items-center justify-center rounded-full border disabled:opacity-30 ${extendPanel.prevBtn}`}
-              >
-                <ChevronLeft className="size-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => (isLast ? handleFinalConfirm() : setIndex((i) => i + 1))}
-                className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium hover:opacity-90 ${extendPanel.nextBtn}`}
-              >
-                {isLast ? "확인했어요" : "다음"}
-                {!isLast && <ChevronRight className="size-3.5" />}
-              </button>
-            </div>
           </>
         )}
       </>
