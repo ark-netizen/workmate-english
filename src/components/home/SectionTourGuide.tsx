@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { useBusinessMode } from "@/context/useBusinessMode";
 
 const STORAGE_KEY = "go:home-section-tour-dismissed";
-const MENU_MOVE_MS = 360;
-const MENU_SCAN_STEP_MS = 75;
-const MENU_SCAN_SETTLE_MS = 90;
 
 export interface TourStep {
   title: string;
@@ -14,18 +12,13 @@ export interface TourStep {
   selector: string;
   /** 있으면 "다음" 대신 이 버튼을 보여주고, 누르면 onClick 실행 후 투어를 닫는다(예: "동료에게 가기") */
   cta?: { label: string; onClick: () => void };
-  /** 있으면 고정된 카드 대신, 강조된 요소 바로 옆(right)이나 위(top)에 말풍선으로 설명을 띄운다
-   *  — 메뉴처럼 "이게 뭔지"가 그 요소 자체와 붙어 있어야 이해되는 경우에 씀 */
+  /** 있으면 고정된 카드 대신, 강조된 요소 바로 옆(right)이나 위(top)에 말풍선으로 설명을 띄운다 */
   anchor?: "right" | "top";
-  /** 메뉴처럼 강조 영역 안에 항목이 여러 개일 때, 하나씩 넘기지 않고 설명만 한 번에 목록으로
-   *  보여줌 — 라벨은 실제 메뉴에 이미 보이므로 반복하지 않는다 */
+  /** 메뉴처럼 강조 영역 안에 항목이 여러 개일 때 설명만 한 번에 목록으로 보여준다 */
   items?: string[];
-  /** items와 달리, 설명 한 줄 한 줄을 그 항목의 실제 화면 위치(행)에 맞춰 정렬해서 보여준다
-   *  — "표의 행"처럼 왼쪽 메뉴와 오른쪽 설명이 같은 높이에 나란히 보이게 함(extendPanel 전용) */
+  /** 설명 한 줄 한 줄을 실제 화면 행 위치에 맞춰 나란히 정렬해서 보여준다 */
   rowItems?: { selector: string; desc: string }[];
-  /** 있으면 흰 카드(테두리·그림자) 대신, 강조된 요소와 같은 배경색으로 틈 없이 이어붙여서
-   *  "그 요소 자체가 옆으로 늘어난 것"처럼 보이게 한다 — 메뉴처럼 별도 말풍선보다는 사이드바
-   *  자체의 연장처럼 보이는 게 자연스러운 경우에 씀(anchor: "right" 전용) */
+  /** 사이드바에 붙는 확장 패널 테마. rowItems 전용 패널에서는 모드별 전용 색을 별도로 적용한다. */
   extendPanel?: {
     bg: string;
     title: string;
@@ -37,17 +30,9 @@ export interface TourStep {
   };
 }
 
-// ring-inset을 썼더니, 프로필 카드처럼 안쪽에 배경이 꽉 찬 자식 요소가 있는 경우 그 자식의
-// 배경이 안쪽으로 그려지는 링을 그대로 덮어버려 거의 안 보이는 문제가 있었다(자식은 항상 부모의
-// 테두리보다 나중에 칠해짐). ring-offset 없이 바깥으로만 살짝(2px) 튀어나오는 기본 outset 링을
-// 쓰면 자식에게 덮일 일도 없고, 뷰포트 가장자리에서도 2px 정도는 거의 안 잘려 보인다.
-// rounded-xl은 넣지 않는다 — 사이드바처럼 화면 가장자리에 딱 붙어 원래 각진 요소에 강제로
-// 둥근 모서리를 씌우면 화면 끝이 이상하게 잘려나간 것처럼 보인다. 카드형 섹션들은 이미 자기
-// className에 rounded-xl이 있어서 안 넣어도 그대로 둥글게 보임.
 const HIGHLIGHT_CLASSES = ["ring-2", "ring-accent"];
-
-const ANCHOR_WIDTH = 272; // 앵커 말풍선 너비(w-68) — 메뉴 항목 목록도 한 번에 담기게 넉넉히
-const ANCHOR_HEIGHT_GUESS = 320; // 실제 렌더 전 높이를 모르니, 클램프용으로 넉넉히 잡은 예상치(항목 목록 포함)
+const ANCHOR_WIDTH = 272;
+const ANCHOR_HEIGHT_GUESS = 320;
 
 function isVisible(el: HTMLElement) {
   return el.offsetParent !== null;
@@ -57,10 +42,6 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), Math.max(min, max));
 }
 
-// 강조할 요소가 Sidebar/MobileTabBar(fixed, z-20)처럼 이미 쌓임 맥락을 가진 요소이거나, 반대로
-// z-index가 전혀 없는 일반 요소일 수도 있어서, ring 클래스만으로는 다른 fixed 요소에 가려질 수
-// 있다. 인라인 스타일로 무조건 최상단에 오게 강제하고, 이미 포지션이 있으면 건드리지 않는다
-// (Sidebar/MobileTabBar 같은 fixed 요소의 위치가 relative로 바뀌어 깨지는 것을 방지).
 function bringToFront(el: HTMLElement) {
   const prevPosition = el.style.position;
   const prevZIndex = el.style.zIndex;
@@ -74,10 +55,6 @@ function bringToFront(el: HTMLElement) {
   };
 }
 
-// 정식 스포트라이트 투어(요소를 어둡게 가리고 구멍 뚫어 짚어주는 방식)는 아니지만, 화면의 실제
-// 섹션을 하나씩 순서대로 테두리로 강조하면서 "여기가 뭐 하는 곳인지"를 카드로 설명해준다.
-// 다음/이전으로 넘기고, 닫으면 localStorage에 남아서 다음 방문부터는 다시 안 뜸 — 단, 체험판은
-// 계정이 매번 새로 시작되는 일회성이라 이 "기억" 자체가 의미 없어서 persist=false로 끈다.
 export function SectionTourGuide({
   steps,
   persist = true,
@@ -85,9 +62,11 @@ export function SectionTourGuide({
 }: {
   steps: TourStep[];
   persist?: boolean;
-  /** 투어를 끝까지 보거나 중간에 닫을 때(둘 다) 호출됨 — 체험판에서 "투어 끝나면 첫 연락 도착" 같은 후속 동작에 씀 */
   onDismiss?: () => void;
 }) {
+  // 이 프로젝트에서 businessMode=true는 실제 UI상 "게임 모드"로 매핑되어 있다.
+  const { businessMode } = useBusinessMode();
+  const gameMode = businessMode;
   const [dismissed, setDismissed] = useState(() => {
     if (!persist) return false;
     try {
@@ -97,25 +76,13 @@ export function SectionTourGuide({
     }
   });
   const [index, setIndex] = useState(0);
-  // 반응형이라 데스크톱/모바일 중 실제로 화면에 보이는(display:none 아닌) 요소가 있는 단계만
   const [availableSteps, setAvailableSteps] = useState<{ step: TourStep; el: HTMLElement }[]>([]);
-  // anchor 단계에서 말풍선을 강조 요소 옆에 붙이기 위한 위치 — 스크롤/리사이즈에도 다시 계산함
   const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
-  // rowItems 단계에서 각 설명을 그 항목의 실제 행 위치에 맞추기 위한 좌표들
   const [rowRects, setRowRects] = useState<{ selector: string; desc: string; rect: DOMRect }[]>([]);
-  // 마지막 단계에서 onDismiss가 있으면(=곧 다른 화면으로 넘어감), 말없이 확 이동하지 않고
-  // "이동해요" 안내를 잠깐 보여준 뒤 넘어간다
   const [leaving, setLeaving] = useState(false);
-  // 메뉴 단계는 오른쪽 중앙에서 보던 시선을 왼쪽 메뉴로 짧게 옮긴 뒤, 메뉴를 빠르게 위→아래로 훑는다.
-  const [menuArriving, setMenuArriving] = useState(false);
-  const [menuMoveStarted, setMenuMoveStarted] = useState(false);
-  const [menuScanSelector, setMenuScanSelector] = useState<string | null>(null);
-  const [menuScanDone, setMenuScanDone] = useState(true);
 
   useEffect(() => {
     if (dismissed) return;
-    // workContext처럼 서버 데이터가 와야 렌더되는 섹션도 있어서, 마운트 직후 바로 찾으면
-    // 아직 DOM에 없을 수 있다 — 데이터 로딩이 대충 끝날 시간을 살짝 두고 찾는다
     const timer = setTimeout(() => {
       const found = steps
         .map((step) => {
@@ -137,6 +104,7 @@ export function SectionTourGuide({
     el.classList.add(...HIGHLIGHT_CLASSES);
     const restore = bringToFront(el);
     el.scrollIntoView({ behavior: "smooth", block: "center" });
+
     const updateRect = () => {
       setAnchorRect(el.getBoundingClientRect());
       const rowItems = current.step.rowItems;
@@ -154,8 +122,8 @@ export function SectionTourGuide({
         setRowRects([]);
       }
     };
+
     updateRect();
-    // 스크롤 애니메이션이 끝난 뒤 최종 위치로 한 번 더 맞춰줌
     const settleTimer = setTimeout(updateRect, 350);
     window.addEventListener("resize", updateRect);
     window.addEventListener("scroll", updateRect, true);
@@ -168,95 +136,6 @@ export function SectionTourGuide({
     };
   }, [dismissed, index, availableSteps]);
 
-  useEffect(() => {
-    if (dismissed) return;
-    const step = availableSteps[index]?.step;
-    if (!step?.rowItems || !step.extendPanel) {
-      setMenuArriving(false);
-      setMenuMoveStarted(false);
-      setMenuScanSelector(null);
-      setMenuScanDone(true);
-      return;
-    }
-
-    const visibleRows = step.rowItems.filter((row) => {
-      const target = document.querySelector<HTMLElement>(row.selector);
-      return !!target && isVisible(target);
-    });
-    if (visibleRows.length === 0) {
-      setMenuArriving(false);
-      setMenuMoveStarted(false);
-      setMenuScanSelector(null);
-      setMenuScanDone(true);
-      return;
-    }
-
-    setMenuArriving(true);
-    setMenuMoveStarted(false);
-    setMenuScanSelector(null);
-    setMenuScanDone(false);
-
-    const timers: ReturnType<typeof setTimeout>[] = [];
-    timers.push(setTimeout(() => setMenuMoveStarted(true), 20));
-    timers.push(setTimeout(() => setMenuArriving(false), MENU_MOVE_MS));
-    visibleRows.forEach((row, rowIndex) => {
-      timers.push(
-        setTimeout(
-          () => setMenuScanSelector(row.selector),
-          MENU_MOVE_MS + rowIndex * MENU_SCAN_STEP_MS,
-        ),
-      );
-    });
-    timers.push(
-      setTimeout(() => {
-        setMenuScanSelector(null);
-        setMenuScanDone(true);
-      }, MENU_MOVE_MS + visibleRows.length * MENU_SCAN_STEP_MS + MENU_SCAN_SETTLE_MS),
-    );
-
-    return () => timers.forEach(clearTimeout);
-  }, [dismissed, index, availableSteps]);
-
-  useEffect(() => {
-    const step = availableSteps[index]?.step;
-    if (!step?.rowItems || menuScanDone) return;
-
-    const rows = step.rowItems
-      .map((row) => document.querySelector<HTMLElement>(row.selector))
-      .filter((el): el is HTMLElement => !!el && isVisible(el));
-    const previous = rows.map((el) => ({
-      el,
-      opacity: el.style.opacity,
-      transition: el.style.transition,
-    }));
-
-    rows.forEach((el) => {
-      el.style.transition = "opacity 90ms ease";
-      el.style.opacity = menuScanSelector && el.matches(menuScanSelector) ? "1" : "0.48";
-    });
-
-    return () => {
-      previous.forEach(({ el, opacity, transition }) => {
-        el.style.opacity = opacity;
-        el.style.transition = transition;
-      });
-    };
-  }, [menuScanSelector, menuScanDone, index, availableSteps]);
-
-  useEffect(() => {
-    if (!menuScanSelector) return;
-    const target = document.querySelector<HTMLElement>(menuScanSelector);
-    if (!target) return;
-    const hadRing2 = target.classList.contains("ring-2");
-    const hadRingAccent = target.classList.contains("ring-accent");
-    if (!hadRing2) target.classList.add("ring-2");
-    if (!hadRingAccent) target.classList.add("ring-accent");
-    return () => {
-      if (!hadRing2) target.classList.remove("ring-2");
-      if (!hadRingAccent) target.classList.remove("ring-accent");
-    };
-  }, [menuScanSelector]);
-
   if (dismissed || availableSteps.length === 0) return null;
 
   const dismiss = () => {
@@ -266,7 +145,7 @@ export function SectionTourGuide({
     try {
       localStorage.setItem(STORAGE_KEY, "1");
     } catch {
-      // 저장 안 돼도 이번 세션엔 안 뜨는 채로 유지됨
+      // 저장 실패여도 현재 세션에서는 닫힌 상태를 유지한다.
     }
   };
 
@@ -274,7 +153,6 @@ export function SectionTourGuide({
   const isLast = index >= availableSteps.length - 1;
   const anchor = current.step.anchor;
 
-  // 마지막 단계에서 확인하면 곧 다른 화면으로 넘어간다는 걸 먼저 알려주고, 짧게 보여준 뒤 실제로 닫는다
   const handleFinalConfirm = () => {
     if (!onDismiss) {
       dismiss();
@@ -286,119 +164,100 @@ export function SectionTourGuide({
 
   const extendPanel = current.step.extendPanel;
 
-  // rowItems + extendPanel 조합: 설명 한 줄 한 줄을 그 항목의 실제 화면 위치(행)에 맞춰 그리는
-  // 전용 레이아웃 — "표의 행처럼 나란히" 보여야 해서 일반 카드 렌더링과는 완전히 다르게 그린다.
-  // 메뉴 단계 진입 시에는 오른쪽 중앙의 안내가 왼쪽으로 이동하는 짧은 연결 동작을 먼저 보여주고,
-  // 도착 직후 메뉴 행을 빠르게 훑어서 사용자의 시선이 실제 왼쪽 메뉴를 한 번 거치게 한다.
+  // 데스크톱 메뉴 단계: 메뉴와 기능 설명은 왼쪽에서 한 번에 나란히 보여주고,
+  // 투어 진행 버튼은 계속 보던 위치인 우측 중앙에 따로 둔다. 메뉴를 자동으로 훑거나
+  // 순차 점멸시키지 않아 사용자가 자기 속도로 이름과 기능을 살펴볼 수 있게 한다.
   if (current.step.rowItems && extendPanel && anchorRect && rowRects.length > 0 && typeof window !== "undefined") {
-    const HEADER_H = 34;
+    const HEADER_H = 38;
     const PAD = 8;
-    const CONTROL_H = 56;
     const firstRect = rowRects[0].rect;
     const lastRect = rowRects[rowRects.length - 1].rect;
     const panelLeft = clamp(anchorRect.right, 8, window.innerWidth - ANCHOR_WIDTH - 8);
     const panelTop = clamp(firstRect.top - HEADER_H - PAD, 8, window.innerHeight - 100);
-    const rowsBottom = lastRect.bottom + PAD;
-    const tealHeight = rowsBottom - panelTop;
-    const moveStartLeft = Math.max(16, window.innerWidth - ANCHOR_WIDTH - 24);
-    const moveStartTop = Math.max(16, window.innerHeight / 2 - 48);
-    const panelOpacity = menuArriving ? "opacity-0" : "opacity-100";
+    const panelBottom = lastRect.bottom + PAD;
+    const panelHeight = panelBottom - panelTop;
+
+    const panelClass = gameMode
+      ? "border-y-2 border-r-2 border-[#315d53] bg-[#d9efe9] text-[#24483b] shadow-[4px_4px_0_rgba(40,53,47,.14)]"
+      : "border-y border-r border-[#c6d5eb] bg-[#edf3ff] text-[#294f7c] shadow-[0_10px_28px_rgba(49,89,138,.10)]";
+    const guideClass = gameMode
+      ? "border-2 border-[#28352f] bg-[#fff9e9] text-[#28352f] shadow-[4px_4px_0_#28352f]"
+      : "border border-[#cbd6e6] bg-white text-[#172033] shadow-xl";
+    const prevClass = gameMode
+      ? "border-2 border-[#315d53] bg-[#eef8ed] text-[#24483b] hover:bg-white"
+      : "border border-[#cbd6e6] bg-white text-[#55708f] hover:bg-[#f5f8fd]";
+    const nextClass = gameMode
+      ? "border-2 border-[#28352f] bg-[#2f795d] text-white shadow-[2px_2px_0_#28352f] hover:bg-[#286b52]"
+      : "border border-[#1a56ff] bg-[#1a56ff] text-white hover:bg-[#1649d8]";
 
     return (
       <>
-        {menuArriving && (
-          <div
-            className={`fixed z-[10000] w-[17rem] max-w-[calc(100vw-1rem)] rounded-xl p-3 shadow-xl transition-[top,left,transform,opacity] duration-[360ms] ease-out ${extendPanel.bg}`}
-            style={{
-              top: menuMoveStarted ? panelTop : moveStartTop,
-              left: menuMoveStarted ? panelLeft : moveStartLeft,
-              transform: menuMoveStarted ? "scale(0.98)" : "scale(1)",
-              opacity: menuMoveStarted ? 0.94 : 1,
-            }}
-          >
-            <p className={`text-xs font-semibold ${extendPanel.title}`}>이번엔 왼쪽 메뉴를 살펴볼게요</p>
+        <div
+          className={`fixed z-[10000] w-[17rem] max-w-[calc(100vw-1rem)] rounded-r-lg ${panelClass}`}
+          style={{ top: panelTop, left: panelLeft, height: panelHeight }}
+        >
+          <div className="flex h-9 items-center justify-between px-3">
+            <p className="text-xs font-bold">
+              {index + 1} / {availableSteps.length} · {current.step.title}
+            </p>
+            <button
+              type="button"
+              onClick={dismiss}
+              aria-label="안내 닫기"
+              className="rounded p-0.5 opacity-55 hover:bg-black/5 hover:opacity-90"
+            >
+              <X className="size-4" />
+            </button>
           </div>
-        )}
+          {rowRects.map(({ desc, rect }, i) => (
+            <p
+              key={i}
+              className="fixed z-[10001] truncate px-3 text-xs font-medium leading-none"
+              style={{
+                top: rect.top + rect.height / 2 - 6,
+                left: panelLeft,
+                width: ANCHOR_WIDTH,
+              }}
+            >
+              {desc}
+            </p>
+          ))}
+        </div>
 
-        {/* 왼쪽 변은 사이드바와 맞닿는 선이라 위쪽도 아래쪽도 항상 각지게 두고, 오른쪽만
-            둥글게 해서 "각졌다 둥글었다" 뒤섞이지 않고 한 가지 규칙으로 통일한다 */}
         <div
-          className={`fixed z-30 w-[17rem] max-w-[calc(100vw-1rem)] rounded-tr-xl transition-[top,left,height,opacity] duration-150 ease-out ${panelOpacity} ${extendPanel.bg}`}
-          style={{ top: panelTop, left: panelLeft, height: tealHeight }}
-        />
-        <div
-          className={`fixed z-30 w-[17rem] max-w-[calc(100vw-1rem)] rounded-br-xl border border-t-0 border-border bg-surface shadow-lg transition-[top,left,opacity] duration-150 ease-out ${panelOpacity}`}
-          style={{ top: rowsBottom, left: panelLeft, height: CONTROL_H }}
+          className={`fixed right-6 top-1/2 z-[10000] w-72 -translate-y-1/2 rounded-xl p-4 ${guideClass}`}
         >
           {leaving ? (
-            <p className="flex h-full items-center gap-2 px-3 text-sm text-foreground/70">
-              <span className="size-3.5 shrink-0 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
+            <p className="flex items-center gap-2 text-sm opacity-75">
+              <span className="size-3.5 shrink-0 animate-spin rounded-full border-2 border-current/30 border-t-current" />
               곧 다음 화면으로 이동해요...
             </p>
           ) : (
-            <div className="flex h-full items-center justify-between gap-1.5 px-3">
-              <button
-                type="button"
-                onClick={() => setIndex((i) => Math.max(0, i - 1))}
-                disabled={index === 0 || !menuScanDone}
-                aria-label="이전"
-                className="flex h-7 w-7 items-center justify-center rounded-full border border-border text-foreground/60 hover:bg-black/[.03] disabled:opacity-30"
-              >
-                <ChevronLeft className="size-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => (isLast ? handleFinalConfirm() : setIndex((i) => i + 1))}
-                disabled={!menuScanDone}
-                className={`flex items-center gap-1 rounded-full bg-accent px-3 py-1.5 text-xs font-medium text-white transition-all hover:opacity-90 disabled:cursor-default ${
-                  menuScanDone ? "ring-2 ring-accent ring-offset-2" : "opacity-40"
-                }`}
-              >
-                {isLast ? "확인했어요" : "다음"}
-                {!isLast && <ChevronRight className="size-3.5" />}
-              </button>
-            </div>
+            <>
+              <p className="text-sm font-semibold leading-relaxed">왼쪽 메뉴의 이름과 기능을 살펴보세요.</p>
+              <p className="mt-1.5 text-xs leading-relaxed opacity-60">각 메뉴 옆에 어떤 기능인지 바로 표시해두었어요.</p>
+              <div className="mt-4 flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIndex((i) => Math.max(0, i - 1))}
+                  disabled={index === 0}
+                  aria-label="이전"
+                  className={`flex h-8 w-8 items-center justify-center rounded-md disabled:opacity-30 ${prevClass}`}
+                >
+                  <ChevronLeft className="size-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => (isLast ? handleFinalConfirm() : setIndex((i) => i + 1))}
+                  className={`flex items-center gap-1 rounded-md px-4 py-2 text-xs font-semibold ${nextClass}`}
+                >
+                  {isLast ? "확인했어요" : "다음"}
+                  {!isLast && <ChevronRight className="size-3.5" />}
+                </button>
+              </div>
+            </>
           )}
         </div>
-        {!leaving && !menuArriving && (
-          <>
-            <div
-              className="fixed z-30 flex items-center justify-between px-3"
-              style={{ top: panelTop + 8, left: panelLeft, width: ANCHOR_WIDTH }}
-            >
-              <p className={`text-xs font-semibold ${extendPanel.title}`}>
-                {index + 1} / {availableSteps.length} · {current.step.title}
-              </p>
-              <button
-                type="button"
-                onClick={dismiss}
-                aria-label="안내 닫기"
-                className={`shrink-0 rounded p-0.5 ${extendPanel.close}`}
-              >
-                <X className="size-4" />
-              </button>
-            </div>
-            {rowRects.map(({ selector, desc, rect }, i) => {
-              const active = selector === menuScanSelector;
-              return (
-                <p
-                  key={i}
-                  className={`fixed z-30 truncate px-3 text-xs leading-none transition-[opacity,transform,font-weight] duration-100 ${extendPanel.item}`}
-                  style={{
-                    top: rect.top + rect.height / 2 - 6,
-                    left: panelLeft,
-                    width: ANCHOR_WIDTH,
-                    opacity: menuScanDone ? 0.86 : active ? 1 : 0.34,
-                    transform: active ? "translateX(4px)" : "translateX(0)",
-                    fontWeight: active ? 700 : 500,
-                  }}
-                >
-                  {desc}
-                </p>
-              );
-            })}
-          </>
-        )}
       </>
     );
   }
@@ -406,16 +265,12 @@ export function SectionTourGuide({
   let anchorStyle: { top?: number; bottom?: number; left: number } | null = null;
   if (anchor && anchorRect && typeof window !== "undefined") {
     if (anchor === "right") {
-      // extendPanel은 "같은 색으로 이어붙여서 늘어난 것처럼" 보여야 하므로 틈을 안 둔다.
-      // 말풍선일 때는 겹치지 않게 12px 띄운다.
       const gap = extendPanel ? 0 : 12;
       anchorStyle = {
         top: clamp(anchorRect.top, 8, window.innerHeight - ANCHOR_HEIGHT_GUESS - 8),
         left: clamp(anchorRect.right + gap, 8, window.innerWidth - ANCHOR_WIDTH - 8),
       };
     } else {
-      // top: 모바일 하단 탭바 위에 붙이는 용도라, 뷰포트 바닥 기준(bottom)으로 띄워야
-      // 탭바 높이가 달라져도 항상 탭바 바로 위에 자연스럽게 붙는다
       anchorStyle = {
         bottom: window.innerHeight - anchorRect.top + 10,
         left: clamp(anchorRect.left + anchorRect.width / 2 - ANCHOR_WIDTH / 2, 8, window.innerWidth - ANCHOR_WIDTH - 8),
@@ -423,8 +278,6 @@ export function SectionTourGuide({
     }
   }
 
-  // extendPanel이 있으면 흰 카드(테두리·그림자·둥근 모서리) 대신, 강조된 요소와 같은 배경색을
-  // 틈 없이 이어붙이고 오른쪽 모서리만 둥글게 해서 "그 요소가 옆으로 늘어난 것"처럼 보이게 한다
   const cardClassName = extendPanel
     ? `fixed z-30 w-[17rem] max-w-[calc(100vw-1rem)] rounded-r-xl p-3 transition-[top,left,bottom] duration-200 ease-out ${extendPanel.bg}`
     : anchor
@@ -497,7 +350,11 @@ export function SectionTourGuide({
                 <ChevronRight className="size-3.5" />
               </button>
             ) : (
-              <button type="button" onClick={() => (isLast ? handleFinalConfirm() : setIndex((i) => i + 1))} className={nextBtnClass}>
+              <button
+                type="button"
+                onClick={() => (isLast ? handleFinalConfirm() : setIndex((i) => i + 1))}
+                className={nextBtnClass}
+              >
                 {isLast ? "확인했어요" : "다음"}
                 {!isLast && <ChevronRight className="size-3.5" />}
               </button>
