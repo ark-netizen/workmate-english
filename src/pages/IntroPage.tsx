@@ -700,20 +700,6 @@ export function IntroPage({
                 기능 살펴보기 ↓
               </button>
             </div>
-            <div className="flex flex-col gap-2 text-left sm:flex-row sm:justify-center sm:gap-5 md:justify-start">
-              {[
-                { n: 1, text: "업종·직무만 입력하면 사원증 발급" },
-                { n: 2, text: "동료·상사·거래처의 연락이 자동 도착" },
-                { n: 3, text: "답장하고 퇴근하면 리포트까지 완성" },
-              ].map((step) => (
-                <div key={step.n} className="flex items-center gap-2 text-xs text-foreground/60">
-                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent/10 text-[11px] font-bold text-accent">
-                    {step.n}
-                  </span>
-                  {step.text}
-                </div>
-              ))}
-            </div>
             <p className="text-xs font-medium text-foreground/40">
               Powered by <span className="font-semibold text-foreground/60">Upstage Solar</span> — 동료·상사·거래처의 모든 대화를 Solar가 만들어요
             </p>
