@@ -16,10 +16,11 @@ export interface TourStep {
   anchor?: "right" | "top";
 }
 
-// ring-offset을 쓰면 링이 요소 바깥으로 2~4px 삐져나오는데, 사이드바/상단 탭바처럼 화면 맨
-// 가장자리(y=0)에 붙은 요소는 그 여백이 뷰포트 밖이라 링 윗부분이 잘려 보인다 — ring-inset으로
-// 요소 안쪽에 그려서 어떤 위치에서도 안 잘리게 함
-const HIGHLIGHT_CLASSES = ["ring-2", "ring-inset", "ring-accent", "rounded-xl"];
+// ring-inset을 썼더니, 프로필 카드처럼 안쪽에 배경이 꽉 찬 자식 요소가 있는 경우 그 자식의
+// 배경이 안쪽으로 그려지는 링을 그대로 덮어버려 거의 안 보이는 문제가 있었다(자식은 항상 부모의
+// 테두리보다 나중에 칠해짐). ring-offset 없이 바깥으로만 살짝(2px) 튀어나오는 기본 outset 링을
+// 쓰면 자식에게 덮일 일도 없고, 뷰포트 가장자리에서도 2px 정도는 거의 안 잘려 보인다.
+const HIGHLIGHT_CLASSES = ["ring-2", "ring-accent", "rounded-xl"];
 
 const ANCHOR_WIDTH = 224; // 앵커 말풍선 너비(w-56) — 화면 밖으로 안 나가게 클램프할 때 사용
 const ANCHOR_HEIGHT_GUESS = 130; // 실제 렌더 전 높이를 모르니, 클램프용으로 넉넉히 잡은 예상치

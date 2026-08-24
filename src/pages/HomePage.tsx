@@ -361,10 +361,15 @@ export function HomePage() {
     }
   };
 
-  // 메뉴 전체를 한 카드에 목록으로 몰아넣었더니 "이게 뭘 어쩌라는 거냐"는 피드백 — 항목 하나하나를
-  // 그 메뉴 옆에 붙는 작은 말풍선으로 순서대로 짚어주는 방식으로 바꿈. 데스크톱 사이드바/모바일
-  // 하단바는 반응형으로 항상 한쪽만 보이므로, 항목마다 두 후보를 넣어두면 보이는 쪽만 걸러써준다
-  const navTourSteps: TourStep[] = navItems.flatMap((item) => [
+  // 먼저 메뉴 전체를 사각 테두리로 한 번 짚어주며 "여기가 메뉴 영역이에요"를 보여준 다음(개요),
+  // 다음을 누르면 그 개요 설명은 사라지고 항목 하나하나를 옆에 붙는 말풍선으로 순서대로 짚어준다.
+  // 데스크톱 사이드바/모바일 하단바는 반응형으로 항상 한쪽만 보이므로, 후보를 둘 다 넣어두면
+  // 실제로 보이는 쪽만 걸러써준다
+  const navOverviewSteps: TourStep[] = [
+    { selector: "#tour-nav-desktop", title: "메뉴", text: "메뉴에서 볼 수 있는 기능들이에요." },
+    { selector: "#tour-nav-mobile", title: "메뉴", text: "메뉴에서 볼 수 있는 기능들이에요." },
+  ];
+  const navItemSteps: TourStep[] = navItems.flatMap((item) => [
     {
       selector: `#tour-nav-desktop [data-tour-navitem="${item.href}"]`,
       title: item.labelKo,
@@ -380,7 +385,8 @@ export function HomePage() {
   ]);
 
   const tourSteps: TourStep[] = [
-    ...navTourSteps,
+    ...navOverviewSteps,
+    ...navItemSteps,
     {
       selector: "#tour-profile",
       title: "프로필 · 근무시간",

@@ -299,13 +299,18 @@ export function OnboardingPage() {
           {/* sm: 이상에서는 gap을 컨테이너에 주지 않고 각 항목의 좌측 여백으로 개별 부여한다 —
               접힌(0폭) 항목도 flex gap은 그대로 차지해서, 카드만 있을 때 중앙이 살짝 밀려 보였음 */}
           <div className="flex w-full flex-col items-center gap-3 sm:flex-row sm:items-center sm:justify-center sm:gap-0">
-            <div className="flex flex-col items-center gap-2">
+            <div className="relative flex flex-col items-center gap-2">
+              {/* 사원증(1) → 우측 안내 카드(2) 순서로 자연스럽게 이어지는 흐름임을 보여주는 순번 배지 */}
+              <span className="absolute -left-3 -top-3 flex size-7 items-center justify-center rounded-full bg-accent text-sm font-bold text-white shadow-md">
+                1
+              </span>
               <EmployeeIdCard profile={trialPreviewProfile} photoUrl={photoUrl} hideAvatarPicker />
               {/* 카드 발급 상태 안내는 카드 바로 아래 붙여서 보여주고, 다음 단계로 넘어가면
-                  오른쪽에 나타나는 화살표+안내 문구가 그 역할을 이어받으므로 접어서 치운다 */}
+                  오른쪽에 나타나는 화살표+안내 문구가 그 역할을 이어받으므로 페이드아웃한다.
+                  높이까지 트랜지션하면 줄바꿈 시 텍스트가 뭉개져 보여서 투명도만 바꾼다 */}
               <p
-                className={`overflow-hidden whitespace-nowrap text-xs font-medium text-accent transition-all duration-500 ease-out ${
-                  isDetailStep ? "max-h-0 opacity-0" : "max-h-6 opacity-100"
+                className={`whitespace-nowrap text-xs font-medium text-accent transition-opacity duration-500 ease-out ${
+                  isDetailStep ? "opacity-0" : "opacity-100"
                 }`}
               >
                 🎉 1분 무료체험용 사원증이 발급됐어요
@@ -313,18 +318,20 @@ export function OnboardingPage() {
             </div>
             <div
               className={`flex flex-col items-center gap-1.5 overflow-hidden text-foreground/40 transition-all duration-500 ease-out ${
-                isDetailStep ? "max-h-56 opacity-100 sm:max-w-[10rem] sm:ml-3 sm:px-2" : "max-h-0 opacity-0 sm:max-w-0 sm:ml-0 sm:px-0"
+                isDetailStep ? "max-h-56 opacity-100 sm:max-w-[11rem] sm:ml-3 sm:px-2" : "max-h-0 opacity-0 sm:max-w-0 sm:ml-0 sm:px-0"
               }`}
             >
               <ArrowDown className="size-5 shrink-0 sm:hidden" />
               <ArrowRight className="hidden size-5 shrink-0 sm:block" />
-              <p className="max-w-[10rem] break-keep text-[11px] leading-snug text-foreground/50">
-                실제 서비스에서는 업종과 직무를 직접 설정할 수 있어요. 출퇴근 시간까지 반영해 나만의 사원증을 만들어요.
+              <p className="max-w-[11rem] break-keep text-[11px] leading-snug text-foreground/50">
+                실제 서비스에서는 업종과 직무를 직접 설정할 수 있어요.
+                <br />
+                출퇴근 시간까지 반영해 나만의 사원증을 만들어요.
               </p>
             </div>
             <div
               className={`w-full overflow-hidden transition-all duration-500 ease-out sm:w-auto ${
-                isDetailStep ? "max-h-[40rem] opacity-100 sm:max-w-xs sm:ml-3" : "max-h-0 opacity-0 sm:max-w-0 sm:ml-0"
+                isDetailStep ? "max-h-[2400px] opacity-100 sm:max-w-xs sm:ml-3" : "max-h-0 opacity-0 sm:max-w-0 sm:ml-0"
               }`}
             >
               <TrialOnboardingPreview />
@@ -333,6 +340,7 @@ export function OnboardingPage() {
           {error && <p className="text-sm text-red-600">{error}</p>}
         </div>
         <TrialActionBar
+          stepNumber={2}
           message={isDetailStep ? "이 프로필로 오늘 하루를 체험해요" : "다음을 눌러 실제 폼도 미리 볼까요?"}
           primaryLabel={submitting ? "불러오는 중..." : "다음"}
           primaryDisabled={submitting}
