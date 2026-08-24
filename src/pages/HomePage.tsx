@@ -235,10 +235,12 @@ export function HomePage() {
   const [advancingDay, setAdvancingDay] = useState(false);
   const [resettingAccount, setResettingAccount] = useState(false);
   const [promotion, setPromotion] = useState<PromotionStatus | null>(null);
-  const [isTrial, setIsTrial] = useState(false);
+  const [isTrial, setIsTrial] = useState<boolean | null>(null);
 
   useEffect(() => {
-    isAnonymousSession().then(setIsTrial).catch(() => {});
+    isAnonymousSession()
+      .then(setIsTrial)
+      .catch(() => setIsTrial(false));
   }, []);
 
   useEffect(() => {
@@ -531,7 +533,9 @@ export function HomePage() {
         </div>
       </section>
 
-      <SectionTourGuide steps={tourSteps} persist={!isTrial} />
+      {/* isTrial 확인이 비동기라, 확정되기 전에 마운트하면 SectionTourGuide 내부 localStorage
+          체크가 (나중에 바뀔) persist=true 기준으로 먼저 굳어버린다 — 확정된 뒤에만 마운트 */}
+      {isTrial !== null && <SectionTourGuide steps={tourSteps} persist={!isTrial} />}
 
       <QaControlPanel
         onDeliverNext={handleDeliverNext}
