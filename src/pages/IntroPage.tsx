@@ -499,6 +499,19 @@ function withSolarHighlight(text: string) {
   );
 }
 
+// 1분 체험 5단계 카드 안에서는 형광펜 대신 진한 글씨로만 강조(이미 색이 많은 카드라 형광펜은 과했음)
+function withSolarBold(text: string) {
+  return text.split(/(solar)/gi).map((part, i) =>
+    /^solar$/i.test(part) ? (
+      <strong className="solar-bold" key={i}>
+        {part}
+      </strong>
+    ) : (
+      part
+    ),
+  );
+}
+
 function HeroSystem() {
   return (
     <div className="features hero-system">
@@ -722,7 +735,7 @@ export function IntroPage({
         <div className="intro-trial-frame">
           <div className="intro-trial-top"><b>DAY 01 · 09:00 AM</b><span>QUEST PROGRESS</span><i><u /></i><strong>2 / 5</strong></div>
           <div className="intro-trial-flow">
-            {[["새 연락 확인","메신저·이메일 도착"],["관계 파악","동료·상사·거래처"],["힌트 활용","단어 → 뼈대 → 답안"],["답장과 첨삭","Solar 즉시 피드백"],["업무 완료","업무 리포트 확인"]].map(([title, copy], i) => <div key={title}><em>{i + 1}</em><b>{title}</b><span>{withSolarHighlight(copy)}</span></div>)}
+            {[["새 연락 확인","메신저·이메일 도착"],["관계 파악","동료·상사·거래처"],["힌트 활용","단어 → 뼈대 → 답안"],["답장과 첨삭","Solar 즉시 피드백"],["업무 완료","업무 리포트 확인"]].map(([title, copy], i) => <div key={title}><em>{i + 1}</em><b>{title}</b><span>{withSolarBold(copy)}</span></div>)}
           </div>
           <button type="button" onClick={handleTrialClick} disabled={startingTrial} className="intro-trial-main">{startingTrial ? "체험 준비 중..." : "무료로 1분 체험하기"}</button>
         </div>
