@@ -45,13 +45,18 @@ function clamp(value: number, min: number, max: number) {
 function bringToFront(el: HTMLElement) {
   const prevPosition = el.style.position;
   const prevZIndex = el.style.zIndex;
+  const prevBorderRadius = el.style.borderRadius;
   if (getComputedStyle(el).position === "static") {
     el.style.position = "relative";
   }
   el.style.zIndex = "9999";
+  // 투어 강조선은 대상 카드의 원래 모서리 모양과 무관하게 항상 같은 둥근 사각형으로 보이게 한다.
+  // 인라인 값은 투어가 끝나면 원래대로 복원하므로 기존 컴포넌트 디자인 자체는 바뀌지 않는다.
+  el.style.borderRadius = "12px";
   return () => {
     el.style.position = prevPosition;
     el.style.zIndex = prevZIndex;
+    el.style.borderRadius = prevBorderRadius;
   };
 }
 
