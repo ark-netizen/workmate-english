@@ -72,7 +72,7 @@ export function ConversationView({ conversation }: { conversation: Conversation 
     storageKey: "messenger-input-height",
     defaultSize: 120,
     min: 40,
-    max: 280,
+    max: 180,
     axis: "y",
     reverse: true,
   });

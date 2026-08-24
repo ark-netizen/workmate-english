@@ -10,14 +10,17 @@ interface UseResizableOptions {
   reverse?: boolean;
 }
 
-function readStoredSize(storageKey: string, defaultSize: number): number {
+function readStoredSize(storageKey: string, defaultSize: number, min: number, max: number): number {
   if (typeof window === "undefined") return defaultSize;
   const stored = Number(window.localStorage.getItem(storageKey));
-  return Number.isFinite(stored) && stored > 0 ? stored : defaultSize;
+  if (!Number.isFinite(stored) || stored <= 0) return defaultSize;
+  // 저장된 값이 예전(더 넉넉했던) min/max 기준으로 남아있을 수 있어서, 지금 기준으로 다시 clamp —
+  // 안 그러면 UI를 더 작게 조정해도 예전에 크게 드래그해둔 값이 그대로 남아 계속 커 보인다
+  return Math.min(max, Math.max(min, stored));
 }
 
 export function useResizable({ storageKey, defaultSize, min, max, axis, reverse = false }: UseResizableOptions) {
-  const [size, setSize] = useState(() => readStoredSize(storageKey, defaultSize));
+  const [size, setSize] = useState(() => readStoredSize(storageKey, defaultSize, min, max));
   const sizeRef = useRef(size);
   sizeRef.current = size;
   const dragRef = useRef<{ pos: number; size: number } | null>(null);

@@ -359,29 +359,23 @@ export function HomePage() {
 
   // 항목을 하나씩 클릭해서 넘기게 했더니 "누가 그걸 다 누르고 앉아있냐"는 피드백 — 메뉴 옆에
   // 붙는 말풍선 하나에 8개 항목 설명을 전부 한 번에 목록으로 보여주고 끝낸다(클릭 1번).
-  // 데스크톱 사이드바/모바일 하단바는 반응형으로 항상 한쪽만 보이므로, 후보를 둘 다 넣어두면
-  // 실제로 보이는 쪽만 걸러써준다
-  // 메뉴 자체엔 이미 라벨(Home/Messenger/...)이 보이므로, 설명 쪽에 라벨을 또 적으면 "메뉴에도
-  // Home, 설명에도 Home"처럼 중복돼 오히려 헷갈린다는 피드백 — 데스크톱은 화면에 세로 여유가
-  // 있으니 각 메뉴 항목 높이에 맞춰 설명만 그 옆에 개별로 띄운다(sideLabels). 모바일 하단
-  // 탭바는 가로로 촘촘히 붙어 있어 항목별로 개별 배치할 자리가 없으므로, 그쪽만 예전처럼
-  // 라벨+설명 목록 한 덩어리로 보여준다(items)
+  // 메뉴 자체엔 이미 라벨(Home/Messenger/...)이 보이므로 설명 쪽에는 라벨을 반복하지 않는다.
+  // 데스크톱/모바일은 반응형으로 항상 한쪽만 보이므로, 후보를 둘 다 넣어두면 실제로 보이는
+  // 쪽만 걸러써준다
+  const navTourItems = navItems.map((item) => item.desc);
   const navTourSteps: TourStep[] = [
     {
       selector: "#tour-nav-desktop",
       title: "메뉴",
       text: "메뉴에서 볼 수 있는 기능들이에요.",
+      items: navTourItems,
       anchor: "right",
-      sideLabels: navItems.map((item) => ({
-        selector: `#tour-nav-desktop [data-tour-navitem="${item.href}"]`,
-        desc: item.desc,
-      })),
     },
     {
       selector: "#tour-nav-mobile",
       title: "메뉴",
       text: "메뉴에서 볼 수 있는 기능들이에요.",
-      items: navItems.map((item) => ({ label: item.label, desc: item.desc })),
+      items: navTourItems,
       anchor: "top",
     },
   ];

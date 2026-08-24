@@ -14,12 +14,9 @@ export interface TourStep {
   /** 있으면 고정된 카드 대신, 강조된 요소 바로 옆(right)이나 위(top)에 말풍선으로 설명을 띄운다
    *  — 메뉴처럼 "이게 뭔지"가 그 요소 자체와 붙어 있어야 이해되는 경우에 씀 */
   anchor?: "right" | "top";
-  /** 화면이 좁아 항목 옆에 개별 배치할 자리가 없을 때(모바일 하단 탭바 등), 라벨을 반복하지
-   *  않고 설명만 목록으로 한 번에 보여줌 */
-  items?: { label: string; desc: string }[];
-  /** 데스크톱처럼 세로로 자리가 있을 때, 각 항목 옆에 그 항목 높이에 맞춰 설명만 개별적으로
-   *  띄운다(라벨은 반복하지 않음 — 실제 메뉴에 이미 보이므로) */
-  sideLabels?: { selector: string; desc: string }[];
+  /** 메뉴처럼 강조 영역 안에 항목이 여러 개일 때, 하나씩 넘기지 않고 설명만 한 번에 목록으로
+   *  보여줌 — 라벨은 실제 메뉴에 이미 보이므로 반복하지 않는다 */
+  items?: string[];
 }
 
 // ring-inset을 썼더니, 프로필 카드처럼 안쪽에 배경이 꽉 찬 자식 요소가 있는 경우 그 자식의
@@ -32,7 +29,7 @@ export interface TourStep {
 const HIGHLIGHT_CLASSES = ["ring-2", "ring-accent"];
 
 const ANCHOR_WIDTH = 272; // 앵커 말풍선 너비(w-68) — 메뉴 항목 목록도 한 번에 담기게 넉넉히
-const ANCHOR_HEIGHT_GUESS = 260; // 실제 렌더 전 높이를 모르니, 클램프용으로 넉넉히 잡은 예상치(항목 목록 포함)
+const ANCHOR_HEIGHT_GUESS = 320; // 실제 렌더 전 높이를 모르니, 클램프용으로 넉넉히 잡은 예상치(항목 목록 포함)
 
 function isVisible(el: HTMLElement) {
   return el.offsetParent !== null;
@@ -86,8 +83,9 @@ export function SectionTourGuide({
   const [availableSteps, setAvailableSteps] = useState<{ step: TourStep; el: HTMLElement }[]>([]);
   // anchor 단계에서 말풍선을 강조 요소 옆에 붙이기 위한 위치 — 스크롤/리사이즈에도 다시 계산함
   const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
-  // sideLabels 단계에서 각 항목 옆에 개별로 띄우는 설명들의 위치
-  const [sideLabelRects, setSideLabelRects] = useState<{ desc: string; rect: DOMRect }[]>([]);
+  // 마지막 단계에서 onDismiss가 있으면(=곧 다른 화면으로 넘어감), 말없이 확 이동하지 않고
+  // "이동해요" 안내를 잠깐 보여준 뒤 넘어간다
+  const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
     if (dismissed) return;
@@ -114,21 +112,7 @@ export function SectionTourGuide({
     el.classList.add(...HIGHLIGHT_CLASSES);
     const restore = bringToFront(el);
     el.scrollIntoView({ behavior: "smooth", block: "center" });
-    const updateRect = () => {
-      setAnchorRect(el.getBoundingClientRect());
-      const sideLabels = current.step.sideLabels;
-      if (sideLabels) {
-        const rects = sideLabels
-          .map((s) => {
-            const target = document.querySelector<HTMLElement>(s.selector);
-            return target && isVisible(target) ? { desc: s.desc, rect: target.getBoundingClientRect() } : null;
-          })
-          .filter((v): v is { desc: string; rect: DOMRect } => v !== null);
-        setSideLabelRects(rects);
-      } else {
-        setSideLabelRects([]);
-      }
-    };
+    const updateRect = () => setAnchorRect(el.getBoundingClientRect());
     updateRect();
     // 스크롤 애니메이션이 끝난 뒤 최종 위치로 한 번 더 맞춰줌
     const settleTimer = setTimeout(updateRect, 350);
@@ -160,17 +144,21 @@ export function SectionTourGuide({
   const isLast = index >= availableSteps.length - 1;
   const anchor = current.step.anchor;
 
+  // 마지막 단계에서 확인하면 곧 다른 화면으로 넘어간다는 걸 먼저 알려주고, 짧게 보여준 뒤 실제로 닫는다
+  const handleFinalConfirm = () => {
+    if (!onDismiss) {
+      dismiss();
+      return;
+    }
+    setLeaving(true);
+    setTimeout(dismiss, 900);
+  };
+
   let anchorStyle: { top?: number; bottom?: number; left: number } | null = null;
   if (anchor && anchorRect && typeof window !== "undefined") {
     if (anchor === "right") {
-      // sideLabels가 있으면 항목별 설명을 옆에 이미 개별로 띄우므로, 이 카드(제목·다음 버튼)는
-      // 그 라벨들과 안 겹치게 마지막 라벨 아래로 내려서 배치한다
-      const topBase =
-        current.step.sideLabels && sideLabelRects.length > 0
-          ? sideLabelRects[sideLabelRects.length - 1].rect.bottom + 12
-          : anchorRect.top;
       anchorStyle = {
-        top: clamp(topBase, 8, window.innerHeight - ANCHOR_HEIGHT_GUESS - 8),
+        top: clamp(anchorRect.top, 8, window.innerHeight - ANCHOR_HEIGHT_GUESS - 8),
         left: clamp(anchorRect.right + 12, 8, window.innerWidth - ANCHOR_WIDTH - 8),
       };
     } else {
@@ -188,79 +176,72 @@ export function SectionTourGuide({
     : "fixed inset-x-4 top-1/2 z-30 mx-auto max-w-sm -translate-y-1/2 rounded-xl border border-accent/30 bg-surface p-4 shadow-xl md:inset-x-auto md:right-6 md:w-80";
 
   return (
-    <>
-      {/* 항목 하나하나를 그 항목 높이에 맞춰 옆에 개별로 띄움 — 라벨은 실제 메뉴에 이미
-          보이므로 반복하지 않고 설명만 나란히 보여줌(가독성을 위해 라벨-설명을 다시 나열하는
-          목록형 카드 대신 이 방식을 씀) */}
-      {current.step.sideLabels &&
-        sideLabelRects.map(({ desc, rect }, i) => (
-          <div
-            key={i}
-            className="fixed z-30 max-w-[13rem] rounded-md border border-accent/20 bg-surface/95 px-2.5 py-1 text-xs text-foreground/70 shadow-sm"
-            style={{ top: rect.top + rect.height / 2 - 12, left: rect.right + 12 }}
-          >
-            {desc}
+    <div className={cardClassName} style={anchorStyle ?? undefined}>
+      {leaving ? (
+        <p className="flex items-center gap-2 text-sm text-foreground/70">
+          <span className="size-3.5 shrink-0 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
+          곧 다음 화면으로 이동해요...
+        </p>
+      ) : (
+        <>
+          <div className="flex items-start justify-between gap-2">
+            <p className="text-xs font-semibold text-accent">
+              {index + 1} / {availableSteps.length} · {current.step.title}
+            </p>
+            <button
+              type="button"
+              onClick={dismiss}
+              aria-label="안내 닫기"
+              className="shrink-0 rounded p-0.5 text-foreground/40 hover:bg-black/[.05] hover:text-foreground/70"
+            >
+              <X className="size-4" />
+            </button>
           </div>
-        ))}
-      <div className={cardClassName} style={anchorStyle ?? undefined}>
-        <div className="flex items-start justify-between gap-2">
-          <p className="text-xs font-semibold text-accent">
-            {index + 1} / {availableSteps.length} · {current.step.title}
-          </p>
-          <button
-            type="button"
-            onClick={dismiss}
-            aria-label="안내 닫기"
-            className="shrink-0 rounded p-0.5 text-foreground/40 hover:bg-black/[.05] hover:text-foreground/70"
-          >
-            <X className="size-4" />
-          </button>
-        </div>
-        <p className="mt-2 text-sm text-foreground/80">{current.step.text}</p>
-        {current.step.items && (
-        <ul className="mt-2.5 max-h-52 space-y-1.5 overflow-y-auto border-t border-border pt-2.5">
-          {current.step.items.map((item) => (
-            <li key={item.label} className="flex items-baseline gap-2 text-xs">
-              <span className="shrink-0 font-medium text-foreground/70">{item.label}</span>
-              <span className="text-foreground/50">{item.desc}</span>
-            </li>
-          ))}
-        </ul>
+          <p className="mt-2 text-sm text-foreground/80">{current.step.text}</p>
+          {current.step.items && (
+            <ul className="mt-2.5 max-h-64 space-y-1.5 overflow-y-auto border-t border-border pt-2.5">
+              {current.step.items.map((desc, i) => (
+                <li key={i} className="text-xs text-foreground/60">
+                  {desc}
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="mt-3 flex items-center justify-end gap-1.5">
+            <button
+              type="button"
+              onClick={() => setIndex((i) => Math.max(0, i - 1))}
+              disabled={index === 0}
+              aria-label="이전"
+              className="flex h-7 w-7 items-center justify-center rounded-full border border-border text-foreground/60 hover:bg-black/[.03] disabled:opacity-30"
+            >
+              <ChevronLeft className="size-4" />
+            </button>
+            {current.step.cta ? (
+              <button
+                type="button"
+                onClick={() => {
+                  current.step.cta?.onClick();
+                  dismiss();
+                }}
+                className="flex items-center gap-1 rounded-full bg-accent px-3 py-1.5 text-xs font-medium text-white hover:opacity-90"
+              >
+                {current.step.cta.label}
+                <ChevronRight className="size-3.5" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => (isLast ? handleFinalConfirm() : setIndex((i) => i + 1))}
+                className="flex items-center gap-1 rounded-full bg-accent px-3 py-1.5 text-xs font-medium text-white hover:opacity-90"
+              >
+                {isLast ? "확인했어요" : "다음"}
+                {!isLast && <ChevronRight className="size-3.5" />}
+              </button>
+            )}
+          </div>
+        </>
       )}
-      <div className="mt-3 flex items-center justify-end gap-1.5">
-        <button
-          type="button"
-          onClick={() => setIndex((i) => Math.max(0, i - 1))}
-          disabled={index === 0}
-          aria-label="이전"
-          className="flex h-7 w-7 items-center justify-center rounded-full border border-border text-foreground/60 hover:bg-black/[.03] disabled:opacity-30"
-        >
-          <ChevronLeft className="size-4" />
-        </button>
-        {current.step.cta ? (
-          <button
-            type="button"
-            onClick={() => {
-              current.step.cta?.onClick();
-              dismiss();
-            }}
-            className="flex items-center gap-1 rounded-full bg-accent px-3 py-1.5 text-xs font-medium text-white hover:opacity-90"
-          >
-            {current.step.cta.label}
-            <ChevronRight className="size-3.5" />
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={() => (isLast ? dismiss() : setIndex((i) => i + 1))}
-            className="flex items-center gap-1 rounded-full bg-accent px-3 py-1.5 text-xs font-medium text-white hover:opacity-90"
-          >
-            {isLast ? "확인했어요" : "다음"}
-            {!isLast && <ChevronRight className="size-3.5" />}
-          </button>
-        )}
-        </div>
-      </div>
-    </>
+    </div>
   );
 }
