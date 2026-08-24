@@ -170,7 +170,7 @@ body {
   min-height: 38px;
   border-radius: 9px !important;
   padding-inline: 13px !important;
-  font-size: 13px !important;
+  font-size: 14px !important;
   font-weight: 700 !important;
   line-height: 1 !important;
   letter-spacing: -0.01em;
@@ -292,9 +292,9 @@ body {
 .intro-page .hero .person{min-height:78px!important;overflow:visible!important}
 .intro-page .hero .mailcard{overflow:visible!important}
 .intro-process-heading{max-width:760px;margin:0 auto 40px}
-.intro-process-heading>span{display:inline-block;margin-bottom:15px;border:2px solid #315d53;background:#ffe28a;padding:7px 11px;color:#183d37;box-shadow:2px 2px 0 #315d53;font-size:11px;font-weight:900;letter-spacing:.06em}
+.intro-process-heading>span{display:inline-block;margin-bottom:15px;border:2px solid #315d53;background:#ffe28a;padding:7px 11px;color:#183d37;box-shadow:2px 2px 0 #315d53;font-size:12px;font-weight:900;letter-spacing:.06em}
 .intro-process-heading h2{margin:0}
-.intro-process-heading p{margin:12px 0 0;color:#647069;font-size:14px}
+.intro-process-heading p{margin:12px 0 0;color:#647069;font-size:15px}
 .intro-business .intro-process-heading>span{border:0;border-radius:999px;background:#eef3ff;box-shadow:none;color:#1855c9}
 /* END FINAL-MOCKUP-CORRECTIONS-V6 */
 
@@ -311,7 +311,7 @@ body {
 
 /* BUSINESS-HERO-INITIALS-V10 */
 .intro-business .hero .avatar{width:42px!important;height:42px!important;flex:0 0 42px!important;border:0!important;border-radius:50%!important;overflow:hidden!important;background:#e7efff!important;box-shadow:none!important}
-.intro-business .hero .business-initial{display:grid;width:100%;height:100%;place-items:center;color:#1a56ff;font-size:14px;font-weight:900}
+.intro-business .hero .business-initial{display:grid;width:100%;height:100%;place-items:center;color:#1a56ff;font-size:15px;font-weight:900}
 .intro-game .hero .business-initial{display:none}
 /* END BUSINESS-HERO-INITIALS-V10 */
 
@@ -324,12 +324,15 @@ body {
 
 /* INTRO-GAME-HERO-FLOW-V14 */
 .intro-page .hero{
+  position:relative;
   border:0;
   padding:72px 24px 50px;
   overflow:hidden;
   font-family:Pretendard,"Malgun Gothic",sans-serif;
 }
 .intro-page .hero .wrap{
+  position:relative;
+  z-index:2;
   width:100%;
   max-width:1180px;
   margin:0 auto;
@@ -339,39 +342,39 @@ body {
   gap:clamp(36px,4vw,64px);
 }
 .intro-page .hero .copy{opacity:1;text-align:left}
-.intro-page .hero .eyebrow{display:inline-block;border:1px solid #bed0ff;background:#fff;color:#1a56ff;border-radius:999px;padding:7px 11px;font-size:11px;font-weight:900;letter-spacing:.15em}
-.intro-page .hero .copy h1{margin:24px 0 18px;color:#11213a;font-size:clamp(42px,3.4vw,58px);font-weight:800;line-height:1.12;letter-spacing:-.045em}
+.intro-page .hero .eyebrow{display:inline-block;border:1px solid #bed0ff;background:#fff;color:#1a56ff;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:900;letter-spacing:.15em}
+.intro-page .hero .copy h1{margin:24px 0 18px;color:#11213a;font-size:clamp(44px,3.6vw,60px);font-weight:800;line-height:1.12;letter-spacing:-.045em}
 .intro-page .hero .copy h1 em{color:#1a56ff;font-style:normal}
-.intro-page .hero .copy p{margin:0;color:#657187;font-size:17px;line-height:1.75}
+.intro-page .hero .copy p{margin:0;color:#657187;font-size:18px;line-height:1.75}
 .intro-page .hero .actions{display:flex;gap:13px;margin-top:30px}
-.intro-page .hero .actions button{padding:15px 22px;border-radius:999px;font-family:inherit;font-size:14px;font-weight:900}
+.intro-page .hero .actions button{padding:15px 22px;border-radius:999px;font-family:inherit;font-size:15px;font-weight:900}
 .intro-page .hero .primary{border:0;background:#1a56ff;color:#fff;box-shadow:0 10px 26px rgba(26,86,255,.2)}
 .intro-page .hero .secondary{border:1px solid #d9e0eb;background:#fff;color:#475569}
 .intro-page .hero .preview{min-width:0;opacity:1}
 .intro-page .hero .mailcard{width:100%;padding:20px;border:1px solid #dfe5ef;border-radius:22px;background:#fff;box-shadow:0 24px 60px rgba(71,98,142,.15)}
 .intro-page .hero .mailhead{display:flex;align-items:center;justify-content:space-between;padding-bottom:15px;border-bottom:1px solid #edf0f5}
-.intro-page .hero .mailhead b{font-size:14px}
-.intro-page .hero .live{padding:6px 9px;border-radius:999px;background:#eef3ff;color:#1a56ff;font-size:10px;font-weight:900}
+.intro-page .hero .mailhead b{font-size:15px}
+.intro-page .hero .live{padding:6px 9px;border-radius:999px;background:#eef3ff;color:#1a56ff;font-size:11px;font-weight:900}
 .intro-page .hero .person{display:flex;align-items:center;gap:12px;min-height:72px;padding:12px 4px;border-bottom:1px solid #edf0f5}
-.intro-page .hero .person strong{font-size:13px}
+.intro-page .hero .person strong{font-size:14px}
 .intro-page .hero .person small{display:block;margin-top:4px;color:#77849a}
-.intro-page .hero .tone{margin-left:auto;padding:5px 8px;border-radius:999px;background:#f2f5f9;color:#596a85;font-size:10px}
+.intro-page .hero .tone{margin-left:auto;padding:5px 8px;border-radius:999px;background:#f2f5f9;color:#596a85;font-size:11px}
 .intro-page .hero .features{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:13px}
 .intro-page .hero .feat{padding:11px;border:1px solid #dce6f7;border-radius:13px;background:#fff;box-shadow:0 4px 12px rgba(63,95,141,.05)}
-.intro-page .hero .feat b{color:#1a56ff;font-size:9px;letter-spacing:.08em}
-.intro-page .hero .feat span{display:block;margin-top:5px;color:#66748b;font-size:10px;line-height:1.45}
+.intro-page .hero .feat b{color:#1a56ff;font-size:10px;letter-spacing:.08em}
+.intro-page .hero .feat span{display:block;margin-top:5px;color:#66748b;font-size:11px;line-height:1.45}
 
 .intro-business .hero{background:linear-gradient(135deg,#f8fbff,#edf3ff 48%,#fff)}
 .intro-business .intro-pixel-office-bg,
 .intro-business .hero>.hero-system{display:none}
 .intro-business .hero .avatar{display:grid;width:42px;height:42px;flex:0 0 42px;place-items:center;overflow:hidden;border:0;border-radius:50%;background:#e7efff;box-shadow:none}
-.intro-business .hero .business-initial{display:grid;width:100%;height:100%;place-items:center;color:#1a56ff;font-size:14px;font-weight:900}
+.intro-business .hero .business-initial{display:grid;width:100%;height:100%;place-items:center;color:#1a56ff;font-size:15px;font-weight:900}
 
 .intro-game .hero{background:linear-gradient(180deg,#83cef1 0%,#cdeeff 72%,#eaf5dc 100%)}
 .intro-game .hero .wrap{align-items:start}
 .intro-game .hero .eyebrow{display:none}
 .intro-game .hero .copy{padding-top:18px}
-.intro-game .hero .copy h1{margin:8px 0 16px;color:#28352f;font-size:clamp(44px,3.25vw,56px);line-height:1.22;text-shadow:2px 2px 0 #f7fff7}
+.intro-game .hero .copy h1{margin:8px 0 16px;color:#28352f;font-size:clamp(46px,3.4vw,58px);line-height:1.22;text-shadow:2px 2px 0 #f7fff7}
 .intro-game .hero .copy h1 em{color:#2f8f80}
 .intro-game .hero .copy p{max-width:560px;padding:10px 13px;border:0;background:rgba(222,246,255,.64);color:#243d3a;font-weight:700}
 .intro-game .hero .primary{border:2px solid #28352f;border-radius:4px;background:#2f795d;color:#fff;box-shadow:4px 4px 0 #28352f}
@@ -386,13 +389,18 @@ body {
 .intro-game .hero .person strong{color:#28352f}
 .intro-game .hero .person small{color:#33473f;font-weight:700}
 .intro-game .hero .tone{border:2px solid #28352f;border-radius:3px;background:#fff;color:#28352f;font-weight:900}
-.intro-game .intro-pixel-office-bg{display:block;width:calc(100% + 48px);max-width:none;height:auto;margin:clamp(-190px,-10vw,-96px) -24px 0;image-rendering:pixelated}
+/* 이전엔 부모의 padding 값을 픽셀 단위로 계산해서 margin으로 상쇄했는데, 화면 폭마다 padding이
+   달라져서(72px/48px/34px) 그때그때 미디어쿼리로 다시 맞춰야 했다 — position:absolute로 히어로
+   바닥에 고정하고, 100vw 트릭으로 부모의 padding/max-width와 무관하게 항상 화면 끝까지 꽉 차게
+   해서 화면 크기가 바뀌어도 다시 맞출 필요가 없게 함. 이미지 자체도 위쪽 투명 여백을 잘라내서
+   더 이상 큰 음수 margin으로 끌어올릴 필요가 없다 */
+.intro-game .intro-pixel-office-bg{display:block;position:absolute;left:50%;bottom:0;width:100vw;margin-left:-50vw;max-width:none;height:auto;image-rendering:pixelated;pointer-events:none}
 .intro-game .hero>.hero-system{width:100%;max-width:1600px;margin:0 auto;position:static;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;border:3px solid #28352f;background:#fff9e9;box-shadow:7px 7px 0 rgba(40,53,47,.25)}
-.intro-game .hero>.hero-system:before{content:"WORKMATE SYSTEM";grid-column:1/-1;padding:9px 12px;border-bottom:3px solid #28352f;background:#2f795d;color:#fff;font-size:14px;font-weight:900}
+.intro-game .hero>.hero-system:before{content:"WORKMATE SYSTEM";grid-column:1/-1;padding:9px 12px;border-bottom:3px solid #28352f;background:#2f795d;color:#fff;font-size:15px;font-weight:900}
 .intro-game .hero>.hero-system .feat{min-height:104px;padding:15px 14px;border:0;border-right:1px solid #cdbf9f;border-radius:0;background:#fff9e9;box-shadow:none}
-.intro-game .hero>.hero-system .feat b{color:#1f6d55;font-size:14px;font-weight:900}
-.intro-game .hero>.hero-system .feat span{color:#4d554f;font-size:13px;line-height:1.55;font-weight:700}
-.intro-game .hero>.hero-system:after{content:"POWERED BY SOLAR AI  ·  관계와 직무를 이해하는 실무 영어 시뮬레이션";grid-column:1/-1;padding:12px 14px;border-top:2px solid #28352f;background:#eaf5df;color:#24483b;font-size:14px;font-weight:900}
+.intro-game .hero>.hero-system .feat b{color:#1f6d55;font-size:15px;font-weight:900}
+.intro-game .hero>.hero-system .feat span{color:#4d554f;font-size:14px;line-height:1.55;font-weight:700}
+.intro-game .hero>.hero-system:after{content:"POWERED BY SOLAR AI  ·  관계와 직무를 이해하는 실무 영어 시뮬레이션";grid-column:1/-1;padding:12px 14px;border-top:2px solid #28352f;background:#eaf5df;color:#24483b;font-size:15px;font-weight:900}
 
 @media(max-width:900px){
   .intro-page .hero{padding:48px 20px 36px}
@@ -400,13 +408,12 @@ body {
   .intro-page .hero .copy{text-align:center}
   .intro-page .hero .copy p{margin-right:auto;margin-left:auto}
   .intro-page .hero .actions{justify-content:center}
-  .intro-game .intro-pixel-office-bg{margin-top:28px}
   .intro-game .hero>.hero-system{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:12px}
 }
 @media(max-width:560px){
   .intro-page .hero{padding:34px 16px 30px}
-  .intro-page .hero .copy h1,.intro-game .hero .copy h1{font-size:clamp(29px,9vw,36px)}
-  .intro-page .hero .copy p{font-size:14px}
+  .intro-page .hero .copy h1,.intro-game .hero .copy h1{font-size:clamp(30px,9vw,38px)}
+  .intro-page .hero .copy p{font-size:15px}
   .intro-page .hero .actions{flex-direction:column}
   .intro-page .hero .actions button{width:100%}
   .intro-page .hero .features,
@@ -431,11 +438,9 @@ body {
 .intro-business .intro-business-features{max-width:1120px!important}
 .intro-trial-frame{max-width:1400px!important}
 @media(max-width:900px){
-  .intro-game .intro-pixel-office-bg{width:calc(100% + 40px);margin:clamp(-70px,-8vw,-28px) -20px 0}
   .intro-game .hero>.hero-system{margin-top:0}
 }
 @media(max-width:560px){
-  .intro-game .intro-pixel-office-bg{width:calc(100% + 32px);margin:-24px -16px 0}
   .intro-game .hero>.hero-system .feat{min-height:auto;padding:13px}
 }
 /* END INTRO-WIDE-SCALE-V16 */
