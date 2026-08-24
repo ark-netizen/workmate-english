@@ -234,14 +234,6 @@ body {
 .intro-business .intro-reviews { background: #f7f9fc !important; }
 .intro-section-title { color: #20362f; }
 .intro-business .intro-section-title { color: #172033; }
-.intro-game-features {
-  border: 3px solid #315d53;
-  border-radius: 10px !important;
-  background: #eaf5dc !important;
-  box-shadow: 8px 8px 0 rgba(49,93,83,.2);
-}
-.intro-game-features > .pointer-events-none { display: none; }
-.intro-game-features > .absolute.inset-x-0 { opacity: .48; }
 .intro-game .intro-game-feature-window { border-color: #315d53 !important; border-radius: 8px !important; background: #fffaf0 !important; box-shadow: 6px 6px 0 rgba(49,93,83,.25) !important; }
 .intro-game .intro-game-feature-window > div:first-child { border-color: #244f3d !important; background: #2f795d !important; }
 .intro-game .intro-game-feature-window > div:first-child > span { color: #fff !important; }
