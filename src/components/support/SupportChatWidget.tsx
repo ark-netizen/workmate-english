@@ -122,14 +122,24 @@ export function SupportChatWidget({
     return (
       <>
         {showTrigger && (
-          <button
-            type="button"
-            onClick={() => onOpenChange(true)}
-            aria-label="도움말 챗봇 열기"
-            className="fixed bottom-20 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-accent text-white shadow-lg hover:opacity-90 md:bottom-5"
-          >
-            <MessageCircleQuestion className="size-6" strokeWidth={2} />
-          </button>
+          <div className="fixed bottom-20 right-5 z-40 flex flex-col items-end gap-2 md:bottom-5">
+            <button
+              type="button"
+              onClick={() => onOpenChange(true)}
+              className="max-w-[280px] rounded-2xl border border-border bg-surface px-3.5 py-2.5 text-left text-xs leading-relaxed text-foreground shadow-lg hover:bg-black/[.02]"
+              aria-label="도움말 챗봇 열기"
+            >
+              안녕하세요! Upstage Solar 기반 AI가 부캐영어 이용 중 궁금한 점을 도와드릴게요.
+            </button>
+            <button
+              type="button"
+              onClick={() => onOpenChange(true)}
+              aria-label="도움말 챗봇 열기"
+              className="flex h-14 w-14 items-center justify-center rounded-full bg-accent text-white shadow-lg hover:opacity-90"
+            >
+              <MessageCircleQuestion className="size-6" strokeWidth={2} />
+            </button>
+          </div>
         )}
         {surveySource && survey && (
           <SurveyModal
