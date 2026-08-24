@@ -670,13 +670,11 @@ export function IntroPage({
                   </div>
                 ))}
               </div>
-              {!businessMode && <HeroSystem />}
-
             </div>
           </Reveal>
         </div>
         <img className="intro-pixel-office-bg" src="/intro/workmate-pixel-office-strip.png" alt="" aria-hidden="true" />
-        {businessMode && <HeroSystem />}
+        <HeroSystem />
       </section>
       <section id="features" className="intro-features-section border-t border-border bg-surface px-4 py-16 md:px-8">
         <div className="mx-auto max-w-5xl">
