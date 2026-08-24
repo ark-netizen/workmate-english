@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { ArrowDown, ArrowRight } from "lucide-react";
 import * as api from "@/lib/api";
 import { useWorkday } from "@/context/useWorkday";
 import { industries } from "@/lib/industries";
@@ -25,131 +24,31 @@ const englishLevels: { value: EnglishLevel; label: string }[] = [
   { value: "advanced", label: "고급" },
 ];
 
-const dailyCountOptions = [3, 4, 5, 6];
+const englishLevelLabel: Record<EnglishLevel, string> = {
+  beginner: "초급",
+  intermediate: "중급",
+  advanced: "고급",
+};
 
-// "1분 체험하기"에서 실제 온보딩 폼(업종/직무/근무시간 등을 직접 설정)이 어떻게 생겼는지 그대로
-// 보여주는 축소 미리보기 — 필드 구성·문구·강조 스타일까지 실제 폼과 동일하게 맞추되, 클릭은 막아둔다
-function TrialOnboardingPreview() {
+function ProfileSummary({ profile }: { profile: ProfileResponse }) {
+  const workHours = [profile.start_time, profile.end_time].filter(Boolean).join("–");
+  const rows = [
+    { label: "주요 업무·상황", value: profile.main_tasks },
+    { label: "자주 소통하는 대상", value: profile.contacts },
+    { label: "근무시간", value: workHours },
+    { label: "영어 난이도", value: profile.english_level ? englishLevelLabel[profile.english_level] : undefined },
+    { label: "하루 알림", value: profile.daily_count ? `${profile.daily_count}회` : undefined },
+  ].filter((row) => row.value);
+
   return (
-    <div className="mx-auto w-full max-w-xs overflow-visible rounded-xl border border-dashed border-foreground/30">
-      <div className="pointer-events-none grayscale select-none space-y-4 bg-surface p-4 text-left opacity-60">
-        <label className="block space-y-1">
-          <span className="text-xs font-medium">이름</span>
-          <input
-            readOnly
-            tabIndex={-1}
-            className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-xs outline-none"
-            value={TRIAL_DEFAULTS.displayName}
-          />
-        </label>
-
-        <div className="space-y-1.5">
-          <p className="text-xs font-medium">업종</p>
-          <div className="flex flex-wrap gap-1.5">
-            {industries.map((item) => (
-              <span
-                key={item}
-                className={`rounded-full border px-2.5 py-1 text-[11px] ${
-                  item === TRIAL_DEFAULTS.industry
-                    ? "border-accent bg-accent/10 text-accent"
-                    : "border-border text-foreground/70"
-                }`}
-              >
-                {item}
-              </span>
-            ))}
-          </div>
+    <dl className="grid gap-px overflow-hidden border-[3px] border-[#2b463b] bg-[#2b463b] text-left sm:grid-cols-2">
+      {rows.map((row) => (
+        <div key={row.label} className="bg-[#fff9e9] px-4 py-3">
+          <dt className="text-[11px] font-bold text-[#2f795d]">{row.label}</dt>
+          <dd className="mt-1 break-keep text-sm leading-relaxed text-[#24312c]">{row.value}</dd>
         </div>
-
-        <label className="block space-y-1">
-          <span className="text-xs font-medium">직무</span>
-          <input
-            readOnly
-            tabIndex={-1}
-            className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-xs outline-none"
-            value={TRIAL_DEFAULTS.jobRole}
-          />
-        </label>
-
-        <label className="block space-y-1">
-          <span className="text-xs font-medium">주요 업무</span>
-          <textarea
-            readOnly
-            tabIndex={-1}
-            rows={2}
-            className="w-full resize-none rounded-md border border-border bg-transparent px-2.5 py-1.5 text-xs outline-none"
-            value={TRIAL_DEFAULTS.mainTasks}
-          />
-        </label>
-
-        <label className="block space-y-1">
-          <span className="text-xs font-medium">자주 소통하는 대상</span>
-          <input
-            readOnly
-            tabIndex={-1}
-            className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-xs outline-none"
-            value={TRIAL_DEFAULTS.contacts}
-          />
-        </label>
-
-        <div className="space-y-1.5">
-          <p className="text-xs font-medium">영어 난이도</p>
-          <div className="flex gap-1.5">
-            {englishLevels.map((level) => (
-              <span
-                key={level.value}
-                className={`rounded-md border px-2.5 py-1 text-[11px] ${
-                  level.value === "intermediate"
-                    ? "border-accent bg-accent/10 text-accent"
-                    : "border-border text-foreground/70"
-                }`}
-              >
-                {level.label}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2">
-          <label className="block space-y-1">
-            <span className="text-xs font-medium">예상 출근시간</span>
-            <input
-              readOnly
-              tabIndex={-1}
-              type="time"
-              className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-xs outline-none"
-              value="09:00"
-            />
-          </label>
-          <label className="block space-y-1">
-            <span className="text-xs font-medium">예상 퇴근시간</span>
-            <input
-              readOnly
-              tabIndex={-1}
-              type="time"
-              className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-xs outline-none"
-              value="18:00"
-            />
-          </label>
-        </div>
-
-        <div className="space-y-1.5">
-          <p className="text-xs font-medium">하루 알림 횟수</p>
-          <div className="flex gap-1.5">
-            {dailyCountOptions.map((n) => (
-              <span
-                key={n}
-                className={`rounded-md border px-2.5 py-1 text-[11px] ${
-                  n === 3 ? "border-accent bg-accent/10 text-accent" : "border-border text-foreground/70"
-                }`}
-              >
-                {n}회
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
+      ))}
+    </dl>
   );
 }
 
@@ -169,8 +68,6 @@ export function OnboardingPage() {
   const [error, setError] = useState<string | null>(null);
   const [completedProfile, setCompletedProfile] = useState<ProfileResponse | null>(null);
   const [isTrialSession, setIsTrialSession] = useState(false);
-  // 체험판 온보딩 2단계: "card"(사원증만) → "detail"(사원증 위로 + 실제 폼 미리보기 아래)
-  const [trialStep, setTrialStep] = useState<"card" | "detail">("card");
   const [advancing, setAdvancing] = useState(false);
   const { photoUrl } = useAvatarPhoto();
   // 사원증이 뚝 하고 갑자기 나타나는 느낌을 줄이려고, 체험판 화면임이 확정된 다음 프레임에
@@ -179,7 +76,17 @@ export function OnboardingPage() {
 
   useEffect(() => {
     isAnonymousSession().then((isTrial) => {
-      if (isTrial) setIsTrialSession(true);
+      if (!isTrial) return;
+      setDisplayName(TRIAL_DEFAULTS.displayName);
+      setIndustry(TRIAL_DEFAULTS.industry);
+      setJobRole(TRIAL_DEFAULTS.jobRole);
+      setMainTasks(TRIAL_DEFAULTS.mainTasks);
+      setContacts(TRIAL_DEFAULTS.contacts);
+      setEnglishLevel("intermediate");
+      setStartTime("09:00");
+      setEndTime("18:00");
+      setDailyCount(3);
+      setIsTrialSession(true);
     });
   }, []);
 
@@ -190,6 +97,18 @@ export function OnboardingPage() {
   }, [isTrialSession]);
 
   const resolvedIndustry = industry === "기타" ? customIndustry.trim() : industry;
+  const draftProfile: ProfileResponse = {
+    display_name: displayName.trim(),
+    industry: resolvedIndustry,
+    job_role: jobRole.trim(),
+    main_tasks: mainTasks.trim(),
+    contacts: contacts.trim(),
+    english_level: englishLevel,
+    start_time: startTime,
+    end_time: endTime,
+    daily_count: dailyCount,
+  };
+
   const canSubmit =
     displayName.trim().length > 0 &&
     resolvedIndustry.length > 0 &&
@@ -203,18 +122,7 @@ export function OnboardingPage() {
     setSubmitting(true);
     setError(null);
     try {
-      const payload: ProfileResponse = {
-        display_name: displayName.trim(),
-        industry: resolvedIndustry,
-        job_role: jobRole.trim(),
-        main_tasks: mainTasks.trim(),
-        contacts: contacts.trim(),
-        english_level: englishLevel,
-        start_time: startTime,
-        end_time: endTime,
-        daily_count: dailyCount,
-      };
-      await api.postProfile(payload);
+      const savedProfile = await api.postProfile(draftProfile);
       // "시작하기" 클릭이라는 사용자 제스처 안에서 바로 요청해야 브라우저가 알림 권한 팝업을 띄워줌
       // (페이지 로드 시 자동 호출은 대부분 브라우저에서 무시/차단됨)
       subscribePush().catch(() => {});
@@ -224,7 +132,7 @@ export function OnboardingPage() {
       // 화면을 건너뛰게 되므로, 컨텍스트를 안 거치는 직접 호출로 서버에서만 미리 만들어두고 결과는 버림.
       api.getTodayWorkday().catch(() => {});
       // refresh()는 사원증 리빌 화면에서 "시작하기"를 눌렀을 때 호출 — 그 전엔 온보딩 화면에 머물러야 함
-      setCompletedProfile(payload);
+      setCompletedProfile(savedProfile);
     } catch (err) {
       setError(err instanceof Error ? err.message : "저장 중 문제가 발생했습니다. 다시 시도해주세요.");
     } finally {
@@ -257,18 +165,7 @@ export function OnboardingPage() {
     setSubmitting(true);
     setError(null);
     try {
-      const payload: ProfileResponse = {
-        display_name: TRIAL_DEFAULTS.displayName,
-        industry: TRIAL_DEFAULTS.industry,
-        job_role: TRIAL_DEFAULTS.jobRole,
-        main_tasks: TRIAL_DEFAULTS.mainTasks,
-        contacts: TRIAL_DEFAULTS.contacts,
-        english_level: "intermediate",
-        start_time: "09:00",
-        end_time: "18:00",
-        daily_count: 3,
-      };
-      await api.postProfile(payload);
+      await api.postProfile(draftProfile);
       subscribePush().catch(() => {});
       await refresh();
     } catch (err) {
@@ -279,67 +176,30 @@ export function OnboardingPage() {
   };
 
   if (isTrialSession) {
-    const trialPreviewProfile: ProfileResponse = {
-      display_name: TRIAL_DEFAULTS.displayName,
-      industry: TRIAL_DEFAULTS.industry,
-      job_role: TRIAL_DEFAULTS.jobRole,
-    };
-    const isDetailStep = trialStep === "detail";
     return (
-      <div className="flex min-h-dvh flex-col">
-        <div
-          className={`flex flex-1 flex-col items-center px-4 pb-10 text-center transition-all duration-500 ease-out ${
-            isDetailStep ? "justify-start gap-6 pt-8" : "justify-center gap-6"
-          } ${trialEntered ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"}`}
-        >
-          <h1 className="break-keep text-lg font-semibold">🎉 1분 무료체험을 위한 사원증 발급 완료!</h1>
-          {/* 화살표+미리보기 칸을 항상 DOM에 두고 max-width/opacity만 트랜지션해서, "다음"을 눌렀을 때
-              사원증이 순간이동하듯 옮겨가지 않고 자연스럽게 옆으로 밀리듯 보이게 함. max-h는 실제
-              캡션 텍스트가 여러 줄로 접힐 때도 잘리지 않도록 넉넉하게 잡는다 */}
-          {/* sm: 이상에서는 gap을 컨테이너에 주지 않고 각 항목의 좌측 여백으로 개별 부여한다 —
-              접힌(0폭) 항목도 flex gap은 그대로 차지해서, 카드만 있을 때 중앙이 살짝 밀려 보였음 */}
-          <div className="flex w-full flex-col items-center gap-3 sm:flex-row sm:items-center sm:justify-center sm:gap-0">
-            <div className="flex flex-col items-center gap-2">
-              <EmployeeIdCard profile={trialPreviewProfile} photoUrl={photoUrl} hideAvatarPicker />
-              {/* 카드 발급 상태 안내는 카드 바로 아래 붙여서 보여주고, 다음 단계로 넘어가면
-                  오른쪽에 나타나는 화살표+안내 문구가 그 역할을 이어받으므로 페이드아웃한다.
-                  높이까지 트랜지션하면 줄바꿈 시 텍스트가 뭉개져 보여서 투명도만 바꾼다 */}
-              <p
-                className={`whitespace-nowrap text-xs font-medium text-accent transition-opacity duration-500 ease-out ${
-                  isDetailStep ? "opacity-0" : "opacity-100"
-                }`}
-              >
-                🎉 1분 무료체험용 사원증이 발급됐어요
-              </p>
+      <div className="flex min-h-dvh items-center justify-center bg-[linear-gradient(#bde7f5,#edf8ed)] px-4 py-10">
+        <section className={`w-full max-w-3xl border-[3px] border-[#2b463b] bg-[#fff9e9] shadow-[9px_9px_0_rgba(43,70,59,.28)] transition-all duration-500 ease-out ${trialEntered ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"}`}>
+          <header className="flex h-12 items-center justify-between border-b-[3px] border-[#2b463b] bg-[#5fb8b0] px-4 text-xs font-black text-[#183d37]">
+            <span>WORKMATE HR · EMPLOYEE CARD ISSUED</span>
+            <span className="border-2 border-[#2b463b] bg-[#eef8ed] px-2 py-1">— □ ×</span>
+          </header>
+          <div className="space-y-5 p-6 sm:p-8">
+            <div className="text-center">
+              <h1 className="break-keep text-xl font-bold text-[#24312c]">1분 무료체험을 위한 사원증 발급 완료!</h1>
+              <p className="mt-2 text-sm text-[#59675f]">입력한 온보딩 정보가 실제 업무 프로필에 반영됐어요.</p>
             </div>
-            <div
-              className={`flex flex-col items-center gap-1.5 overflow-hidden text-foreground/40 transition-all duration-500 ease-out ${
-                isDetailStep ? "max-h-56 opacity-100 sm:max-w-[11rem] sm:ml-3 sm:px-2" : "max-h-0 opacity-0 sm:max-w-0 sm:ml-0 sm:px-0"
-              }`}
-            >
-              <ArrowDown className="size-5 shrink-0 sm:hidden" />
-              <ArrowRight className="hidden size-5 shrink-0 sm:block" />
-              <p className="max-w-[11rem] break-keep text-[11px] leading-snug text-foreground/50">
-                실제 서비스에서는 업종과 직무를 직접 설정할 수 있어요.
-                <br />
-                출퇴근 시간까지 반영해 나만의 사원증을 만들어요.
-              </p>
+            <div className="mx-auto max-w-2xl space-y-4">
+              <EmployeeIdCard profile={draftProfile} photoUrl={photoUrl} hideAvatarPicker />
+              <ProfileSummary profile={draftProfile} />
             </div>
-            <div
-              className={`w-full overflow-hidden transition-all duration-500 ease-out sm:w-auto ${
-                isDetailStep ? "max-h-[2400px] opacity-100 sm:max-w-xs sm:ml-3" : "max-h-0 opacity-0 sm:max-w-0 sm:ml-0"
-              }`}
-            >
-              <TrialOnboardingPreview />
-            </div>
+            {error && <p className="text-center text-sm text-red-600">{error}</p>}
           </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
-        </div>
+        </section>
         <TrialActionBar
-          message={isDetailStep ? "이 프로필로 오늘 하루를 체험해요" : "다음을 눌러 실제 폼도 미리 볼까요?"}
-          primaryLabel={submitting ? "불러오는 중..." : "다음"}
+          message="이 프로필로 오늘 하루를 체험해요"
+          primaryLabel={submitting ? "불러오는 중..." : "체험 시작하기"}
           primaryDisabled={submitting}
-          onPrimary={isDetailStep ? handleTrialContinue : () => setTrialStep("detail")}
+          onPrimary={handleTrialContinue}
           onEnd={handleEndTrial}
         />
       </div>
@@ -531,3 +391,4 @@ export function OnboardingPage() {
 
   return <div className="mx-auto flex min-h-screen max-w-xl flex-col justify-center">{form}</div>;
 }
+
