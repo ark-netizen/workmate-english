@@ -51,6 +51,7 @@ export function Sidebar() {
               <Link
                 key={item.href}
                 to={item.href}
+                title={item.labelKo}
                 className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors ${
                   businessMode
                     ? active
