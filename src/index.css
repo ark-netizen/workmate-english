@@ -642,3 +642,15 @@ body {
   border-color:#c9cecb!important;
 }
 /* END FEATURE-CARD-NEUTRAL-CONTENT-FIX-V12 */
+
+/* LOCK-WORKMATE-SYSTEM-V13 */
+.intro-game .hero .preview,
+.intro-game .hero .businesspreview{position:static!important}
+.intro-game .hero .features{position:absolute!important;left:0!important;right:0!important;bottom:0!important;width:100%!important;margin:0!important;transform:none!important}
+.intro-game .hero .copy p{border-left:0!important}
+@media(max-width:850px){
+  .intro-game .hero .preview,
+  .intro-game .hero .businesspreview{position:relative!important}
+  .intro-game .hero .features{position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;width:100%!important;margin-top:28px!important}
+}
+/* END LOCK-WORKMATE-SYSTEM-V13 */
