@@ -674,7 +674,7 @@ export function IntroPage({
       </section>
       <section id="features" className="intro-features-section border-t border-border bg-surface px-4 py-16 md:px-8">
         <div className="mx-auto max-w-5xl">
-          <h2 className="intro-section-title text-center text-2xl font-bold tracking-tight md:text-3xl">이런 기능들이 있어요</h2>
+          <div className="intro-process-heading text-center"><span>WORK PROCESS</span><h2 className="intro-section-title text-2xl font-bold tracking-tight md:text-3xl">이런 기능들이 있어요</h2><p>카드를 한 장씩 내려보며 실제 업무 영어 흐름을 확인해 보세요.</p></div>
 
           <div className="mt-10">
             <Reveal>
@@ -741,6 +741,7 @@ export function IntroPage({
     </div>
   );
 }
+
 
 
 

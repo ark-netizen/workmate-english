@@ -489,3 +489,17 @@ body {
 .intro-page .intro-nav{border-bottom:0!important;box-shadow:none!important}
 .intro-page .intro-nav+.business-divider-strip{display:none!important}
 /* END REMOVE-INTRO-DIVIDER-V5 */
+
+/* FINAL-MOCKUP-CORRECTIONS-V6 */
+.intro-game .hero .copy:before{display:none!important;content:none!important}
+.intro-game .hero .copy{padding-top:38px!important}
+.intro-page .hero .avatar{width:52px!important;height:60px!important;flex:0 0 52px!important;border-radius:4px!important;overflow:visible!important;background:transparent!important}
+.intro-page .hero .avatar>svg{display:block!important;width:52px!important;height:60px!important;max-width:none!important;object-fit:contain!important;overflow:visible!important}
+.intro-page .hero .person{min-height:78px!important;overflow:visible!important}
+.intro-page .hero .mailcard{overflow:visible!important}
+.intro-process-heading{max-width:760px;margin:0 auto 40px}
+.intro-process-heading>span{display:inline-block;margin-bottom:15px;border:2px solid #315d53;background:#ffe28a;padding:7px 11px;color:#183d37;box-shadow:2px 2px 0 #315d53;font-size:11px;font-weight:900;letter-spacing:.06em}
+.intro-process-heading h2{margin:0}
+.intro-process-heading p{margin:12px 0 0;color:#647069;font-size:14px}
+.intro-business .intro-process-heading>span{border:0;border-radius:999px;background:#eef3ff;box-shadow:none;color:#1855c9}
+/* END FINAL-MOCKUP-CORRECTIONS-V6 */
