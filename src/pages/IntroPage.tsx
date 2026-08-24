@@ -334,16 +334,16 @@ function FeatureScrollList({ items }: { items: typeof features }) {
             <div key={f.title} ref={(el) => { sectionRefs.current[i] = el; }} className="snap-center scroll-mt-24">
               <Reveal>
                 <div
-                  className={`intro-business-feature-card flex min-h-[340px] flex-col justify-center rounded-3xl border ${c.border} ${c.bg} p-5 shadow-sm transition-all duration-500 sm:grid sm:grid-cols-2 sm:items-center sm:gap-8 sm:p-7 ${
+                  className={`intro-business-feature-card flex min-h-[380px] flex-col justify-center rounded-3xl border ${c.border} ${c.bg} p-6 shadow-sm transition-all duration-500 sm:grid sm:grid-cols-2 sm:items-center sm:gap-10 sm:p-9 ${
                     reversed ? "sm:[&>*:first-child]:order-2" : ""
                   } ${i === active ? "scale-100 opacity-100" : "scale-[0.96] opacity-50"}`}
                 >
-                  <div className="space-y-3">
-                    <span className={`inline-flex h-14 w-14 items-center justify-center rounded-2xl ${c.iconBg}`}>
-                      <Icon className={`h-7 w-7 ${c.icon}`} strokeWidth={1.75} />
+                  <div className="space-y-4">
+                    <span className={`inline-flex h-16 w-16 items-center justify-center rounded-2xl ${c.iconBg}`}>
+                      <Icon className={`h-8 w-8 ${c.icon}`} strokeWidth={1.75} />
                     </span>
-                    <p className="text-xl font-bold leading-snug">{f.title}</p>
-                    <p className="text-sm leading-relaxed text-foreground/60">{f.body}</p>
+                    <p className="text-2xl font-bold leading-snug">{f.title}</p>
+                    <p className="text-base leading-relaxed text-foreground/60">{f.body}</p>
                   </div>
                   <div className="mt-5 flex sm:mt-0">
                     <Visual />
