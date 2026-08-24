@@ -2,7 +2,7 @@
 // 실제 사진 대신 우리 서비스 실제 UI를 축소한 미리보기 카드를 히어로에 배치.
 // 디자인·카피는 초안 — 비주얼(폰트/애니메이션/실제 이미지)은 추후 다듬을 예정.
 import { useEffect, useRef, useState } from "react";
-import type { ComponentType, CSSProperties, ReactNode } from "react";
+import type { ComponentType, ReactNode } from "react";
 import { Sparkles, Building2, Bell, FileText, HeartHandshake, Star, Gamepad2, Briefcase, type LucideIcon } from "lucide-react";
 import { AccountModal } from "@/components/shell/AccountModal";
 import { RankAvatar } from "@/components/promotion/RankAvatar";
@@ -283,59 +283,6 @@ function Reveal({ children, delayMs = 0, className }: { children: ReactNode; del
       style={{ animationDelay: `${delayMs}ms`, animationFillMode: "backwards" }}
     >
       {children}
-    </div>
-  );
-}
-
-function MockPreview({ gameMode }: { gameMode: boolean }) {
-  const rows = [
-    { initial: "J", rank: "사원", name: "Jake", role: "동료", tone: "캐주얼", line: "Hey, can you take a look by 3? 🙏" },
-    { initial: "E", rank: "과장", name: "Ellen", role: "상사", tone: "격식", line: "Could you please review this by 3pm today?" },
-    { initial: "LC", rank: "부장", name: "Liam Carter", role: "거래처", tone: "보수적", line: "We would kindly request your review by 3:00 PM." },
-  ];
-  return (
-    <div className="intro-preview relative mx-auto w-full max-w-sm">
-      <div className="intro-preview-window rotate-2 rounded-2xl border border-border bg-surface p-4 shadow-xl">
-        <p className="mb-3 text-xs font-medium text-foreground/50">오늘의 연락 (3)</p>
-        <div className="space-y-2">
-          {rows.map((r) => (
-            <div key={r.name} className="intro-contact-card flex items-start gap-3 rounded-lg border border-border bg-background px-3 py-2.5">
-              {gameMode ? (
-                <RankAvatar rank={r.rank} className="intro-rank-avatar h-9 w-9 rounded-md" />
-              ) : (
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/10 text-xs font-semibold text-accent">
-                  {r.initial}
-                </span>
-              )}
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="truncate text-sm font-medium">
-                    {r.name} <span className="font-normal text-foreground/40">· {r.role}</span>
-                  </p>
-                  <span className="shrink-0 rounded-full bg-foreground/5 px-2 py-0.5 text-[10px] text-foreground/40">
-                    {r.tone}
-                  </span>
-                </div>
-                <p className="mt-0.5 truncate text-xs text-foreground/60">{r.line}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* 화면 밖으로 넘치는 장식용 말풍선 — 좁은 모바일 화면에선 카드 바깥으로 잘려나가므로 sm 이상에서만 노출 */}
-      <div
-        className="animate-float absolute -left-6 -top-5 hidden rounded-xl border border-pink-100 bg-pink-50 px-3 py-2 text-xs font-medium text-pink-700 shadow-md sm:block"
-        style={{ "--float-rotate": "-6deg", animationDelay: "0s" } as CSSProperties}
-      >
-        🔔 외근 중 · 30분 후 재알림
-      </div>
-      <div
-        className="animate-float absolute -right-4 -bottom-4 hidden rounded-xl border border-amber-100 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 shadow-md sm:block"
-        style={{ "--float-rotate": "6deg", animationDelay: "1.5s" } as CSSProperties}
-      >
-        💡 힌트 3단계 지원
-      </div>
     </div>
   );
 }
@@ -683,7 +630,6 @@ export function IntroPage({
           </div>
         </div>
       </nav>
-      {businessMode && <div className="business-divider-strip" aria-hidden="true" />}
 
       <section id="preview" className="intro-hero hero">
         <div className="wrap">
@@ -795,5 +741,7 @@ export function IntroPage({
     </div>
   );
 }
+
+
 
 

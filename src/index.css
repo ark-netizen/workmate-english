@@ -483,3 +483,9 @@ body {
 .intro-game .hero .features:after{content:"POWERED BY SOLAR AI  ·  관계와 직무를 이해하는 실무 영어 시뮬레이션";grid-column:1/-1;background:#eaf5df;border-top:2px solid #28352f;padding:12px 14px;color:#24483b;font-size:12px;font-weight:900}
 @media(max-width:850px){.intro-page .hero .wrap,.intro-game .hero .wrap{grid-template-columns:1fr;padding-bottom:0}.intro-page .hero .copy{text-align:center}.intro-page .hero .copy h1,.intro-game .hero .copy h1{font-size:38px!important}.intro-page .hero .actions,.intro-game .hero .actions{justify-content:center}.intro-game .hero:before{bottom:240px;background-size:auto 300px!important}.intro-game .hero .features{position:relative;grid-template-columns:repeat(2,1fr);margin-top:28px}}
 /* END INTRO-EXACT-MOCKUP-HERO-V4 */
+
+/* REMOVE-INTRO-DIVIDER-V5 */
+.intro-page .business-divider-strip{display:none!important;height:0!important}
+.intro-page .intro-nav{border-bottom:0!important;box-shadow:none!important}
+.intro-page .intro-nav+.business-divider-strip{display:none!important}
+/* END REMOVE-INTRO-DIVIDER-V5 */
