@@ -21,6 +21,8 @@ export function TopBar({
 }) {
   const [now, setNow] = useState<Date | null>(null);
   const { businessMode, setBusinessMode } = useBusinessMode();
+  // businessMode=true가 실제 화면에서는 게임 모드로 쓰인다.
+  const gameMode = businessMode;
 
   useEffect(() => {
     const tick = () => setNow(new Date());
@@ -32,24 +34,27 @@ export function TopBar({
   return (
     <header
       className={`sticky top-0 z-10 flex h-16 items-center justify-between gap-3 px-4 md:px-6 ${
-        businessMode ? "border-b-0 bg-[#5aa89a]" : "border-b border-border bg-surface"
+        gameMode ? "bg-[#5fb8b0]" : "border-b border-[#dfe5ef] bg-white"
       }`}
     >
       <div className="flex min-w-0 items-center gap-3">
         <Link to="/" className="shrink-0 md:hidden">
           <Logo compact />
         </Link>
-        <span className={`h-4 w-px shrink-0 md:hidden ${businessMode ? "bg-white/30" : "bg-border"}`} aria-hidden="true" />
+        <span
+          className={`h-4 w-px shrink-0 md:hidden ${gameMode ? "bg-[#28352f]/35" : "bg-[#dfe5ef]"}`}
+          aria-hidden="true"
+        />
         <div className="flex shrink-0 items-center gap-1.5">
           <PresenceDot tone={workStatusPresence[workStatus]} />
           <StatusBadge tone={workStatusTone[workStatus]}>{workStatusLabel[workStatus]}</StatusBadge>
         </div>
-        <span className={`hidden truncate text-sm sm:inline ${businessMode ? "text-white/70" : "text-foreground/50"}`}>
+        <span className={`hidden truncate text-sm sm:inline ${gameMode ? "font-medium text-[#24483b]/75" : "text-[#6b7a90]"}`}>
           {now
             ? now.toLocaleDateString("ko-KR", { timeZone: "Asia/Seoul", month: "long", day: "numeric", weekday: "short" })
             : ""}
         </span>
-        <span className={`shrink-0 text-sm tabular-nums ${businessMode ? "text-white/80" : "text-foreground/60"}`}>
+        <span className={`shrink-0 text-sm tabular-nums ${gameMode ? "font-semibold text-[#24483b]" : "text-[#5f6f86]"}`}>
           {now
             ? now.toLocaleTimeString("ko-KR", {
                 timeZone: "Asia/Seoul",
@@ -59,22 +64,21 @@ export function TopBar({
             : "--:--"}
         </span>
       </div>
+
       <div className="flex shrink-0 items-center gap-2">
-        {/* 게임/비즈니스 모드 전환 — 아이콘 하나로는 지금 어느 모드인지 잘 안 보인다는 피드백으로,
-            두 옵션을 원 하나가 반으로 갈라진 것처럼 나란히 보여주고 현재 켜진 쪽만 채워서 확실히 구분되게 함 */}
         <div
           role="group"
           aria-label="모드 선택"
-          className={`flex shrink-0 items-center gap-0.5 rounded-full border p-0.5 ${
-            businessMode ? "border-white/40" : "border-border"
+          className={`flex shrink-0 items-center gap-0.5 p-0.5 ${
+            gameMode
+              ? "rounded-md border-2 border-[#28352f] bg-[#eaf7f5] shadow-[2px_2px_0_rgba(40,53,47,.22)]"
+              : "rounded-full border border-[#cbd6e6] bg-white"
           }`}
         >
-          {/* businessMode(true)는 실제로는 이 초록/틸 배경 쪽이라 "게임 모드"로, false가 "비즈니스
-              모드"(깔끔한 흰 배경)로 불려야 함 — 색상 자체는 그대로 두고 라벨/활성 매핑만 맞춘다 */}
           {(
             [
-              { key: "game", active: businessMode, Icon: Gamepad2, label: "게임" },
-              { key: "business", active: !businessMode, Icon: Briefcase, label: "비즈니스" },
+              { key: "game", active: gameMode, Icon: Gamepad2, label: "게임" },
+              { key: "business", active: !gameMode, Icon: Briefcase, label: "비즈니스" },
             ] as const
           ).map(({ key, active, Icon, label }) => (
             <button
@@ -84,23 +88,22 @@ export function TopBar({
                 if (active) return;
                 const next = key === "game";
                 setBusinessMode(next);
-                setStoredBusinessMode(next); // 직접 고른 값이니 저장 — 다른 페이지·다음 방문에도 유지
+                setStoredBusinessMode(next);
               }}
               aria-pressed={active}
               aria-label={`${label} 모드${active ? " (현재 선택됨)" : "로 전환"}`}
-              // 활성 상태 배경색은 Tailwind 클래스(bg-foreground 등)로 주면 이 버튼에서만 다른
-              // 규칙에 밀려 안 먹히는 문제가 있어(활성/비활성 배경이 서로 뒤바뀐 것처럼 보였음),
-              // 우선순위가 확실한 인라인 스타일로 직접 지정한다.
               style={{
-                backgroundColor: active ? (businessMode ? "#ffffff" : "#1f2328") : "transparent",
-                color: active ? (businessMode ? "#5aa89a" : "#ffffff") : undefined,
+                backgroundColor: active ? (gameMode ? "#ffe28a" : "#1a56ff") : "transparent",
+                color: active ? (gameMode ? "#28352f" : "#ffffff") : undefined,
               }}
-              className={`flex items-center gap-1 rounded-full px-2 py-1.5 text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1 px-2 py-1.5 text-xs font-semibold transition-colors ${
+                gameMode ? "rounded-[3px]" : "rounded-full"
+              } ${
                 active
                   ? ""
-                  : businessMode
-                    ? "text-white/60 hover:bg-white/10"
-                    : "text-foreground/40 hover:bg-black/[.03]"
+                  : gameMode
+                    ? "text-[#31524b] hover:bg-white/30"
+                    : "text-[#6b7a90] hover:bg-[#f5f8fd]"
               }`}
             >
               <Icon className="size-4" strokeWidth={2} />
@@ -108,26 +111,38 @@ export function TopBar({
             </button>
           ))}
         </div>
+
         <button
           type="button"
           onClick={onOpenChat}
           aria-label="도움말 챗봇 열기"
-          className={`shrink-0 rounded-full border p-2 ${
-            businessMode ? "border-white/50 text-white hover:bg-white/10" : "border-border text-foreground/70 hover:bg-black/[.03]"
+          className={`shrink-0 p-2 transition-colors ${
+            gameMode
+              ? "rounded-[4px] border-2 border-[#28352f] bg-[#fff9e9] text-[#28352f] shadow-[2px_2px_0_#28352f] hover:bg-white"
+              : "rounded-full border border-[#cbd6e6] bg-white text-[#55708f] hover:bg-[#f5f8fd]"
           }`}
         >
           <MessageCircleQuestion className="size-4" strokeWidth={2} />
         </button>
+
         <Link
           to="/notifications"
           aria-label="알림"
-          className={`relative shrink-0 rounded-full border p-2 ${
-            businessMode ? "border-white/50 text-white hover:bg-white/10" : "border-border text-foreground/70 hover:bg-black/[.03]"
+          className={`relative shrink-0 p-2 transition-colors ${
+            gameMode
+              ? "rounded-[4px] border-2 border-[#28352f] bg-[#fff9e9] text-[#28352f] shadow-[2px_2px_0_#28352f] hover:bg-white"
+              : "rounded-full border border-[#cbd6e6] bg-white text-[#55708f] hover:bg-[#f5f8fd]"
           }`}
         >
           <Bell className="size-4" strokeWidth={2} />
           {unreadCount > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-medium text-white ring-2 ring-surface">
+            <span
+              className={`absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold ring-2 ${
+                gameMode
+                  ? "bg-[#f09a63] text-[#28352f] ring-[#fff9e9]"
+                  : "bg-[#1a56ff] text-white ring-white"
+              }`}
+            >
               {unreadCount}
             </span>
           )}
