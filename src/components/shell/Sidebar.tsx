@@ -13,6 +13,8 @@ export function Sidebar() {
   const { pathname } = useLocation();
   const { conversations, emailThreads } = useWorkday();
   const { businessMode } = useBusinessMode();
+  // 이 프로젝트에서 businessMode=true는 실제 UI상 게임 모드다.
+  const gameMode = businessMode;
 
   const unreadByHref: Record<string, number> = {
     "/messenger": conversations.reduce((sum, c) => sum + c.unreadCount, 0),
@@ -24,26 +26,28 @@ export function Sidebar() {
       <aside
         id="tour-nav-desktop"
         className={`flex w-56 flex-col overflow-y-auto ${
-          businessMode ? "border-r-0 bg-[#5aa89a]" : "border-r border-border bg-surface"
+          gameMode
+            ? "border-r-[3px] border-[#28352f] bg-[#5fb8b0]"
+            : "border-r border-[#dfe5ef] bg-white"
         }`}
       >
-        {/* 로고 영역 높이를 TopBar와 똑같이 h-16으로 맞추고, 로고 자리와 디바이더 모두
-            sticky top-*로 aside 자체 스크롤 위에 고정해서 내비게이션이 넘쳐 스크롤되어도
-            로고+디바이더는 항상 화면에 고정되어 보이게 함(= TopBar 아래 디바이더와 폭만
-            다를 뿐 같은 높이에서 끊김 없이 이어져 보임) */}
         <div
-          className={`sticky top-0 z-10 flex h-16 shrink-0 items-center px-5 ${
-            businessMode ? "bg-[#5aa89a]" : "bg-surface"
-          }`}
+          className={`sticky top-0 z-10 flex h-16 shrink-0 items-center px-5 ${gameMode ? "bg-[#5fb8b0]" : "bg-white"}`}
         >
           <Link to="/">
             <Logo />
           </Link>
         </div>
-        {businessMode && (
-          <div className="business-divider-strip sticky top-16 z-10 shrink-0" aria-hidden="true" />
+
+        {/* 기존 6px 공간은 유지하되, 게임 모드에서는 인트로의 레트로 프레임 무드에 맞춘 얇은 구분선으로 바꾼다. */}
+        {gameMode && (
+          <div
+            className="sticky top-16 z-10 h-1.5 shrink-0 border-y-2 border-[#28352f] bg-[#eaf5dc]"
+            aria-hidden="true"
+          />
         )}
-        <nav className="flex-1 px-3 py-3 space-y-1">
+
+        <nav className="flex-1 space-y-1 px-3 py-3">
           {navItems.map((item) => {
             const active = isActive(pathname, item.href);
             const Icon = item.icon;
@@ -54,20 +58,24 @@ export function Sidebar() {
                 to={item.href}
                 title={item.labelKo}
                 data-tour-navitem={item.href}
-                className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors ${
-                  businessMode
+                className={`flex items-center gap-2.5 px-3 py-2 text-sm transition-colors ${
+                  gameMode
                     ? active
-                      ? "bg-white/15 text-white font-medium"
-                      : "text-white/80 hover:bg-black/[.03] hover:text-white"
+                      ? "rounded-[3px] bg-[#ffe28a] font-bold text-[#28352f] shadow-[2px_2px_0_#28352f] ring-2 ring-[#28352f]"
+                      : "rounded-[3px] font-medium text-[#24483b] hover:bg-white/25 hover:text-[#173d35]"
                     : active
-                      ? "bg-accent/10 text-accent font-medium"
-                      : "text-foreground/70 hover:bg-black/[.03] hover:text-foreground"
+                      ? "rounded-md bg-[#edf3ff] font-semibold text-[#174fae]"
+                      : "rounded-md text-[#5f6f86] hover:bg-[#f5f8fd] hover:text-[#172033]"
                 }`}
               >
                 <Icon className="size-4 shrink-0" strokeWidth={2} />
                 <span className="flex-1">{item.label}</span>
                 {unread > 0 && (
-                  <span className="inline-flex h-4 min-w-4 shrink-0 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
+                  <span
+                    className={`inline-flex h-4 min-w-4 shrink-0 items-center justify-center rounded-full px-1 text-[10px] font-semibold ${
+                      gameMode ? "bg-[#f09a63] text-[#28352f]" : "bg-[#1a56ff] text-white"
+                    }`}
+                  >
                     {unread}
                   </span>
                 )}
