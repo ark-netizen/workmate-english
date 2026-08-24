@@ -680,8 +680,9 @@ export function IntroPage({
               </span>
               <span className="block whitespace-nowrap">경험하세요.</span>
             </h1>
-            <p className="mx-auto max-w-md text-sm leading-relaxed text-foreground/60 md:mx-0">
-              하나의 상황도 캐주얼·격식체·비즈니스 메일 버전으로 배우며 톤과 뉘앙스를 몸으로 익혀요.
+            <p className="mx-auto max-w-md text-sm leading-relaxed text-foreground/70 md:mx-0">
+              하나의 상황도 캐주얼·격식체·비즈니스 메일 버전으로 배우며
+              <br className="hidden sm:block" /> 톤과 뉘앙스를 몸으로 익혀요.
             </p>
             <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center md:justify-start">
               <button
