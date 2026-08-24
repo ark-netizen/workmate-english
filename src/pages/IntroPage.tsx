@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import type { ComponentType, CSSProperties, ReactNode } from "react";
 import { Sparkles, Building2, Bell, FileText, HeartHandshake, Star, Gamepad2, Briefcase, type LucideIcon } from "lucide-react";
 import { AccountModal } from "@/components/shell/AccountModal";
+import { RankAvatar } from "@/components/promotion/RankAvatar";
 import { Logo } from "@/components/ui/Logo";
 import { useBusinessMode } from "@/context/useBusinessMode";
 import { setStoredBusinessMode } from "@/lib/businessModePref";
@@ -30,10 +31,10 @@ function ReviewsSection() {
   const review = reviews[index];
 
   return (
-    <section id="reviews" className="border-t border-border bg-surface px-4 py-16 md:px-8">
+    <section id="reviews" className="intro-reviews border-t border-border bg-surface px-4 py-16 md:px-8">
       <div className="mx-auto max-w-2xl text-center">
         <h2 className="text-2xl font-bold tracking-tight md:text-3xl">실제 후기를 공개합니다</h2>
-        <div className="mt-8 overflow-hidden rounded-2xl border border-border bg-background p-8">
+        <div className="intro-review-card mt-8 overflow-hidden rounded-2xl border border-border bg-background p-8">
           <div key={index} className="animate-reviewslide">
             <div className="flex justify-center text-amber-400">
               {Array.from({ length: 5 }).map((_, i) => (
@@ -286,22 +287,26 @@ function Reveal({ children, delayMs = 0, className }: { children: ReactNode; del
   );
 }
 
-function MockPreview() {
+function MockPreview({ gameMode }: { gameMode: boolean }) {
   const rows = [
-    { initial: "J", name: "Jake", role: "동료", tone: "캐주얼", line: "Hey, can you take a look by 3? 🙏" },
-    { initial: "E", name: "Ellen", role: "상사", tone: "격식", line: "Could you please review this by 3pm today?" },
-    { initial: "LC", name: "Liam Carter", role: "거래처", tone: "보수적", line: "We would kindly request your review by 3:00 PM." },
+    { initial: "J", rank: "사원", name: "Jake", role: "동료", tone: "캐주얼", line: "Hey, can you take a look by 3? 🙏" },
+    { initial: "E", rank: "과장", name: "Ellen", role: "상사", tone: "격식", line: "Could you please review this by 3pm today?" },
+    { initial: "LC", rank: "부장", name: "Liam Carter", role: "거래처", tone: "보수적", line: "We would kindly request your review by 3:00 PM." },
   ];
   return (
-    <div className="relative mx-auto w-full max-w-sm">
-      <div className="rotate-2 rounded-2xl border border-border bg-surface p-4 shadow-xl">
+    <div className="intro-preview relative mx-auto w-full max-w-sm">
+      <div className="intro-preview-window rotate-2 rounded-2xl border border-border bg-surface p-4 shadow-xl">
         <p className="mb-3 text-xs font-medium text-foreground/50">오늘의 연락 (3)</p>
         <div className="space-y-2">
           {rows.map((r) => (
-            <div key={r.name} className="flex items-start gap-3 rounded-lg border border-border bg-background px-3 py-2.5">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/10 text-xs font-semibold text-accent">
-                {r.initial}
-              </span>
+            <div key={r.name} className="intro-contact-card flex items-start gap-3 rounded-lg border border-border bg-background px-3 py-2.5">
+              {gameMode ? (
+                <RankAvatar rank={r.rank} className="intro-rank-avatar h-9 w-9 rounded-md" />
+              ) : (
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/10 text-xs font-semibold text-accent">
+                  {r.initial}
+                </span>
+              )}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
                   <p className="truncate text-sm font-medium">
@@ -371,7 +376,7 @@ function FeatureScrollList({ items }: { items: typeof features }) {
   };
 
   return (
-    <div className="relative mx-auto max-w-4xl">
+    <div className="intro-business-features relative mx-auto max-w-4xl">
       <div className="space-y-8 md:space-y-12">
         {items.map((f, i) => {
           const Icon = f.icon;
@@ -382,7 +387,7 @@ function FeatureScrollList({ items }: { items: typeof features }) {
             <div key={f.title} ref={(el) => { sectionRefs.current[i] = el; }} className="snap-center scroll-mt-24">
               <Reveal>
                 <div
-                  className={`flex min-h-[340px] flex-col justify-center rounded-3xl border ${c.border} ${c.bg} p-5 shadow-sm transition-all duration-500 sm:grid sm:grid-cols-2 sm:items-center sm:gap-8 sm:p-7 ${
+                  className={`intro-business-feature-card flex min-h-[340px] flex-col justify-center rounded-3xl border ${c.border} ${c.bg} p-5 shadow-sm transition-all duration-500 sm:grid sm:grid-cols-2 sm:items-center sm:gap-8 sm:p-7 ${
                     reversed ? "sm:[&>*:first-child]:order-2" : ""
                   } ${i === active ? "scale-100 opacity-100" : "scale-[0.96] opacity-50"}`}
                 >
@@ -457,7 +462,7 @@ function FeatureWindowScrollList({ items }: { items: typeof features }) {
   };
 
   return (
-    <div className="relative overflow-hidden rounded-[28px] bg-[linear-gradient(180deg,#1a3fd8_0%,#3562e6_20%,#5a89ef_42%,#86adf5_62%,#c3ddf9_82%,#eef6fc_100%)] px-4 py-10 sm:px-8 sm:py-14">
+    <div className="intro-game-features relative overflow-hidden rounded-[28px] bg-[linear-gradient(180deg,#1a3fd8_0%,#3562e6_20%,#5a89ef_42%,#86adf5_62%,#c3ddf9_82%,#eef6fc_100%)] px-4 py-10 sm:px-8 sm:py-14">
       <div
         className="pointer-events-none absolute inset-0"
         style={{
@@ -479,7 +484,7 @@ function FeatureWindowScrollList({ items }: { items: typeof features }) {
           return (
             <div key={f.title} ref={(el) => { sectionRefs.current[i] = el; }} className="snap-center scroll-mt-24">
               <div
-                className={`overflow-hidden rounded-2xl border-2 border-[#2b2b2b] bg-[#fbf3e6] shadow-[0_8px_0_rgba(0,0,0,0.25)] transition-all duration-500 ${
+                className={`intro-game-feature-window overflow-hidden rounded-2xl border-2 border-[#2b2b2b] bg-[#fbf3e6] shadow-[0_8px_0_rgba(0,0,0,0.25)] transition-all duration-500 ${
                   i === active ? "scale-100 opacity-100" : "scale-[0.97] opacity-60"
                 }`}
               >
@@ -508,7 +513,7 @@ function FeatureWindowScrollList({ items }: { items: typeof features }) {
                     <p className="mb-3 text-xl leading-relaxed font-bold text-[#1c1c1c]">{f.title}</p>
                     <p className="text-[13px] leading-loose text-[#5c5c5c]">{f.body}</p>
                   </div>
-                  <div className="rounded-2xl border-2 border-[#2b2b2b] shadow-[2px_2px_0_rgba(0,0,0,0.12)]">
+                  <div className="intro-game-feature-visual rounded-2xl border-2 border-[#2b2b2b] shadow-[2px_2px_0_rgba(0,0,0,0.12)]">
                     <Visual />
                   </div>
                 </div>
@@ -588,13 +593,13 @@ export function IntroPage({
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className={`intro-page min-h-screen bg-background ${businessMode ? "intro-game" : "intro-business"}`}>
       <nav
-        className={`sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur ${
+        className={`intro-nav sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur ${
           businessMode ? "business-titlebar border-b-0" : ""
         }`}
       >
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 md:px-8">
+        <div className="intro-nav-inner mx-auto flex max-w-5xl items-center justify-between px-4 py-3 md:px-8">
           <Logo compact className="sm:hidden" />
           <Logo className="hidden sm:block" />
           <div className="flex flex-wrap items-center justify-end gap-1.5 sm:flex-nowrap sm:gap-4">
@@ -604,7 +609,7 @@ export function IntroPage({
                   key={cat.id}
                   type="button"
                   onClick={() => scrollToSection(cat.id)}
-                  className={`rounded-md px-3 py-1.5 text-sm font-medium hover:bg-black/[.03] ${
+                  className={`intro-nav-link rounded-md px-3 py-1.5 text-sm font-medium hover:bg-black/[.03] ${
                     businessMode ? "text-white/80 hover:text-white" : "text-foreground/60 hover:text-foreground"
                   }`}
                 >
@@ -616,7 +621,7 @@ export function IntroPage({
             <button
               type="button"
               onClick={handleLoginClick}
-              className={`whitespace-nowrap rounded-md px-2 py-1.5 text-xs font-medium sm:px-3 sm:text-sm ${
+              className={`intro-login-btn whitespace-nowrap rounded-md px-2 py-1.5 text-xs font-medium sm:px-3 sm:text-sm ${
                 businessMode ? "text-white/80 hover:text-white" : "text-foreground/60 hover:text-foreground"
               }`}
             >
@@ -626,7 +631,7 @@ export function IntroPage({
               type="button"
               onClick={handleTrialClick}
               disabled={startingTrial}
-              className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium hover:opacity-90 disabled:opacity-60 sm:px-4 sm:text-sm ${
+              className={`intro-trial-btn whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium hover:opacity-90 disabled:opacity-60 sm:px-4 sm:text-sm ${
                 businessMode ? "bg-white text-[#2a2620]" : "bg-accent text-white"
               }`}
             >
@@ -635,7 +640,7 @@ export function IntroPage({
             <div
               role="group"
               aria-label="모드 선택"
-              className={`flex shrink-0 items-center gap-0.5 rounded-full border p-0.5 ${
+              className={`intro-mode-toggle flex shrink-0 items-center gap-0.5 rounded-full border p-0.5 ${
                 businessMode ? "border-white/40" : "border-border"
               }`}
             >
@@ -662,7 +667,7 @@ export function IntroPage({
                     backgroundColor: active ? (businessMode ? "#ffffff" : "#1f2328") : "transparent",
                     color: active ? (businessMode ? "#5aa89a" : "#ffffff") : undefined,
                   }}
-                  className={`flex items-center gap-1 rounded-full px-2 py-1.5 text-xs font-medium transition-colors sm:px-3 ${
+                  className={`intro-mode-option flex items-center gap-1 rounded-full px-2 py-1.5 text-xs font-medium transition-colors sm:px-3 ${
                     active
                       ? ""
                       : businessMode
@@ -680,17 +685,17 @@ export function IntroPage({
       </nav>
       {businessMode && <div className="business-divider-strip" aria-hidden="true" />}
 
-      <section id="preview" className="relative overflow-hidden bg-gradient-to-b from-accent/[.06] to-transparent px-4 py-14 md:py-20">
-        <div className="mx-auto grid max-w-5xl grid-cols-1 items-center gap-12 md:grid-cols-2 md:px-8">
-          <Reveal className="space-y-5 text-center md:text-left">
-            <h1 className="text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl md:text-4xl">
+      <section id="preview" className="intro-hero relative overflow-hidden bg-gradient-to-b from-accent/[.06] to-transparent px-4 py-14 md:py-20">
+        <div className="intro-hero-grid mx-auto grid max-w-5xl grid-cols-1 items-center gap-12 md:grid-cols-2 md:px-8">
+          <Reveal className="intro-hero-copy space-y-5 text-center md:text-left">
+            <h1 className="intro-hero-title text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl md:text-4xl">
               <span className="block whitespace-nowrap">영어를 공부하지 마세요.</span>
               <span className="block whitespace-nowrap">
                 <span className="text-accent">영어로 일하는 하루</span>를
               </span>
               <span className="block whitespace-nowrap">경험하세요.</span>
             </h1>
-            <p className="mx-auto max-w-md text-sm leading-relaxed text-foreground/70 md:mx-0">
+            <p className="intro-hero-description mx-auto max-w-md text-sm leading-relaxed text-foreground/70 md:mx-0">
               하나의 상황도 캐주얼·격식체·비즈니스 메일 버전으로 배우며
               <br className="hidden sm:block" /> 톤과 뉘앙스를 몸으로 익혀요.
             </p>
@@ -699,32 +704,32 @@ export function IntroPage({
                 type="button"
                 onClick={handleTrialClick}
                 disabled={startingTrial}
-                className="rounded-full bg-accent px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-accent/20 hover:opacity-90 disabled:opacity-60"
+                className="intro-hero-trial rounded-full bg-accent px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-accent/20 hover:opacity-90 disabled:opacity-60"
               >
                 {startingTrial ? "체험 준비 중..." : "1분 가상 근무 체험하기 (로그인 불필요)"}
               </button>
               <button
                 type="button"
                 onClick={() => scrollToSection("features")}
-                className="text-sm font-medium text-foreground/50 hover:text-foreground"
+                className="intro-hero-features text-sm font-medium text-foreground/50 hover:text-foreground"
               >
                 기능 살펴보기 ↓
               </button>
             </div>
-            <p className="text-xs font-medium text-foreground/40">
+            <p className="intro-powered text-xs font-medium text-foreground/40">
               Powered by <span className="font-semibold text-foreground/60">Upstage Solar</span> — 동료·상사·거래처의 모든 대화를 Solar가 만들어요
             </p>
           </Reveal>
 
           <Reveal delayMs={150}>
-            <MockPreview />
+            <MockPreview gameMode={businessMode} />
           </Reveal>
         </div>
       </section>
 
-      <section id="features" className="border-t border-border bg-surface px-4 py-16 md:px-8">
+      <section id="features" className="intro-features-section border-t border-border bg-surface px-4 py-16 md:px-8">
         <div className="mx-auto max-w-5xl">
-          <h2 className="text-center text-2xl font-bold tracking-tight md:text-3xl">이런 기능들이 있어요</h2>
+          <h2 className="intro-section-title text-center text-2xl font-bold tracking-tight md:text-3xl">이런 기능들이 있어요</h2>
 
           <div className="mt-10">
             <Reveal>
@@ -742,14 +747,14 @@ export function IntroPage({
 
       {/* accent(teal)→accent-2(orange)가 정반대 색이라 그라데이션 중간이 탁한 카키색으로
           섞여 보였음 — 색 섞임 없이 브랜드 컬러 하나로만 깔끔하게 */}
-      <section id="start" className="bg-accent px-4 py-16 text-center text-white">
+      <section id="start" className="intro-final-cta bg-accent px-4 py-16 text-center text-white">
         <h2 className="text-2xl font-bold tracking-tight">오늘부터 출근해보세요</h2>
-        <p className="mt-2 text-sm text-white/80">로그인 없이 1분이면 시작할 수 있어요.</p>
+        <p className="intro-final-copy mt-2 text-sm text-white/80">로그인 없이 1분이면 시작할 수 있어요.</p>
         <button
           type="button"
           onClick={handleTrialClick}
           disabled={startingTrial}
-          className="mt-6 rounded-full bg-white px-8 py-3 text-sm font-semibold text-accent shadow-lg hover:opacity-90 disabled:opacity-60"
+          className="intro-final-button mt-6 rounded-full bg-white px-8 py-3 text-sm font-semibold text-accent shadow-lg hover:opacity-90 disabled:opacity-60"
         >
           {startingTrial ? "체험 준비 중..." : "지금 바로 체험하기"}
         </button>
