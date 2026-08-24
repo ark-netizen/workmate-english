@@ -58,12 +58,22 @@ export function EmployeeIdCard({
     }
   };
 
+  // hideAvatarPicker 쓰는 곳(체험판)은 캐릭터 고르는 영역이 아예 없어서, 세로로 길쭉한 카드보다
+  // 실제 명함/사원증처럼 가로로 넓은 카드가 옆에 다른 콘텐츠(미리보기 폼)와 나란히 놓기도 자연스럽다
+  const horizontal = hideAvatarPicker;
+
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
-      <div className="h-2 bg-gradient-to-r from-accent to-accent-2" />
-      <div className="flex flex-col items-center gap-3 p-5 text-center">
+      <div className={horizontal ? "h-1.5 bg-gradient-to-r from-accent to-accent-2" : "h-2 bg-gradient-to-r from-accent to-accent-2"} />
+      <div
+        className={
+          horizontal
+            ? "flex items-center gap-4 p-5 text-left"
+            : "flex flex-col items-center gap-3 p-5 text-center"
+        }
+      >
         <div className="relative shrink-0">
-          <div className="h-20 w-20 overflow-hidden rounded-xl ring-1 ring-border">
+          <div className={horizontal ? "h-16 w-16 overflow-hidden rounded-xl ring-1 ring-border" : "h-20 w-20 overflow-hidden rounded-xl ring-1 ring-border"}>
             {showPhoto ? (
               <img src={photoUrl ?? undefined} alt={name} className="h-full w-full object-cover" />
             ) : (
@@ -72,9 +82,9 @@ export function EmployeeIdCard({
           </div>
         </div>
 
-        <div className="min-w-0 space-y-1">
+        <div className={horizontal ? "min-w-0 space-y-1" : "min-w-0 space-y-1 text-center"}>
           <p className="text-xs font-medium uppercase tracking-wide text-foreground/40">Global Office</p>
-          <div className="flex items-center justify-center gap-2">
+          <div className={horizontal ? "flex items-center gap-2" : "flex items-center justify-center gap-2"}>
             <p className="truncate text-lg font-semibold">{name}</p>
             <span className="shrink-0 rounded-full bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent">{rank}</span>
           </div>

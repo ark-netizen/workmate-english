@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { ArrowDown, ArrowRight } from "lucide-react";
 import * as api from "@/lib/api";
 import { useWorkday } from "@/context/useWorkday";
 import { industries } from "@/lib/industries";
@@ -31,14 +32,6 @@ const dailyCountOptions = [3, 4, 5, 6];
 function TrialOnboardingPreview() {
   return (
     <div className="mx-auto w-full max-w-xs overflow-visible rounded-xl border border-dashed border-foreground/30">
-      <div className="flex items-center justify-center gap-1.5 bg-foreground/5 px-3 py-2">
-        <span className="text-sm">🔒</span>
-        <span className="break-keep text-xs font-semibold text-foreground/60">
-          실제 서비스에서는 업종과 직무를 직접 설정할 수 있어요.
-          <br />
-          출퇴근 시간까지 반영해 나만의 사원증을 만들어요.
-        </span>
-      </div>
       <div className="pointer-events-none grayscale select-none space-y-4 bg-surface p-4 text-left opacity-60">
         <label className="block space-y-1">
           <span className="text-xs font-medium">이름</span>
@@ -288,22 +281,33 @@ export function OnboardingPage() {
         {/* pb는 하단 sticky 안내바(약 64px)에 콘텐츠가 가려지지 않도록 여유 있게 확보 */}
         <div
           className={`flex flex-1 flex-col items-center px-4 pb-28 text-center transition-all duration-500 ease-out ${
-            isDetailStep
-              ? "justify-start gap-6 pt-8 sm:flex-row sm:items-start sm:justify-center"
-              : "justify-center gap-6"
+            isDetailStep ? "justify-start gap-6 pt-8" : "justify-center gap-6"
           }`}
         >
-          {/* detail 단계 전엔 그냥 이 컨테이너의 직접 자식으로 두고(display:contents), detail
-              단계에서만 별도 열로 묶어서 오른쪽에 미리보기 폼이 나란히 붙을 수 있게 함 */}
-          <div className={isDetailStep ? "flex shrink-0 flex-col items-center gap-4" : "contents"}>
-            <h1 className="break-keep text-lg font-semibold">🎉 1분 무료체험을 위한 사원증 발급 완료!</h1>
+          <h1 className="break-keep text-lg font-semibold">🎉 1분 무료체험을 위한 사원증 발급 완료!</h1>
+          <div
+            className={
+              isDetailStep
+                ? "flex w-full flex-col items-center gap-3 sm:flex-row sm:items-center sm:justify-center"
+                : "contents"
+            }
+          >
             <EmployeeIdCard profile={trialPreviewProfile} photoUrl={photoUrl} hideAvatarPicker />
+            {isDetailStep && (
+              <>
+                <div className="flex flex-col items-center gap-1.5 text-foreground/40 sm:px-2">
+                  <ArrowDown className="size-5 sm:hidden" />
+                  <ArrowRight className="hidden size-5 sm:block" />
+                  <p className="max-w-[10rem] break-keep text-[11px] leading-snug text-foreground/50">
+                    실제 서비스에서는 업종과 직무를 직접 설정할 수 있어요. 출퇴근 시간까지 반영해 나만의 사원증을 만들어요.
+                  </p>
+                </div>
+                <div className="animate-slidein w-full sm:w-auto">
+                  <TrialOnboardingPreview />
+                </div>
+              </>
+            )}
           </div>
-          {isDetailStep && (
-            <div className="animate-slidein w-full sm:w-auto sm:pt-9">
-              <TrialOnboardingPreview />
-            </div>
-          )}
           {error && <p className="text-sm text-red-600">{error}</p>}
         </div>
         <div className="sticky bottom-0 z-10">

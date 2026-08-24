@@ -22,6 +22,7 @@ export function Sidebar() {
   return (
     <div className="sticky top-0 hidden h-screen self-start md:flex md:shrink-0">
       <aside
+        id="tour-nav-desktop"
         className={`flex w-56 flex-col overflow-y-auto ${
           businessMode ? "border-r-0 bg-[#5aa89a]" : "border-r border-border bg-surface"
         }`}

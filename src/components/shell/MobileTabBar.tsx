@@ -13,6 +13,7 @@ export function MobileTabBar() {
 
   return (
     <nav
+      id="tour-nav-mobile"
       className={`md:hidden fixed bottom-0 inset-x-0 z-20 ${
         businessMode ? "border-t-0 bg-[#5aa89a]" : "border-t border-border bg-surface"
       }`}

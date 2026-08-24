@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import type { RefObject } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
 const STORAGE_KEY = "go:home-section-tour-dismissed";
@@ -7,10 +6,16 @@ const STORAGE_KEY = "go:home-section-tour-dismissed";
 export interface TourStep {
   title: string;
   text: string;
-  ref: RefObject<HTMLElement | null>;
+  /** CSS 셀렉터 — Sidebar/MobileTabBar처럼 이 컴포넌트 바깥(형제 컴포넌트)에 있는 요소도
+   *  React ref를 안 뚫고 그냥 문서에서 찾아 강조할 수 있게 */
+  selector: string;
 }
 
 const HIGHLIGHT_CLASSES = ["ring-2", "ring-accent", "ring-offset-2", "rounded-xl"];
+
+function isVisible(el: HTMLElement) {
+  return el.offsetParent !== null;
+}
 
 // 정식 스포트라이트 투어(요소를 어둡게 가리고 구멍 뚫어 짚어주는 방식)는 아니지만, 화면의 실제
 // 섹션을 하나씩 순서대로 테두리로 강조하면서 "여기가 뭐 하는 곳인지"를 카드로 설명해준다.
@@ -24,22 +29,37 @@ export function SectionTourGuide({ steps }: { steps: TourStep[] }) {
     }
   });
   const [index, setIndex] = useState(0);
-
-  // 실제로 화면에 존재하는(ref가 붙은) 단계만 — 체험판 등에서 특정 섹션이 없을 수 있음
-  const availableSteps = steps.filter((s) => s.ref.current);
+  // 반응형이라 데스크톱/모바일 중 실제로 화면에 보이는(display:none 아닌) 요소가 있는 단계만
+  const [availableSteps, setAvailableSteps] = useState<{ step: TourStep; el: HTMLElement }[]>([]);
 
   useEffect(() => {
     if (dismissed) return;
-    const step = availableSteps[index];
-    if (!step?.ref.current) return;
-    const el = step.ref.current;
+    // workContext처럼 서버 데이터가 와야 렌더되는 섹션도 있어서, 마운트 직후 바로 찾으면
+    // 아직 DOM에 없을 수 있다 — 데이터 로딩이 대충 끝날 시간을 살짝 두고 찾는다
+    const timer = setTimeout(() => {
+      const found = steps
+        .map((step) => {
+          const el = document.querySelector<HTMLElement>(step.selector);
+          return el && isVisible(el) ? { step, el } : null;
+        })
+        .filter((v): v is { step: TourStep; el: HTMLElement } => v !== null);
+      setAvailableSteps(found);
+    }, 400);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dismissed]);
+
+  useEffect(() => {
+    if (dismissed) return;
+    const current = availableSteps[index];
+    if (!current) return;
+    const { el } = current;
     el.classList.add(...HIGHLIGHT_CLASSES);
     el.scrollIntoView({ behavior: "smooth", block: "center" });
     return () => {
       el.classList.remove(...HIGHLIGHT_CLASSES);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dismissed, index, availableSteps.length]);
+  }, [dismissed, index, availableSteps]);
 
   if (dismissed || availableSteps.length === 0) return null;
 
@@ -52,14 +72,14 @@ export function SectionTourGuide({ steps }: { steps: TourStep[] }) {
     }
   };
 
-  const step = availableSteps[Math.min(index, availableSteps.length - 1)];
+  const current = availableSteps[Math.min(index, availableSteps.length - 1)];
   const isLast = index >= availableSteps.length - 1;
 
   return (
-    <div className="fixed inset-x-4 bottom-20 z-30 mx-auto max-w-sm rounded-xl border border-accent/30 bg-surface p-4 shadow-xl md:inset-x-auto md:right-6 md:bottom-6">
+    <div className="fixed inset-x-4 top-1/2 z-30 mx-auto max-w-sm -translate-y-1/2 rounded-xl border border-accent/30 bg-surface p-4 shadow-xl md:inset-x-auto md:right-6 md:w-80">
       <div className="flex items-start justify-between gap-2">
         <p className="text-xs font-semibold text-accent">
-          {index + 1} / {availableSteps.length} · {step.title}
+          {index + 1} / {availableSteps.length} · {current.step.title}
         </p>
         <button
           type="button"
@@ -70,7 +90,7 @@ export function SectionTourGuide({ steps }: { steps: TourStep[] }) {
           <X className="size-4" />
         </button>
       </div>
-      <p className="mt-2 text-sm text-foreground/80">{step.text}</p>
+      <p className="mt-2 text-sm text-foreground/80">{current.step.text}</p>
       <div className="mt-3 flex items-center justify-end gap-1.5">
         <button
           type="button"

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import * as api from "@/lib/api";
@@ -234,10 +234,6 @@ export function HomePage() {
   const [advancingDay, setAdvancingDay] = useState(false);
   const [resettingAccount, setResettingAccount] = useState(false);
   const [promotion, setPromotion] = useState<PromotionStatus | null>(null);
-  const profileSectionRef = useRef<HTMLDivElement | null>(null);
-  const statsSectionRef = useRef<HTMLElement | null>(null);
-  const contextSectionRef = useRef<HTMLElement | null>(null);
-  const contactsSectionRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     api.getProfile().then(setProfile).catch(() => setProfile(null));
@@ -352,23 +348,35 @@ export function HomePage() {
   };
 
   const tourSteps: TourStep[] = [
+    // 데스크톱 사이드바/모바일 하단바는 반응형으로 항상 한쪽만 화면에 보이므로, 둘 다 후보로
+    // 넣어두면 SectionTourGuide가 실제로 보이는(display:none 아닌) 쪽만 걸러서 써준다
     {
-      ref: profileSectionRef,
+      selector: "#tour-nav-desktop",
+      title: "메뉴",
+      text: "메신저·이메일·근태·업무일지·인사평가 등 다른 화면은 여기서 이동해요.",
+    },
+    {
+      selector: "#tour-nav-mobile",
+      title: "메뉴",
+      text: "메신저·이메일·근태·업무일지·인사평가 등 다른 화면은 여기서 이동해요.",
+    },
+    {
+      selector: "#tour-profile",
       title: "프로필 · 근무시간",
       text: "내 사원증과 오늘 일한 시간이 여기 표시돼요. 승급하면 아바타 캐릭터도 바뀌어요.",
     },
     {
-      ref: statsSectionRef,
+      selector: "#tour-stats",
       title: "근무 현황 요약",
       text: "근무 상태, 연차, 읽지 않은 메시지, 다음 연락 예정 시간을 한눈에 볼 수 있어요.",
     },
     {
-      ref: contextSectionRef,
+      selector: "#tour-context",
       title: "오늘의 업무 상황",
       text: "오늘 무슨 상황인지, 동료·상사·거래처에게 각각 뭘 전달해야 하는지 알려줘요.",
     },
     {
-      ref: contactsSectionRef,
+      selector: "#tour-contacts",
       title: "오늘의 연락",
       text: "여기서 받은 메시지에 답장하면 하루가 진행되고, 다 처리한 뒤 퇴근하면 리포트가 만들어져요.",
     },
@@ -426,7 +434,7 @@ export function HomePage() {
         </Link>
       )}
 
-      <div ref={profileSectionRef}>
+      <div id="tour-profile">
         <ProfileHoursCard
           profile={profile}
           workStatus={workStatus ?? "before-work"}
@@ -435,7 +443,7 @@ export function HomePage() {
         />
       </div>
 
-      <section ref={statsSectionRef} className="rounded-xl border border-border bg-surface p-5">
+      <section id="tour-stats" className="rounded-xl border border-border bg-surface p-5">
         {/* 항목 수와 정확히 같은 개수의 1fr 칼럼 grid — 칼럼 폭이 수학적으로 완전히 동일해서
             마지막 칼럼의 오른쪽 끝이 컨테이너 padding과 항상 정확히 맞음(flex-grow 오차 없음) */}
         <div className={`grid grid-cols-1 gap-4 ${leaveBalance ? "sm:grid-cols-5" : "sm:grid-cols-3"}`}>
@@ -456,7 +464,7 @@ export function HomePage() {
 
 
       {workContext && (
-        <section ref={contextSectionRef} className="rounded-xl border border-border bg-surface p-5">
+        <section id="tour-context" className="rounded-xl border border-border bg-surface p-5">
           <div className="flex items-start justify-between gap-3">
             <div>
               <h2 className="text-sm font-semibold text-foreground">오늘의 업무 상황</h2>
@@ -485,7 +493,7 @@ export function HomePage() {
         </section>
       )}
 
-      <section ref={contactsSectionRef} className="space-y-3">
+      <section id="tour-contacts" className="space-y-3">
         <div className="flex items-center justify-between border-b border-border pb-2">
           <h2 className="text-sm font-medium text-foreground/70">
             오늘의 연락 ({todayItems.length})
