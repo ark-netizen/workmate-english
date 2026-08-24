@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight } from "lucide-react";
+import { useBusinessMode } from "@/context/useBusinessMode";
 
 // "1분 체험하기" 전체 과정(온보딩 → 사원증 → 오늘의 연락 → 답장 3개 → 리포트)에서 공통으로 쓰는
 // 안내 카드. 화면 우측 중앙(모바일은 화면 중앙)에 떠서, 홈 화면의 섹션 투어 카드(SectionTourGuide)와
@@ -28,6 +29,9 @@ export function TrialActionBar({
 }) {
   const barRef = useRef<HTMLDivElement>(null);
   const [showNudge, setShowNudge] = useState(false);
+  const { businessMode } = useBusinessMode();
+  // 이 프로젝트에서는 businessMode=true가 게임 모드이므로 실제 비즈니스 모드는 반대값이다.
+  const isBusinessMode = !businessMode;
   // 처음 뜰 때 자리에 이미 있던 것처럼 뚝 나타나면 어색해서, 마운트 직후 살짝 옆에서
   // 밀려들어오며 페이드인 되게 함(라우트 이동으로 다시 마운트될 때도 같은 효과). 온보딩
   // 화면에서는 사원증이 먼저 자리 잡고(1) 그다음 이 카드가 따라오는(2) 순서로 보여야 하는데,
@@ -59,9 +63,11 @@ export function TrialActionBar({
   return (
     <div
       ref={barRef}
-      className={`fixed inset-x-4 top-1/2 z-30 mx-auto max-w-sm -translate-y-1/2 rounded-xl border border-accent/30 bg-surface p-4 shadow-xl transition-[transform,opacity] duration-300 ease-out md:inset-x-auto md:right-6 md:w-80 ${
-        entered ? "translate-x-0 opacity-100" : "translate-x-6 opacity-0"
-      }`}
+      className={`fixed inset-x-4 top-1/2 z-30 mx-auto max-w-sm -translate-y-1/2 rounded-xl p-4 transition-[transform,opacity] duration-300 ease-out md:inset-x-auto md:right-6 md:w-80 ${
+        isBusinessMode
+          ? "border-2 border-[#1a56ff] bg-[#eef4ff] shadow-[0_18px_45px_rgba(26,86,255,0.24)]"
+          : "border border-accent/30 bg-surface shadow-xl"
+      } ${entered ? "translate-x-0 opacity-100" : "translate-x-6 opacity-0"}`}
     >
       {showNudge && (
         <div className="absolute inset-x-0 -top-10 flex justify-center px-4">
@@ -71,27 +77,45 @@ export function TrialActionBar({
         </div>
       )}
       <div className="flex items-center gap-2">
-        <span className="shrink-0 rounded-full bg-accent px-2.5 py-1 text-xs font-medium text-white">체험판</span>
+        <span
+          className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium text-white ${
+            isBusinessMode ? "bg-[#1a56ff]" : "bg-accent"
+          }`}
+        >
+          체험판
+        </span>
         {dotsTotal != null && (
           <div className="flex shrink-0 items-center gap-1">
             {Array.from({ length: dotsTotal }).map((_, i) => (
               <span
                 key={i}
-                className={`h-1.5 w-5 rounded-full ${i < (dotsFilled ?? 0) ? "bg-accent" : "bg-foreground/15"}`}
+                className={`h-1.5 w-5 rounded-full ${
+                  i < (dotsFilled ?? 0)
+                    ? isBusinessMode
+                      ? "bg-[#1a56ff]"
+                      : "bg-accent"
+                    : isBusinessMode
+                      ? "bg-[#1a56ff]/20"
+                      : "bg-foreground/15"
+                }`}
               />
             ))}
           </div>
         )}
       </div>
-      <p className="mt-2.5 text-sm text-foreground/80">{message}</p>
+      <p className={`mt-2.5 text-sm ${isBusinessMode ? "font-medium text-[#17345f]" : "text-foreground/80"}`}>{message}</p>
       <div className="mt-3 flex items-center justify-end gap-1.5">
         <button
           type="button"
           onClick={onEnd}
           className={
             endPrimary
-              ? "shrink-0 rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90"
-              : "shrink-0 rounded-full border border-border px-3 py-1.5 text-xs text-foreground/60 hover:bg-black/[.03]"
+              ? `shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 ${
+                  isBusinessMode ? "bg-[#1a56ff]" : "bg-accent"
+                }`
+              : `shrink-0 rounded-full border px-3 py-1.5 text-xs hover:bg-black/[.03] ${
+                  isBusinessMode ? "border-[#9bb7ff] text-[#36527a]" : "border-border text-foreground/60"
+                }`
           }
         >
           체험 종료
@@ -101,7 +125,9 @@ export function TrialActionBar({
             type="button"
             onClick={onPrimary}
             disabled={primaryDisabled}
-            className="flex shrink-0 items-center gap-1 rounded-full bg-accent px-3 py-1.5 text-xs font-medium text-white hover:opacity-90 disabled:opacity-60"
+            className={`flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium text-white hover:opacity-90 disabled:opacity-60 ${
+              isBusinessMode ? "bg-[#1a56ff]" : "bg-accent"
+            }`}
           >
             {primaryLabel}
             <ArrowRight className="size-3.5" strokeWidth={2.5} />
