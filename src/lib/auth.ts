@@ -101,16 +101,33 @@ export async function startKakaoNotifyConsent() {
   }
 }
 
-/** 카카오 재동의 리다이렉트로 돌아온 직후 SettingsPage에서 호출 — provider token을 서버에 저장 */
+/**
+ * 카카오 재동의 리다이렉트로 돌아온 직후 호출 — provider token을 서버에 저장.
+ * 리다이렉트 직후에는 Supabase가 URL의 인증 정보를 아직 세션에 다 반영하지 못한 순간이 있어서
+ * (특히 여러 곳(WorkdayContext refresh 등)에서 거의 동시에 호출될 때), 바로 실패로 단정하지 않고
+ * 짧게 재시도한다. 성공하거나 재시도를 다 썼을 때만 대기 플래그를 지운다(조급하게 지우면
+ * 나중에 세션이 준비돼도 재시도할 기회 자체가 없어짐).
+ */
 export async function finalizePendingKakaoNotify() {
   if (window.sessionStorage.getItem(PENDING_KAKAO_NOTIFY_KEY) !== "1") return false;
-  window.sessionStorage.removeItem(PENDING_KAKAO_NOTIFY_KEY);
   const sb = requireSupabase();
-  const { data } = await sb.auth.getSession();
-  const session = data.session;
+
+  let session = (await sb.auth.getSession()).data.session;
+  for (let attempt = 0; attempt < 5 && !(session?.provider_token && session?.provider_refresh_token); attempt++) {
+    await new Promise((r) => setTimeout(r, 400));
+    session = (await sb.auth.getSession()).data.session;
+  }
+
   if (!session?.provider_token || !session?.provider_refresh_token) {
+    window.sessionStorage.removeItem(PENDING_KAKAO_NOTIFY_KEY);
+    console.error("[kakao] provider token을 못 받음", {
+      hasProviderToken: !!session?.provider_token,
+      hasProviderRefreshToken: !!session?.provider_refresh_token,
+    });
     throw new Error("카카오 인증 정보를 받지 못했어요. 다시 시도해주세요.");
   }
+
+  window.sessionStorage.removeItem(PENDING_KAKAO_NOTIFY_KEY);
   await saveKakaoNotifyToken({
     accessToken: session.provider_token,
     refreshToken: session.provider_refresh_token,

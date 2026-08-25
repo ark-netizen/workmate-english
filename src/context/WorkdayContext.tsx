@@ -129,7 +129,7 @@ export function WorkdayProvider({ children }: { children: ReactNode }) {
       await finalizePendingConsent().catch(() => {});
       // 카톡 알림 재동의(talk_message)도 같은 방식으로 리다이렉트됐다 돌아오므로 여기서 같이 처리 —
       // 어느 페이지로 돌아오든(리다이렉트는 항상 origin 루트) refresh()가 전역에서 불려서 놓치지 않음
-      await finalizePendingKakaoNotify().catch(() => {});
+      await finalizePendingKakaoNotify().catch((err) => console.error("[kakao] 재동의 처리 실패:", err));
       const next = await api.getTodayWorkday();
       if (seq !== refreshSeqRef.current) return // 그 사이 더 최신 refresh()가 시작됐으면 이 낡은 응답은 버림
 
