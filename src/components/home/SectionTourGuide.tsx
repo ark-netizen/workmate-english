@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useBusinessMode } from "@/context/useBusinessMode";
 
@@ -106,8 +107,12 @@ export function SectionTourGuide({
     const current = availableSteps[index];
     if (!current) return;
     const { el } = current;
-    el.classList.add(...HIGHLIGHT_CLASSES);
-    const restore = bringToFront(el);
+
+    // 메뉴 확장 단계는 패널 자체가 사이드바 경계를 이어서 보여주므로 외곽 ring을 덧씌우지 않는다.
+    // 사이드바 전체 ring이 상단바까지 튀어나와 보이던 문제도 같이 방지한다.
+    const shouldHighlight = !current.step.rowItems;
+    if (shouldHighlight) el.classList.add(...HIGHLIGHT_CLASSES);
+    const restore = shouldHighlight ? bringToFront(el) : () => {};
     el.scrollIntoView({ behavior: "smooth", block: "center" });
 
     const updateRect = () => {
@@ -133,7 +138,7 @@ export function SectionTourGuide({
     window.addEventListener("resize", updateRect);
     window.addEventListener("scroll", updateRect, true);
     return () => {
-      el.classList.remove(...HIGHLIGHT_CLASSES);
+      if (shouldHighlight) el.classList.remove(...HIGHLIGHT_CLASSES);
       restore();
       clearTimeout(settleTimer);
       window.removeEventListener("resize", updateRect);
@@ -173,14 +178,14 @@ export function SectionTourGuide({
   // 투어 진행 버튼은 계속 보던 위치인 우측 중앙에 따로 둔다. 메뉴를 자동으로 훑거나
   // 순차 점멸시키지 않아 사용자가 자기 속도로 이름과 기능을 살펴볼 수 있게 한다.
   if (current.step.rowItems && extendPanel && anchorRect && rowRects.length > 0 && typeof window !== "undefined") {
-    // 헤더 실제 높이(h-9=36px)와 정확히 맞춰야 헤더 바로 아래에 첫 항목이 붙는다 —
-    // 여기에 추가로 PAD까지 빼면 헤더와 첫 항목 사이에 빈 틈이 생겨버린다(실제로 그렇게 보인 버그).
-    const HEADER_H = 36;
     const PAD = 8;
-    const firstRect = rowRects[0].rect;
     const lastRect = rowRects[rowRects.length - 1].rect;
+
+    // HomePage에는 zoom:1.1이 적용돼 있다. fixed 패널을 그 내부에서 렌더링하면 좌표까지 1.1배 되어
+    // 사이드바와 패널 사이에 빈틈이 생긴다. 아래 패널은 body portal로 렌더링해 viewport 좌표를 그대로 쓴다.
     const panelLeft = clamp(anchorRect.right, 8, window.innerWidth - ANCHOR_WIDTH - 8);
-    const panelTop = clamp(firstRect.top - HEADER_H, 8, window.innerHeight - 100);
+    // 데스크톱 TopBar가 정확히 64px이므로 메뉴 패널도 그 아래에서 시작시켜 상단바와 겹치지 않게 한다.
+    const panelTop = clamp(64, 8, window.innerHeight - 100);
     const panelBottom = lastRect.bottom + PAD;
     const panelHeight = panelBottom - panelTop;
 
@@ -197,7 +202,7 @@ export function SectionTourGuide({
       ? "border-2 border-[#28352f] bg-[#2f795d] text-white shadow-[2px_2px_0_#28352f] hover:bg-[#286b52]"
       : "border border-[#1a56ff] bg-[#1a56ff] text-white hover:bg-[#1649d8]";
 
-    return (
+    return createPortal(
       <>
         <div
           className={`fixed z-[10000] w-[17rem] max-w-[calc(100vw-1rem)] rounded-r-lg ${panelClass}`}
@@ -265,7 +270,8 @@ export function SectionTourGuide({
             </>
           )}
         </div>
-      </>
+      </>,
+      document.body,
     );
   }
 
@@ -332,7 +338,7 @@ export function SectionTourGuide({
       ? "flex items-center gap-1 rounded-full border-2 border-[#28352f] bg-[#2f795d] px-3 py-1.5 text-xs font-semibold text-white shadow-[2px_2px_0_#28352f] hover:bg-[#286b52]"
       : "flex items-center gap-1 rounded-full bg-accent px-3 py-1.5 text-xs font-medium text-white hover:opacity-90";
 
-  return (
+  const card = (
     <div className={cardClassName} style={anchorStyle ?? undefined}>
       {leaving ? (
         <p className={`flex items-center gap-2 text-sm ${extendPanel ? extendPanel.body : gameMode ? "text-[#38443f]" : "text-foreground/70"}`}>
@@ -396,4 +402,6 @@ export function SectionTourGuide({
       )}
     </div>
   );
+
+  return typeof document !== "undefined" ? createPortal(card, document.body) : card;
 }
