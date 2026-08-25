@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { SquarePen, GripVertical } from "lucide-react";
 import { useWorkday } from "@/context/useWorkday";
-import { Avatar } from "@/components/ui/Avatar";
+import { ContactAvatar } from "@/components/ui/ContactAvatar";
 import { formatDateTime } from "@/lib/format";
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { useResizable } from "@/hooks/useResizable";
@@ -88,7 +88,11 @@ export function EmailList() {
                   }`}
                 >
                   <GripVertical className="size-3.5 shrink-0 self-center cursor-grab text-foreground/25" />
-                  <Avatar name={contact?.name ?? "?"} className="self-center" />
+                  <ContactAvatar
+                    name={contact?.name ?? "?"}
+                    role={contact?.role}
+                    className="self-center"
+                  />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
                       <span
