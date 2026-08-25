@@ -15,7 +15,6 @@ export function RankLineup({
 }) {
   const currentIndex = Math.max(0, RANKS.indexOf(currentRank || "사원"));
   const markerX = GROUP_X_START + currentIndex * GROUP_GAP + 28;
-  // 상위 X% → 막대 위에서의 위치(왼쪽 0% = 하위, 오른쪽 100% = 상위)
   const barPosition = topPercent != null ? Math.min(96, Math.max(4, 100 - topPercent)) : null;
 
   return (
@@ -25,9 +24,8 @@ export function RankLineup({
         preserveAspectRatio="xMidYMid meet"
         className="mx-auto block h-auto w-full"
         role="img"
-        aria-label={`직급 라인업, 현재 ${currentRank ?? "사원"}`}
+        aria-label={`수달 직급 라인업, 현재 ${currentRank ?? "사원"}`}
       >
-        {/* 나(현재 직급) 표시 마커 */}
         <g transform={`translate(${markerX},-8)`}>
           <rect x="-17" y="-24" width="34" height="17" rx="3" fill="var(--accent)" />
           <text x="0" y="-11" textAnchor="middle" fontSize="10" fontWeight="700" fill="#fff" fontFamily="sans-serif">
@@ -49,7 +47,6 @@ export function RankLineup({
         ))}
       </svg>
 
-      {/* 전체 사용자 대비 위치 — 텍스트 대신 막대 그래프 + 마커로 한눈에 보이게 */}
       <div className="relative mt-3 px-1">
         {barPosition != null ? (
           <span
@@ -87,6 +84,7 @@ export function RankLineup({
       <p className="mt-3 text-center text-xs text-foreground/50">
         현재 직급: <span className="font-semibold text-foreground">{currentRank ?? "사원"}</span>
       </p>
+      <p className="mt-1 text-center text-[11px] text-foreground/35">현재 수달 캐릭터 모드 · 인간 캐릭터 모드 준비 중</p>
     </div>
   );
 }
