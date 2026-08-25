@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useWorkday } from "@/context/useWorkday";
-import { Avatar } from "@/components/ui/Avatar";
+import { ContactAvatar } from "@/components/ui/ContactAvatar";
 import { formatDateTime } from "@/lib/format";
 
 const channelStyle = {
@@ -24,6 +24,7 @@ export function NotificationsPage() {
         to: `/messenger/${conversation.id}`,
         channel: "messenger" as const,
         name: contact?.name,
+        role: contact?.role,
         preview: lastMessage?.body ?? "",
         createdAt: conversation.updatedAt,
         read: conversation.unreadCount === 0,
@@ -36,6 +37,7 @@ export function NotificationsPage() {
         to: `/email/${thread.id}`,
         channel: "email" as const,
         name: contact?.name,
+        role: contact?.role,
         preview: thread.subject,
         createdAt: thread.updatedAt,
         read: thread.unreadCount === 0,
@@ -86,7 +88,7 @@ export function NotificationsPage() {
               to={item.to}
               className="flex items-center gap-3 rounded-lg border border-border bg-surface px-4 py-3 hover:bg-black/[.02]"
             >
-              <Avatar name={item.name ?? "?"} />
+              <ContactAvatar name={item.name ?? "?"} role={item.role} />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span
