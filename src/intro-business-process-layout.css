@@ -1,6 +1,7 @@
 /* Business intro WORK PROCESS layout.
    비즈니스 모드만 별도로 다룬다.
-   데스크톱에서는 텍스트와 그래픽을 좌/우 끝에 두고 남는 공간을 가운데로 배분한다.
+   두 덩어리를 좌/우 끝에 붙이는 것이 아니라, 카드 안에서 그래픽·텍스트·여백이
+   시각적으로 고르게 배분되도록 space-evenly 기준으로 배치한다.
    짝수 카드는 기존 React order 규칙을 그대로 사용해 그래픽이 왼쪽, 텍스트가 오른쪽에 온다. */
 
 @media (min-width: 768px) {
@@ -8,22 +9,24 @@
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
-    justify-content: space-between !important;
+    justify-content: space-evenly !important;
     gap: 0 !important;
   }
 
+  /* 텍스트는 한 덩어리 자체의 폭만 잡고, 남는 공간은 부모가 균등 배분한다. */
   .intro-business .intro-business-feature-card > div:first-child {
-    flex: 0 1 45% !important;
-    width: auto !important;
-    max-width: none !important;
+    flex: 0 1 360px !important;
+    width: min(34%, 360px) !important;
+    max-width: 360px !important;
     min-width: 0 !important;
     margin: 0 !important;
   }
 
+  /* 그래픽도 카드 절반을 억지로 점유하지 않고 실제 보기 좋은 폭까지만 사용한다. */
   .intro-business .intro-business-feature-card > div:last-child {
-    flex: 0 1 50% !important;
-    width: auto !important;
-    max-width: none !important;
+    flex: 0 1 500px !important;
+    width: min(44%, 500px) !important;
+    max-width: 500px !important;
     min-width: 0 !important;
     margin: 0 !important;
   }
@@ -32,5 +35,19 @@
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 980px) {
+  .intro-business .intro-business-feature-card > div:first-child {
+    flex-basis: 310px !important;
+    width: min(35%, 310px) !important;
+    max-width: 310px !important;
+  }
+
+  .intro-business .intro-business-feature-card > div:last-child {
+    flex-basis: 430px !important;
+    width: min(47%, 430px) !important;
+    max-width: 430px !important;
   }
 }
