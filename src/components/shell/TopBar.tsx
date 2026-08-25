@@ -45,8 +45,11 @@ export function TopBar({
           className={`h-4 w-px shrink-0 md:hidden ${gameMode ? "bg-[#28352f]/35" : "bg-[#dfe5ef]"}`}
           aria-hidden="true"
         />
-        <div className="flex shrink-0 items-center gap-1.5">
-          <PresenceDot tone={workStatusPresence[workStatus]} />
+        <div className="flex shrink-0 items-center gap-2">
+          <PresenceDot
+            tone={workStatusPresence[workStatus]}
+            className={gameMode ? "ring-[3px] ring-[#fffaf0] shadow-[0_0_0_1px_#28352f]" : ""}
+          />
           <StatusBadge tone={workStatusTone[workStatus]}>{workStatusLabel[workStatus]}</StatusBadge>
         </div>
         <span className={`hidden truncate text-sm sm:inline ${gameMode ? "font-medium text-[#24483b]/75" : "text-[#6b7a90]"}`}>
@@ -137,10 +140,8 @@ export function TopBar({
           <Bell className="size-4" strokeWidth={2} />
           {unreadCount > 0 && (
             <span
-              className={`absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold ring-2 ${
-                gameMode
-                  ? "bg-[#f09a63] text-[#28352f] ring-[#fff9e9]"
-                  : "bg-[#1a56ff] text-white ring-white"
+              className={`absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#e53935] px-1 text-[10px] font-bold text-white ring-2 ${
+                gameMode ? "ring-[#fff9e9]" : "ring-white"
               }`}
             >
               {unreadCount}
