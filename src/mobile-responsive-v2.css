@@ -88,23 +88,38 @@
     width: 46px !important;
     height: 54px !important;
     flex: 0 0 46px !important;
-    place-items: end center !important;
+    place-items: center !important;
     overflow: hidden !important;
     border: 2px solid #28352f !important;
     border-radius: 3px !important;
     background: #bce5dc !important;
     box-sizing: border-box !important;
   }
+  /* RankAvatar는 .avatar 바로 아래 span > svg 구조라서 바깥 박스와 별도로 중앙 정렬한다. */
+  .intro-game .hero .avatar > span {
+    display: grid !important;
+    width: calc(100% - 6px) !important;
+    height: calc(100% - 8px) !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    place-items: center !important;
+    overflow: hidden !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+  .intro-game .hero .avatar > span > svg,
   .intro-game .hero .avatar > svg,
   .intro-game .hero .avatar > img {
     display: block !important;
-    width: 43px !important;
-    height: 50px !important;
+    width: 100% !important;
+    height: 100% !important;
     max-width: 100% !important;
     max-height: 100% !important;
+    margin: 0 auto !important;
     overflow: hidden !important;
-    transform: scale(.94) !important;
-    transform-origin: center bottom !important;
+    transform: none !important;
+    transform-origin: center center !important;
   }
   .intro-business .hero .avatar {
     overflow: hidden !important;
@@ -115,6 +130,19 @@
     text-align: center !important;
     white-space: nowrap !important;
     word-break: keep-all !important;
+  }
+
+  /* Pixel office strip: desktop crop height를 모바일에 그대로 쓰지 않고 원본 비율로 축소한다. */
+  .intro-game .intro-pixel-office-bg {
+    display: block !important;
+    left: 50% !important;
+    width: 100vw !important;
+    max-width: none !important;
+    height: auto !important;
+    aspect-ratio: 1913 / 344 !important;
+    margin-left: -50vw !important;
+    object-fit: contain !important;
+    object-position: center center !important;
   }
 
   /* Guest trial: internal QA controls must never cover the public mobile trial. */
