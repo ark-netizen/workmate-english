@@ -8,6 +8,7 @@ import "./game-mode-workspace.css";
 import "./intro-mobile.css";
 import "./intro-mobile-hotfix.css";
 import "./mobile-responsive-v2.css";
+import "./mobile-trial-preview.css";
 import "./enable-mobile-intro-trial";
 
 createRoot(document.getElementById("root")!).render(
