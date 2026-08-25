@@ -230,4 +230,5 @@ export interface ProfileResponse {
   colleague_notify_time?: string | null;
   manager_notify_time?: string | null;
   client_notify_time?: string | null;
+  kakao_notify_enabled?: boolean;
 }

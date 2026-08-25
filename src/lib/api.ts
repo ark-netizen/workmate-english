@@ -361,6 +361,21 @@ export function deleteMyAccount() {
   });
 }
 
+// 카카오 talk_message 재동의 OAuth가 끝난 뒤, 세션에서 받은 provider token을 서버에 저장
+export function connectKakaoNotify(payload: { accessToken: string; refreshToken: string; expiresIn?: number }) {
+  return apiFetch<{ profile: ProfileResponse }>("/api/profile", {
+    method: "POST",
+    body: JSON.stringify({ action: "kakao.connect", ...payload }),
+  });
+}
+
+export function disconnectKakaoNotify() {
+  return apiFetch<{ profile: ProfileResponse }>("/api/profile", {
+    method: "POST",
+    body: JSON.stringify({ action: "kakao.disconnect" }),
+  });
+}
+
 export function subscribePushOnServer(subscription: PushSubscriptionJSON) {
   return apiFetch<unknown>("/api/push", {
     method: "POST",

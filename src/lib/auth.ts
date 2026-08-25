@@ -1,7 +1,7 @@
 // 회원가입/로그인 — 익명 세션을 실계정으로 업그레이드(온보딩 데이터 유지) or 기존 계정 로그인
 import { supabase, supabaseReady } from "./supabaseClient.js";
 import { setAccessToken, clearAccessToken } from "./authToken";
-import { postConsent } from "./api";
+import { postConsent, connectKakaoNotify as saveKakaoNotifyToken } from "./api";
 
 function requireSupabase() {
   if (!supabaseReady || !supabase) throw new Error("Supabase 설정이 없습니다.");
@@ -78,6 +78,43 @@ export async function finalizePendingConsent() {
   if (window.sessionStorage.getItem(PENDING_CONSENT_KEY) !== "1") return false;
   window.sessionStorage.removeItem(PENDING_CONSENT_KEY);
   await postConsent();
+  return true;
+}
+
+const PENDING_KAKAO_NOTIFY_KEY = "go_pending_kakao_notify";
+
+/**
+ * 설정에서 "카톡 알림 받기"를 켤 때 호출 — talk_message는 기본 로그인 스코프가 아니라서
+ * 카카오 재동의(전체 리다이렉트)가 한 번 더 필요하다("이용 중 동의"이므로 로그인 시점이 아니라
+ * 이 시점에만 물어봄). 돌아온 뒤 finalizePendingKakaoNotify()에서 토큰을 서버로 넘긴다.
+ */
+export async function startKakaoNotifyConsent() {
+  const sb = requireSupabase();
+  window.sessionStorage.setItem(PENDING_KAKAO_NOTIFY_KEY, "1");
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: "kakao",
+    options: { redirectTo: window.location.origin, scopes: "talk_message" },
+  });
+  if (error) {
+    window.sessionStorage.removeItem(PENDING_KAKAO_NOTIFY_KEY);
+    throw new Error(error.message);
+  }
+}
+
+/** 카카오 재동의 리다이렉트로 돌아온 직후 SettingsPage에서 호출 — provider token을 서버에 저장 */
+export async function finalizePendingKakaoNotify() {
+  if (window.sessionStorage.getItem(PENDING_KAKAO_NOTIFY_KEY) !== "1") return false;
+  window.sessionStorage.removeItem(PENDING_KAKAO_NOTIFY_KEY);
+  const sb = requireSupabase();
+  const { data } = await sb.auth.getSession();
+  const session = data.session;
+  if (!session?.provider_token || !session?.provider_refresh_token) {
+    throw new Error("카카오 인증 정보를 받지 못했어요. 다시 시도해주세요.");
+  }
+  await saveKakaoNotifyToken({
+    accessToken: session.provider_token,
+    refreshToken: session.provider_refresh_token,
+  });
   return true;
 }
 

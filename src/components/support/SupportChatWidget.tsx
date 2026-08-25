@@ -37,6 +37,11 @@ const FAQ_PRESETS: { question: string; answer: string }[] = [
     question: "퇴근하면 뭐가 나와요?",
     answer: "퇴근하면 오늘의 답변을 바탕으로 잘한 표현·교정·필수 암기·총평이 담긴 리포트가 생성돼요. 리포트 페이지에서 확인할 수 있어요.",
   },
+  {
+    question: "카톡 알림은 어떻게 꺼요?",
+    answer:
+      "설정(Settings) → 계정 카드에 있는 '카톡 알림 받기' 토글을 끄면 돼요. 카카오로 로그인한 계정에서만 보이는 항목이에요. 끄면 바로 발송이 멈추고, 나중에 다시 켜면 카카오 동의를 한 번 더 받아요.",
+  },
 ];
 
 const STAGE_PLACEHOLDER: Record<Stage, string> = {

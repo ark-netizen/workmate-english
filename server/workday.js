@@ -3,6 +3,10 @@
 import { admin, unwrap } from './db.js'
 import { todayAt, todayDateKST } from './time.js'
 import { sendPushToUser } from './push.js'
+import { sendKakaoToUser } from './kakao.js'
+
+// 카카오 "나에게 보내기"는 웹 푸시와 달리 상대경로가 아니라 완전한 URL이 있어야 링크 버튼이 동작한다
+const APP_BASE_URL = process.env.APP_BASE_URL || 'https://www.enmate.co.kr'
 import { getProfile } from './profile.js'
 import { getActiveSurveyForUser } from './support.js'
 import { TRIAL_SCENARIO, TRIAL_CHARACTERS, TRIAL_REPLY, TRIAL_DAILY_REPORT } from './trialContent.js'
@@ -1147,6 +1151,17 @@ export async function closeWorkday(workdayId) {
     title: '오늘의 업무일지가 준비됐어요',
     body: '오늘 대화를 바탕으로 리포트가 완성됐습니다. 확인해보세요.',
     url: '/reports',
+  }).catch(() => {})
+
+  // 카톡 알림 트리거 3(리포트 완성) — 하루 1번뿐인 이벤트라 무응답 대기 없이 웹 푸시와 동시 발송,
+  // 야간 조용시간이면 sendKakaoToUser 내부에서 스스로 건너뛴다(재시도 큐는 아직 없음 — 그 회차는 건너뜀)
+  const goodCount = report?.good_expressions?.length ?? 0
+  const correctionCount = report?.corrections?.length ?? 0
+  const memorizeCount = report?.recommended_expressions?.length ?? 0
+  await sendKakaoToUser(workday.user_id, {
+    text: `[부캐영어] 오늘의 업무일지가 도착했어요 📋\n잘한 표현 ${goodCount}건 · 교정 ${correctionCount}건 · 꼭 기억할 표현 ${memorizeCount}건`,
+    url: `${APP_BASE_URL}/reports`,
+    buttonTitle: '전체 리포트 보기',
   }).catch(() => {})
 
   return { report }

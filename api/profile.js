@@ -6,6 +6,7 @@ import { getProfile, saveProfile } from '../server/profile.js'
 import { getPromotionStatus, startEvaluation, submitEvaluation } from '../server/promotion.js'
 import { deleteUserAccount } from '../server/admin.js'
 import { rescheduleTodayNotifications } from '../server/workday.js'
+import { saveKakaoToken, deleteKakaoToken } from '../server/kakao.js'
 import { withErrors } from '../server/http.js'
 
 export default withErrors(null, async (req, res) => {
@@ -37,6 +38,26 @@ export default withErrors(null, async (req, res) => {
     if (action === 'delete-account') {
       const result = await deleteUserAccount(userId)
       res.status(200).json(result)
+      return
+    }
+    // 카카오 알림 재동의(talk_message 스코프) OAuth가 끝난 뒤, 프론트가 세션에서 받은
+    // provider_token/provider_refresh_token을 그대로 넘겨 저장 — 이 시점에 kakao_notify_enabled도 켠다
+    if (action === 'kakao.connect') {
+      const { accessToken, refreshToken, expiresIn } = req.body || {}
+      if (!accessToken || !refreshToken) {
+        res.status(400).json({ error: 'accessToken/refreshToken 필요' })
+        return
+      }
+      await saveKakaoToken(userId, { accessToken, refreshToken, expiresIn })
+      const profile = await saveProfile(userId, { kakao_notify_enabled: true })
+      res.status(200).json({ profile })
+      return
+    }
+    // 카톡 알림 끄기 — 토큰까지 지워서, 나중에 다시 켤 때는 재동의부터 다시 받는다
+    if (action === 'kakao.disconnect') {
+      await deleteKakaoToken(userId)
+      const profile = await saveProfile(userId, { kakao_notify_enabled: false })
+      res.status(200).json({ profile })
       return
     }
     // 액션 없으면 온보딩 저장

@@ -33,6 +33,7 @@ const EDITABLE_FIELDS = [
   'client_name', 'client_personality',
   'start_time', 'end_time', 'daily_count',
   'colleague_notify_time', 'manager_notify_time', 'client_notify_time',
+  'kakao_notify_enabled',
 ]
 
 // 이름만 바뀐 역할(성격은 그대로, "새로운 사람"으로 리셋하지 않은 경우) — 다음 출근을 기다릴 필요 없이
