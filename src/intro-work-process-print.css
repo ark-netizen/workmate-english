@@ -1,0 +1,230 @@
+/* Game intro WORK PROCESS — each existing feature card itself becomes a clean printed work sheet.
+   No torn paper, tape, flying-paper overlay, or extra card-on-paper layer. */
+
+.intro-page.intro-game .intro-game-features {
+  isolation: isolate;
+  padding-bottom: 340px !important;
+}
+
+.intro-page.intro-game .intro-game-features > .relative {
+  overflow: visible;
+}
+
+.intro-page.intro-game .intro-game-features .snap-center {
+  --sheet-x: 0px;
+  --sheet-r: 0deg;
+  position: relative;
+  padding-top: clamp(72px, 7vw, 112px);
+  perspective: 1200px;
+}
+
+.intro-page.intro-game .intro-game-features .snap-center:nth-child(1) { --sheet-x: -150px; --sheet-r: -5deg; }
+.intro-page.intro-game .intro-game-features .snap-center:nth-child(2) { --sheet-x: 135px; --sheet-r: 4.5deg; }
+.intro-page.intro-game .intro-game-features .snap-center:nth-child(3) { --sheet-x: -90px; --sheet-r: 3.5deg; }
+.intro-page.intro-game .intro-game-features .snap-center:nth-child(4) { --sheet-x: 155px; --sheet-r: -4deg; }
+.intro-page.intro-game .intro-game-features .snap-center:nth-child(5) { --sheet-x: -120px; --sheet-r: 4deg; }
+
+/* The old retro window is now the actual printed A4-like sheet. */
+.intro-page.intro-game .intro-game-features .intro-game-feature-window {
+  position: relative;
+  overflow: visible !important;
+  border: 1px solid #bfc8c2 !important;
+  border-radius: 2px !important;
+  background: #fdfefd !important;
+  box-shadow: 0 14px 28px rgba(28, 55, 45, .13), 0 2px 0 rgba(28, 55, 45, .08) !important;
+  transform-origin: 50% 0%;
+  will-change: transform, opacity;
+}
+
+/* Remove the old WorkMate OS titlebar: this is a printed sheet, not a floating app window. */
+.intro-page.intro-game .intro-game-features .intro-game-feature-window > div:first-child {
+  display: none !important;
+}
+
+/* Printed document metadata directly on the sheet. */
+.intro-page.intro-game .intro-game-features .intro-game-feature-window::before {
+  position: absolute;
+  top: 18px;
+  left: 30px;
+  right: 30px;
+  z-index: 2;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #d7ded9;
+  color: #315d53;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .14em;
+  line-height: 1;
+}
+.intro-page.intro-game .intro-game-features .snap-center:nth-child(1) .intro-game-feature-window::before { content: "01  ·  WORK RECORD"; }
+.intro-page.intro-game .intro-game-features .snap-center:nth-child(2) .intro-game-feature-window::before { content: "02  ·  WORK RECORD"; }
+.intro-page.intro-game .intro-game-features .snap-center:nth-child(3) .intro-game-feature-window::before { content: "03  ·  WORK RECORD"; }
+.intro-page.intro-game .intro-game-features .snap-center:nth-child(4) .intro-game-feature-window::before { content: "04  ·  WORK RECORD"; }
+.intro-page.intro-game .intro-game-features .snap-center:nth-child(5) .intro-game-feature-window::before { content: "05  ·  WORK RECORD"; }
+
+.intro-page.intro-game .intro-game-features .intro-game-feature-window::after {
+  content: "WORKMATE ENGLISH  /  PRINTED WORK LOG";
+  position: absolute;
+  right: 30px;
+  bottom: 18px;
+  color: #8b9690;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .1em;
+}
+
+/* Keep the original feature HTML, but lay it out like information printed on the paper. */
+.intro-page.intro-game .intro-game-features .intro-game-feature-window > div:nth-child(2) {
+  min-height: 430px;
+  padding: 64px 50px 48px !important;
+  gap: 42px !important;
+}
+
+.intro-page.intro-game .intro-game-features .intro-game-feature-window > div:nth-child(2) > div:first-child > div:first-child {
+  width: 46px !important;
+  height: 46px !important;
+  margin-bottom: 18px !important;
+  border: 1px solid #9eaaa3 !important;
+  border-radius: 2px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.intro-page.intro-game .intro-game-features .intro-game-feature-window p {
+  color: #2e3833 !important;
+}
+
+/* The right-side preview is printed content on the same sheet — not a second card sitting on top. */
+.intro-page.intro-game .intro-game-features .intro-game-feature-visual {
+  overflow: hidden;
+  border: 1px solid #ccd4cf !important;
+  border-radius: 2px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.intro-page.intro-game .intro-game-features .intro-game-feature-visual > * {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Future sheets wait small and off-axis, like a freshly printed sheet drifting into view. */
+.intro-page.intro-game .intro-game-features .snap-center > .intro-game-feature-window.opacity-60 {
+  opacity: .16 !important;
+  transform: translate3d(var(--sheet-x), -44px, 0) rotate(var(--sheet-r)) scale(.62) !important;
+}
+
+/* Sheets already passed remain readable instead of shrinking back when the next one activates. */
+.intro-page.intro-game .intro-game-features .snap-center:has(~ .snap-center .intro-game-feature-window.opacity-100) > .intro-game-feature-window {
+  opacity: .78 !important;
+  transform: translate3d(0, 0, 0) rotate(0deg) scale(.985) !important;
+}
+
+/* Current sheet: the same object grows and settles into its final printed document size. */
+.intro-page.intro-game .intro-game-features .snap-center > .intro-game-feature-window.opacity-100 {
+  opacity: 1 !important;
+  transform: translate3d(0, 0, 0) rotate(0deg) scale(1) !important;
+  animation: intro-printed-sheet-arrive 680ms cubic-bezier(.18,.78,.22,1) both;
+}
+
+@keyframes intro-printed-sheet-arrive {
+  0% {
+    opacity: .12;
+    transform: translate3d(var(--sheet-x), -58px, 0) rotate(var(--sheet-r)) scale(.58);
+  }
+  52% {
+    opacity: .88;
+    transform: translate3d(calc(var(--sheet-x) * .18), -12px, 0) rotate(calc(var(--sheet-r) * .2)) scale(.91);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+}
+
+/* The five printed records accumulate into one flat work journal at the end. */
+.intro-page.intro-game .intro-game-features::before,
+.intro-page.intro-game .intro-game-features::after {
+  pointer-events: none;
+  position: absolute;
+  left: 50%;
+  bottom: 54px;
+  width: min(390px, calc(100% - 52px));
+  height: 238px;
+  border-radius: 4px;
+}
+
+.intro-page.intro-game .intro-game-features::before {
+  content: "";
+  z-index: 0;
+  border: 1px solid #bdc7c1;
+  background: #fff;
+  box-shadow:
+    -13px 8px 0 #f8faf8,
+    11px 14px 0 #eef2ef,
+    -4px 20px 0 #fff,
+    0 28px 24px rgba(34, 61, 51, .14);
+  transform: translateX(-50%) rotate(-2.2deg);
+}
+
+.intro-page.intro-game .intro-game-features::after {
+  content: "WORKMATE ENGLISH LOG\A나만의 업무 영어 일지\A\A오늘의 업무 기록 5장이 쌓였습니다.";
+  z-index: 1;
+  box-sizing: border-box;
+  padding: 48px 38px;
+  white-space: pre-line;
+  border: 2px solid #28352f;
+  background: #315d53;
+  color: #fffdf7;
+  box-shadow: 7px 7px 0 #28352f;
+  transform: translateX(-50%) rotate(.8deg);
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.6;
+  letter-spacing: .015em;
+  text-align: left;
+}
+
+@supports (animation-timeline: view()) {
+  .intro-page.intro-game .intro-game-features::before,
+  .intro-page.intro-game .intro-game-features::after {
+    animation: intro-worklog-stack-in linear both;
+    animation-timeline: view();
+    animation-range: entry 18% entry 72%;
+  }
+
+  @keyframes intro-worklog-stack-in {
+    from { opacity: 0; translate: 0 30px; }
+    to { opacity: 1; translate: 0 0; }
+  }
+}
+
+@media (max-width: 767px) {
+  .intro-page.intro-game .intro-game-features {
+    padding-bottom: 300px !important;
+  }
+  .intro-page.intro-game .intro-game-features .snap-center {
+    --sheet-x: 0px !important;
+    padding-top: 58px;
+  }
+  .intro-page.intro-game .intro-game-features .intro-game-feature-window > div:nth-child(2) {
+    min-height: auto;
+    padding: 58px 24px 42px !important;
+  }
+  .intro-page.intro-game .intro-game-features::before,
+  .intro-page.intro-game .intro-game-features::after {
+    bottom: 42px;
+    height: 210px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-page.intro-game .intro-game-features .intro-game-feature-window,
+  .intro-page.intro-game .intro-game-features::before,
+  .intro-page.intro-game .intro-game-features::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
