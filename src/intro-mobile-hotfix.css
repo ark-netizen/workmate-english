@@ -1,0 +1,117 @@
+/* Intro mobile hotfix — 기존 desktop 디자인은 건드리지 않고 767px 이하만 보정한다. */
+@media (max-width: 767px) {
+  /* intro-mobile.css가 nav의 두 로고 이미지를 모두 display:block으로 덮어써서
+     compact/full 로고가 동시에 보이던 문제. 모바일에서는 compact 로고 하나만 남긴다. */
+  .intro-page .intro-nav-inner > img:first-of-type {
+    display: block !important;
+  }
+  .intro-page .intro-nav-inner > img:nth-of-type(2) {
+    display: none !important;
+  }
+
+  /* Hero의 캐주얼/격식/보수적 배지와 연락 문구가 좁은 폭에서 서로 밀어내며
+     글자가 쪼개지지 않도록 3열(grid)로 고정한다. */
+  .intro-page .hero .person {
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    gap: 8px !important;
+    min-width: 0 !important;
+  }
+  .intro-page .hero .person > div {
+    min-width: 0 !important;
+  }
+  .intro-page .hero .person strong,
+  .intro-page .hero .person small {
+    display: block !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+  .intro-page .hero .person strong {
+    font-size: 12px !important;
+  }
+  .intro-page .hero .person small {
+    margin-top: 3px !important;
+    font-size: 10.5px !important;
+  }
+  .intro-page .hero .tone {
+    margin-left: 0 !important;
+    flex: none !important;
+    min-width: max-content !important;
+    padding: 4px 6px !important;
+    font-size: 10px !important;
+    line-height: 1.15 !important;
+    white-space: nowrap !important;
+    word-break: keep-all !important;
+  }
+  .intro-game .hero .avatar {
+    width: 44px !important;
+    height: 50px !important;
+    flex: 0 0 44px !important;
+  }
+  .intro-game .hero .avatar > svg {
+    width: 44px !important;
+    height: 50px !important;
+  }
+
+  /* Business WORK PROCESS: Reveal wrapper/visual의 intrinsic width 때문에 카드가 viewport를
+     밀어내지 못하도록 모든 직계 래퍼를 실제 가용폭 안에 가둔다. */
+  .intro-business .intro-features-section,
+  .intro-business .intro-features-section > div,
+  .intro-business .intro-business-features,
+  .intro-business .intro-business-features > div,
+  .intro-business .intro-business-features > div > div,
+  .intro-business .intro-business-feature-card,
+  .intro-business .intro-business-feature-card > * {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+  .intro-business .intro-business-feature-card {
+    overflow: hidden !important;
+    padding: 18px !important;
+    transform: none !important;
+  }
+  .intro-business .intro-business-feature-card > div:last-child {
+    display: block !important;
+    overflow: hidden !important;
+  }
+  .intro-business .intro-business-feature-card > div:last-child > * {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+  .intro-business .intro-business-feature-card img,
+  .intro-business .intro-business-feature-card svg {
+    max-width: 100% !important;
+  }
+
+  /* 데스크톱용 우측 고정 페이지 점은 모바일에서 카드와 겹치므로 숨긴다. */
+  .intro-business .intro-business-features > .fixed,
+  .intro-game .intro-game-features > .fixed {
+    display: none !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .intro-page .hero .person {
+    gap: 6px !important;
+  }
+  .intro-game .hero .avatar {
+    width: 40px !important;
+    height: 46px !important;
+    flex-basis: 40px !important;
+  }
+  .intro-game .hero .avatar > svg {
+    width: 40px !important;
+    height: 46px !important;
+  }
+  .intro-page .hero .tone {
+    padding-inline: 5px !important;
+    font-size: 9.5px !important;
+  }
+}
