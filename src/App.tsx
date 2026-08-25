@@ -31,12 +31,18 @@ import { SettingsPage } from "@/pages/SettingsPage";
 import { NoticePage } from "@/pages/NoticePage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 
-function StandalonePage({ children }: { children: ReactNode }) {
+function StandalonePage({ children, mintFooter = false }: { children: ReactNode; mintFooter?: boolean }) {
   return (
     <div className="flex min-h-screen flex-col">
       <div className="flex-1">{children}</div>
-      <footer className="border-t border-border/60 bg-background px-4 py-4 text-center">
-        <CopyrightNotice className="text-[10px] leading-4 text-foreground/40" />
+      <footer
+        className={`border-t px-4 py-4 text-center ${
+          mintFooter ? "border-[#4b9d95] bg-[#5fb8b0]" : "border-border/60 bg-background"
+        }`}
+      >
+        <CopyrightNotice
+          className={`text-[10.5px] leading-4 ${mintFooter ? "text-[#244f3d]/75" : "text-foreground/40"}`}
+        />
       </footer>
     </div>
   );
@@ -136,7 +142,7 @@ function AppRoutes() {
       return <Navigate to="/intro" replace />;
     }
     return (
-      <StandalonePage>
+      <StandalonePage mintFooter>
         <IntroPage
           onContinueWithoutLogin={async () => {
             await startFreshGuestTrial();
