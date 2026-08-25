@@ -57,7 +57,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <MobileTabBar />
       {!isTrial && <InAppBanner />}
       <SurveyBanner />
-      <SupportChatWidget open={chatOpen} onOpenChange={setChatOpen} showTrigger={pathname === "/"} />
+      <SupportChatWidget
+        open={chatOpen}
+        onOpenChange={setChatOpen}
+        showTrigger={isTrial && pathname === "/"}
+      />
     </div>
   );
 }
