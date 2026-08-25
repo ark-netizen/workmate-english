@@ -51,16 +51,6 @@ export function TrialOnboardingReveal({
           : "bg-[linear-gradient(135deg,#f8fbff,#edf3ff_48%,#fff)]"
       }`}
     >
-      {gameMode && (
-        <img
-          src="/intro/workmate-pixel-office-strip.png"
-          alt=""
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 bottom-0 w-full opacity-35"
-          style={{ imageRendering: "pixelated" }}
-        />
-      )}
-
       <div className="absolute right-4 top-5 z-20 md:right-8">
         <div
           role="group"
