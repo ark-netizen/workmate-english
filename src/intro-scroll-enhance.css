@@ -49,6 +49,24 @@
     width: 100%;
   }
 
+  /* WORK PROCESS 카드의 가운데 빈 공간을 줄인다.
+     텍스트 영역은 조금 좁히고 실제 UI 예시 영역을 넓혀 두 덩어리가 더 붙어 보이게 한다. */
+  .intro-game .intro-game-feature-window > div:last-child {
+    grid-template-columns: minmax(0, 45fr) minmax(0, 55fr) !important;
+    column-gap: 24px !important;
+  }
+
+  .intro-business .intro-business-features > div:first-child > div:nth-child(odd) .intro-business-feature-card {
+    grid-template-columns: minmax(0, 45fr) minmax(0, 55fr) !important;
+    column-gap: 24px !important;
+  }
+
+  /* 비즈니스 모드의 짝수 카드는 좌우가 뒤집히므로 UI 예시 쪽을 동일하게 넓힌다. */
+  .intro-business .intro-business-features > div:first-child > div:nth-child(even) .intro-business-feature-card {
+    grid-template-columns: minmax(0, 55fr) minmax(0, 45fr) !important;
+    column-gap: 24px !important;
+  }
+
   /* 1분 체험/후기는 한 화면에 내용이 안정적으로 담기되 과한 빈 공간은 줄인다. */
   .intro-trial-showcase,
   .intro-reviews {
