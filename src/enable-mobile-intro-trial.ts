@@ -31,7 +31,7 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
             if (hadOwn && previous) {
               Object.defineProperty(window, "innerWidth", previous);
             } else {
-              delete (window as Window & { innerWidth?: number }).innerWidth;
+              Reflect.deleteProperty(window, "innerWidth");
             }
           } catch {
             // 복원 실패가 체험 진입을 막지는 않게 한다.
