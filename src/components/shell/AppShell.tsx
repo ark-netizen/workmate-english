@@ -20,15 +20,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     conversations.reduce((sum, conversation) => sum + conversation.unreadCount, 0) +
     emailThreads.reduce((sum, thread) => sum + thread.unreadCount, 0);
 
-  // 게임 모드 실사용 화면은 인트로와 같은 역할 분담으로 맞춘다:
-  // 연한 민트 아이보리=배경, 따뜻한 크림=카드, 베이지=일반 경계, 진초록=주요 강조.
-  // AppShell 안에서만 변수를 덮어써 Intro/로그인 등 다른 화면의 팔레트는 건드리지 않는다.
+  // 게임 모드 실사용 화면은 인트로와 같은 민트+진초록 구조를 유지하되,
+  // 본문 카드까지 노랗게 보이지 않도록 surface를 중성에 가까운 아이보리로 낮춘다.
+  // 배경과 카드는 명도 차이로 구분하고, 일반 경계는 녹색기가 아주 옅게 섞인 회색으로 정리한다.
   const shellTheme = gameMode
     ? ({
         "--background": "#eef5ec",
         "--foreground": "#28352f",
-        "--surface": "#fff9e9",
-        "--border": "#d8cba9",
+        "--surface": "#fbfcf7",
+        "--border": "#cbd8cd",
         "--accent": "#2f795d",
         "--accent-2": "#f09a63",
       } as React.CSSProperties)
@@ -47,7 +47,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             인트로의 픽셀/레트로 프레임과 맞는 얇은 구분선으로 보이게 한다. */}
         {gameMode && (
           <div
-            className="sticky top-16 z-10 h-1.5 shrink-0 border-y-2 border-[#28352f] bg-[#eaf5dc]"
+            className="sticky top-16 z-10 h-1.5 shrink-0 border-y-2 border-[#28352f] bg-[#dfeee5]"
             aria-hidden="true"
           />
         )}
