@@ -8,8 +8,8 @@ function polishIntroCopy() {
   if (heroCopy && heroCopy.dataset.copyPolished !== "true") {
     heroCopy.dataset.copyPolished = "true";
     heroCopy.innerHTML = [
-      '<span class="intro-hero-copy-block">메신저와 이메일로 실제 업무를 주고받으면,<br/><mark class="solar-mark">Solar</mark>가 상대와 상황에 맞는 표현과 문법을 짚어줘요.</span>',
-      '<span class="intro-hero-copy-block intro-hero-copy-secondary">동료·상사·거래처마다 달라지는 말투를 익히고,<br/>잘한 표현과 교정 포인트는 퇴근 리포트에서 다시 복습해요.</span>',
+      '<span class="intro-hero-copy-block">메신저와 이메일로 실제 업무를 처리하면, <mark class="solar-mark">Solar</mark>가 관계별 표현과 문법을 첨삭하고 하루의 성장을 업무 리포트로 남겨요.</span>',
+      '<span class="intro-hero-copy-block intro-hero-copy-secondary">동료·상사·거래처마다 달라지는 말투까지 익히고, 잘한 표현과 교정 포인트는 퇴근 후 다시 복습할 수 있어요.</span>',
     ].join("");
   }
 
