@@ -28,7 +28,7 @@ function polishProcessCopy(page: HTMLElement) {
 
   cards.forEach((card, index) => {
     const copy = processCopy[index];
-    if (!copy || card.dataset.processCopyPolished === "true") return;
+    if (!copy) return;
 
     const isGameCard = card.classList.contains("intro-game-feature-window");
     const title = isGameCard
@@ -40,9 +40,10 @@ function polishProcessCopy(page: HTMLElement) {
 
     if (!title || !body) return;
 
-    title.textContent = copy.title;
-    body.innerHTML = copy.body;
-    card.dataset.processCopyPolished = "true";
+    if (title.textContent !== copy.title) title.textContent = copy.title;
+
+    const expectedBody = copy.body.replaceAll("<br/>", "<br>");
+    if (body.innerHTML !== expectedBody) body.innerHTML = copy.body;
   });
 }
 
