@@ -1,0 +1,7 @@
+/* businessMode=true가 현재 실제 UI에서는 게임 모드로 사용되고 있어 body에 .business-mode가 붙는다.
+   메신저/이메일의 내부 회청색 헤더만 게임 모드에서 Intro와 같은 진초록 계열로 맞춘다.
+   비즈니스 모드에서는 기존 회청색을 그대로 유지한다. */
+.business-mode .bg-\[\#36454F\],
+.business-mode .bg-\[\#4B5A66\] {
+  background-color: #315d53 !important;
+}
