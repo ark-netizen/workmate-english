@@ -15,6 +15,7 @@ import "./mobile-spacing-pass.css";
 import "./intro-nav-responsive.css";
 import "./intro-scroll-enhance.css";
 import "./intro-scroll-enhance";
+import "./intro-copy-polish";
 import "./enable-mobile-intro-trial";
 
 createRoot(document.getElementById("root")!).render(
