@@ -1,0 +1,176 @@
+/* Game intro WORK PROCESS: printer paper -> feature card -> accumulated workbook.
+   Decorative only; existing feature DOM/content/layout stays intact. */
+
+.intro-page.intro-game .intro-game-features {
+  isolation: isolate;
+  padding-bottom: 330px !important;
+}
+
+.intro-page.intro-game .intro-game-features .snap-center {
+  --paper-x: 0px;
+  --paper-r: 0deg;
+  position: relative;
+  padding-top: 72px;
+}
+
+.intro-page.intro-game .intro-game-features .snap-center:nth-child(1) { --paper-x: -165px; --paper-r: -8deg; }
+.intro-page.intro-game .intro-game-features .snap-center:nth-child(2) { --paper-x: 145px; --paper-r: 7deg; }
+.intro-page.intro-game .intro-game-features .snap-center:nth-child(3) { --paper-x: -95px; --paper-r: 5deg; }
+.intro-page.intro-game .intro-game-features .snap-center:nth-child(4) { --paper-x: 175px; --paper-r: -6deg; }
+.intro-page.intro-game .intro-game-features .snap-center:nth-child(5) { --paper-x: -135px; --paper-r: 8deg; }
+
+/* 한 장씩 내려오는 작은 기록지. 활성 카드가 바뀔 때마다 해당 종이만 재생된다. */
+.intro-page.intro-game .intro-game-features .snap-center::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  left: 50%;
+  width: 74px;
+  height: 96px;
+  border: 2px solid #315d53;
+  border-radius: 4px;
+  opacity: 0;
+  background:
+    linear-gradient(135deg, transparent 0 72%, #d9efe9 72% 100%) top right / 22px 22px no-repeat,
+    repeating-linear-gradient(to bottom, transparent 0 15px, rgba(49, 93, 83, .16) 15px 16px) 11px 16px / calc(100% - 22px) calc(100% - 29px) no-repeat,
+    #fffdf7;
+  box-shadow: 4px 5px 0 rgba(40, 53, 47, .18);
+  transform-origin: center center;
+  will-change: transform, opacity;
+}
+
+/* FeatureWindowScrollList가 active에 붙이는 opacity-100을 그대로 트리거로 사용한다. */
+.animate-slidein .intro-page.intro-game .intro-game-features .snap-center:has(> .intro-game-feature-window.opacity-100)::before,
+.intro-page.intro-game .animate-slidein .intro-game-features .snap-center:has(> .intro-game-feature-window.opacity-100)::before {
+  animation: intro-paper-fall-into-card 720ms cubic-bezier(.2,.75,.22,1) both;
+}
+
+.animate-slidein .intro-page.intro-game .intro-game-features .snap-center:has(> .intro-game-feature-window.opacity-100) > .intro-game-feature-window,
+.intro-page.intro-game .animate-slidein .intro-game-features .snap-center:has(> .intro-game-feature-window.opacity-100) > .intro-game-feature-window {
+  animation: intro-paper-card-arrive 520ms cubic-bezier(.2,.75,.22,1) 390ms both;
+}
+
+@keyframes intro-paper-fall-into-card {
+  0% {
+    opacity: 0;
+    transform: translateX(calc(-50% + var(--paper-x))) translateY(-52px) rotate(var(--paper-r)) scale(.58);
+  }
+  18% { opacity: 1; }
+  48% {
+    opacity: 1;
+    transform: translateX(calc(-50% + var(--paper-x))) translateY(2px) rotate(var(--paper-r)) scale(.9);
+  }
+  72% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(30px) rotate(0deg) scale(1.18);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(86px) rotate(0deg) scale(8.8, 4.1);
+  }
+}
+
+@keyframes intro-paper-card-arrive {
+  0% {
+    opacity: .12;
+    transform: translateY(18px) scale(.94);
+  }
+  55% { opacity: .78; }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 다섯 장의 기록이 쌓여 마지막에 한 권의 업무 영어 기록집이 된다. */
+.intro-page.intro-game .intro-game-features::before,
+.intro-page.intro-game .intro-game-features::after {
+  pointer-events: none;
+  position: absolute;
+  left: 50%;
+  bottom: 58px;
+  width: min(340px, calc(100% - 48px));
+  height: 214px;
+  border: 2px solid #315d53;
+  border-radius: 7px;
+}
+
+.intro-page.intro-game .intro-game-features::before {
+  content: "";
+  z-index: 0;
+  background:
+    repeating-linear-gradient(to bottom, transparent 0 24px, rgba(49, 93, 83, .12) 24px 25px),
+    #fffdf7;
+  box-shadow:
+    7px 7px 0 #d9efe9,
+    13px 13px 0 #fff6dc,
+    19px 19px 0 rgba(40, 53, 47, .14);
+  transform: translateX(-50%) rotate(-3deg);
+}
+
+.intro-page.intro-game .intro-game-features::after {
+  content: "WORKMATE ENGLISH LOG\A나의 업무 영어 기록";
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 38px 30px 30px;
+  white-space: pre-line;
+  text-align: center;
+  color: #24483b;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1.7;
+  letter-spacing: .02em;
+  background:
+    linear-gradient(to bottom, #5fb8b0 0 34px, transparent 34px),
+    linear-gradient(90deg, transparent 0 24px, rgba(240, 154, 99, .34) 24px 31px, transparent 31px),
+    #fffaf0;
+  box-shadow: 5px 5px 0 #28352f;
+  transform: translateX(-50%) rotate(1.2deg);
+}
+
+@supports (animation-timeline: view()) {
+  .intro-page.intro-game .intro-game-features::before,
+  .intro-page.intro-game .intro-game-features::after {
+    animation: intro-workbook-settle linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 70%;
+  }
+
+  @keyframes intro-workbook-settle {
+    from { opacity: 0; translate: 0 28px; }
+    to { opacity: 1; translate: 0 0; }
+  }
+}
+
+@media (max-width: 767px) {
+  .intro-page.intro-game .intro-game-features {
+    padding-bottom: 280px !important;
+  }
+  .intro-page.intro-game .intro-game-features .snap-center {
+    padding-top: 54px;
+  }
+  .intro-page.intro-game .intro-game-features .snap-center:nth-child(n) {
+    --paper-x: 0px;
+  }
+  .intro-page.intro-game .intro-game-features::before,
+  .intro-page.intro-game .intro-game-features::after {
+    bottom: 44px;
+    height: 190px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-page.intro-game .intro-game-features .snap-center::before {
+    display: none;
+  }
+  .intro-page.intro-game .intro-game-features .intro-game-feature-window,
+  .intro-page.intro-game .intro-game-features::before,
+  .intro-page.intro-game .intro-game-features::after {
+    animation: none !important;
+  }
+}
