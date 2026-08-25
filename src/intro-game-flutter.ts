@@ -37,6 +37,7 @@ function createParticle(
   particle.style.setProperty("--flutter-left", `${left}%`);
   particle.style.setProperty("--flutter-top", `${top}%`);
   particle.style.setProperty("--flutter-duration", `${duration}s`);
+  particle.style.setProperty("--flutter-flap-duration", `${Math.max(4.8, duration * 0.34).toFixed(1)}s`);
   particle.style.setProperty("--flutter-delay", `${-delay}s`);
   particle.style.setProperty("--flutter-direction", String(direction));
   particle.style.setProperty("--flutter-scale", String(0.72 + (index % 5) * 0.09));
