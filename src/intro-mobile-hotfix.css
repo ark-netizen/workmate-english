@@ -1,16 +1,28 @@
 /* Intro mobile hotfix — 기존 desktop 디자인은 건드리지 않고 767px 이하만 보정한다. */
 @media (max-width: 767px) {
-  /* intro-mobile.css가 nav의 두 로고 이미지를 모두 display:block으로 덮어써서
-     compact/full 로고가 동시에 보이던 문제. 모바일에서는 compact 로고 하나만 남긴다. */
+  .intro-page,
+  .intro-page * {
+    box-sizing: border-box;
+  }
+
+  /* 상단 로고: 모바일에서는 compact 로고 하나만 노출 */
   .intro-page .intro-nav-inner > img:first-of-type {
     display: block !important;
+    flex: 0 0 auto !important;
+    width: auto !important;
+    max-width: 30px !important;
+    height: 28px !important;
   }
   .intro-page .intro-nav-inner > img:nth-of-type(2) {
     display: none !important;
   }
 
-  /* Hero의 캐주얼/격식/보수적 배지와 연락 문구가 좁은 폭에서 서로 밀어내며
-     글자가 쪼개지지 않도록 3열(grid)로 고정한다. */
+  /* Hero 연락 카드: 이름/문장/톤 배지가 서로 밀지 않게 고정하고 단어 중간 줄바꿈 금지 */
+  .intro-page .hero .mailcard {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
   .intro-page .hero .person {
     display: grid !important;
     grid-template-columns: auto minmax(0, 1fr) auto !important;
@@ -28,6 +40,7 @@
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
+    word-break: normal !important;
   }
   .intro-page .hero .person strong {
     font-size: 12px !important;
@@ -38,9 +51,8 @@
   }
   .intro-page .hero .tone {
     margin-left: 0 !important;
-    flex: none !important;
     min-width: max-content !important;
-    padding: 4px 6px !important;
+    padding: 4px 7px !important;
     font-size: 10px !important;
     line-height: 1.15 !important;
     white-space: nowrap !important;
@@ -56,48 +68,232 @@
     height: 50px !important;
   }
 
-  /* Business WORK PROCESS: Reveal wrapper/visual의 intrinsic width 때문에 카드가 viewport를
-     밀어내지 못하도록 모든 직계 래퍼를 실제 가용폭 안에 가둔다. */
-  .intro-business .intro-features-section,
-  .intro-business .intro-features-section > div,
-  .intro-business .intro-business-features,
-  .intro-business .intro-business-features > div,
-  .intro-business .intro-business-features > div > div,
-  .intro-business .intro-business-feature-card,
-  .intro-business .intro-business-feature-card > * {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    box-sizing: border-box !important;
+  /* WORKMATE SYSTEM 6칸: 같은 행 높이를 맞추고 한국어/영문이 어색하게 한 글자씩 떨어지지 않게 */
+  .intro-game .hero > .hero-system {
+    grid-auto-rows: 1fr !important;
   }
-  .intro-business .intro-business-feature-card {
+  .intro-game .hero > .hero-system .feat {
+    display: flex !important;
+    min-height: 96px !important;
+    flex-direction: column !important;
+    justify-content: center !important;
     overflow: hidden !important;
-    padding: 18px !important;
-    transform: none !important;
   }
-  .intro-business .intro-business-feature-card > div:last-child {
+  .intro-game .hero > .hero-system .feat b {
     display: block !important;
-    overflow: hidden !important;
+    font-size: 12px !important;
+    line-height: 1.28 !important;
+    white-space: normal !important;
+    word-break: keep-all !important;
+    overflow-wrap: normal !important;
   }
-  .intro-business .intro-business-feature-card > div:last-child > * {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    box-sizing: border-box !important;
+  .intro-game .hero > .hero-system .feat span {
+    font-size: 11px !important;
+    line-height: 1.45 !important;
+    word-break: keep-all !important;
+    overflow-wrap: break-word !important;
   }
-  .intro-business .intro-business-feature-card img,
-  .intro-business .intro-business-feature-card svg {
-    max-width: 100% !important;
+  .intro-game .hero > .hero-system .hero-system-footer,
+  .intro-business .hero > .hero-system .hero-system-footer {
+    padding-inline: 12px !important;
+    font-size: 11px !important;
+    line-height: 1.45 !important;
+    word-break: keep-all !important;
   }
 
-  /* 데스크톱용 우측 고정 페이지 점은 모바일에서 카드와 겹치므로 숨긴다. */
+  /* WORK PROCESS 공통: Reveal wrapper부터 실제 카드/비주얼까지 viewport 안으로 */
+  .intro-page .intro-features-section,
+  .intro-page .intro-features-section > div,
+  .intro-page .intro-features-section .mt-10,
+  .intro-page .intro-features-section .mt-10 > div,
+  .intro-page .intro-game-features,
+  .intro-page .intro-business-features,
+  .intro-page .intro-game-features > div,
+  .intro-page .intro-business-features > div,
+  .intro-page .intro-game-feature-window,
+  .intro-page .intro-business-feature-card,
+  .intro-page .intro-game-feature-window > div,
+  .intro-page .intro-business-feature-card > * {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .intro-page .intro-game-feature-window,
+  .intro-page .intro-business-feature-card {
+    transform: none !important;
+    overflow: hidden !important;
+  }
+  .intro-business .intro-business-feature-card {
+    padding: 18px !important;
+  }
+  .intro-game .intro-game-feature-window > div:last-child {
+    padding: 18px !important;
+    gap: 18px !important;
+  }
+
+  /* WORK PROCESS 큰 카드 제목/설명: 한국어 어절 단위로 자연스럽게 */
+  .intro-page .intro-business-feature-card > div:first-child > p:nth-of-type(1),
+  .intro-page .intro-game-feature-window > div:last-child > div:first-child > p:first-of-type {
+    font-size: 21px !important;
+    line-height: 1.35 !important;
+    letter-spacing: -0.025em !important;
+    word-break: keep-all !important;
+    overflow-wrap: break-word !important;
+  }
+  .intro-page .intro-business-feature-card > div:first-child > p:nth-of-type(2),
+  .intro-page .intro-game-feature-window > div:last-child > div:first-child > p:nth-of-type(2) {
+    font-size: 14px !important;
+    line-height: 1.65 !important;
+    word-break: keep-all !important;
+    overflow-wrap: break-word !important;
+  }
+
+  /* WORK PROCESS 안쪽 예시 박스들: 과한 padding/폰트로 줄바꿈이 튀지 않게 통일 */
+  .intro-page .intro-business-feature-card > div:last-child,
+  .intro-page .intro-business-feature-card > div:last-child > *,
+  .intro-page .intro-game-feature-visual,
+  .intro-page .intro-game-feature-visual > * {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+  .intro-page .intro-business-feature-card > div:last-child > *,
+  .intro-page .intro-game-feature-visual > * {
+    padding: 16px !important;
+  }
+  .intro-page .intro-business-feature-card p,
+  .intro-page .intro-game-feature-visual p,
+  .intro-page .intro-business-feature-card span,
+  .intro-page .intro-game-feature-visual span {
+    max-width: 100% !important;
+  }
+  .intro-page .intro-business-feature-card p,
+  .intro-page .intro-game-feature-visual p {
+    word-break: keep-all !important;
+    overflow-wrap: break-word !important;
+  }
+  .intro-page .intro-business-feature-card .grid.grid-cols-3,
+  .intro-page .intro-game-feature-visual .grid.grid-cols-3 {
+    gap: 7px !important;
+  }
+  .intro-page .intro-business-feature-card .grid.grid-cols-3 > div,
+  .intro-page .intro-game-feature-visual .grid.grid-cols-3 > div {
+    min-width: 0 !important;
+    padding: 10px 4px !important;
+  }
+  .intro-page .intro-business-feature-card .grid.grid-cols-3 p,
+  .intro-page .intro-game-feature-visual .grid.grid-cols-3 p {
+    font-size: 11px !important;
+    line-height: 1.3 !important;
+    white-space: nowrap !important;
+  }
+  .intro-page .intro-business-feature-card .grid.grid-cols-3 p + p,
+  .intro-page .intro-game-feature-visual .grid.grid-cols-3 p + p {
+    font-size: 17px !important;
+  }
+
+  /* 알림 예시의 두 버튼은 좁은 폭에서 억지로 반씩 쪼개지 말고 세로로 */
+  .intro-page .intro-business-feature-card .border-t.border-border.pt-4,
+  .intro-page .intro-game-feature-visual .border-t.border-border.pt-4 {
+    flex-direction: column !important;
+  }
+
+  /* 데스크톱용 우측 고정 페이지 점은 모바일에서 숨김 */
   .intro-business .intro-business-features > .fixed,
   .intro-game .intro-game-features > .fixed {
     display: none !important;
   }
+
+  /* 1분 체험 5단계: 다섯 박스의 높이/타이포를 동일하게 하고 자연스러운 줄바꿈 */
+  .intro-page .intro-trial-showcase {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow: visible !important;
+  }
+  .intro-page .intro-trial-frame {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+  }
+  .intro-page .intro-trial-flow {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    padding: 16px 12px 14px !important;
+  }
+  .intro-page .intro-trial-flow > div {
+    display: grid !important;
+    grid-template-columns: 38px minmax(0, 1fr) !important;
+    grid-template-rows: auto auto !important;
+    column-gap: 12px !important;
+    align-content: center !important;
+    width: 100% !important;
+    min-height: 112px !important;
+    height: 112px !important;
+    padding: 14px 14px !important;
+    text-align: left !important;
+  }
+  .intro-page .intro-trial-flow em {
+    grid-row: 1 / 3 !important;
+    align-self: center !important;
+    width: 36px !important;
+    height: 36px !important;
+    margin: 0 !important;
+  }
+  .intro-page .intro-trial-flow b {
+    align-self: end !important;
+    margin-top: 0 !important;
+    font-size: 17px !important;
+    line-height: 1.35 !important;
+    word-break: keep-all !important;
+    overflow-wrap: normal !important;
+  }
+  .intro-page .intro-trial-flow span {
+    align-self: start !important;
+    margin-top: 5px !important;
+    font-size: 13px !important;
+    line-height: 1.45 !important;
+    word-break: keep-all !important;
+    overflow-wrap: break-word !important;
+  }
+  .intro-page .intro-trial-flow > div:not(:last-child)::after {
+    content: "▼" !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: -12px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    font-size: 10px !important;
+  }
+
+  /* 무료체험 CTA는 모바일에서 반드시 보이고 누를 수 있게 */
+  .intro-page .intro-trial-main {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 5 !important;
+    width: calc(100% - 24px) !important;
+    max-width: 360px !important;
+    min-height: 48px !important;
+    margin: 4px auto 18px !important;
+    padding: 12px 16px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 14px !important;
+    line-height: 1.25 !important;
+    white-space: nowrap !important;
+  }
+  .intro-page .intro-trial-btn,
+  .intro-page .hero .primary {
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
 }
 
-@media (max-width: 360px) {
+@media (max-width: 380px) {
   .intro-page .hero .person {
     gap: 6px !important;
   }
@@ -113,5 +309,16 @@
   .intro-page .hero .tone {
     padding-inline: 5px !important;
     font-size: 9.5px !important;
+  }
+  .intro-page .intro-trial-flow > div {
+    min-height: 108px !important;
+    height: 108px !important;
+    padding-inline: 12px !important;
+  }
+  .intro-page .intro-trial-flow b {
+    font-size: 16px !important;
+  }
+  .intro-page .intro-trial-flow span {
+    font-size: 12.5px !important;
   }
 }
