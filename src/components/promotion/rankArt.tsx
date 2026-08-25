@@ -22,29 +22,12 @@ const SPRITE_PATH = "/characters/rank-otters.webp";
 
 function OtterRankImage({ index }: { index: number }) {
   return (
-    <svg
-      x="-6"
-      y="12"
-      width="68"
-      height="92"
-      viewBox={`${index * FRAME_WIDTH} 0 ${FRAME_WIDTH} ${FRAME_HEIGHT}`}
-      preserveAspectRatio="xMidYMid meet"
-      aria-hidden="true"
-    >
-      <image
-        href={SPRITE_PATH}
-        x="0"
-        y="0"
-        width={SPRITE_WIDTH}
-        height={FRAME_HEIGHT}
-        preserveAspectRatio="none"
-      />
+    <svg x="-6" y="12" width="68" height="92" viewBox={`${index * FRAME_WIDTH} 0 ${FRAME_WIDTH} ${FRAME_HEIGHT}`} preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+      <image href={SPRITE_PATH} x="0" y="0" width={SPRITE_WIDTH} height={FRAME_HEIGHT} preserveAspectRatio="none" />
     </svg>
   );
 }
 
-// RankAvatar / RankLineup 양쪽에서 공유.
-// 사원~이사 순서로, 업로드된 확정 시안의 수달을 그대로 매핑한다.
 export const RANK_BODY: Record<string, ReactNode> = Object.fromEntries(
   RANKS.map((rank, index) => [rank, <OtterRankImage key={rank} index={index} />]),
 ) as Record<string, ReactNode>;
