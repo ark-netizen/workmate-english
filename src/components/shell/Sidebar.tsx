@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { navItems } from "./nav-items";
 import { Logo } from "@/components/ui/Logo";
+import { CopyrightNotice } from "@/components/ui/CopyrightNotice";
 import { useWorkday } from "@/context/useWorkday";
 import { useBusinessMode } from "@/context/useBusinessMode";
 
@@ -79,6 +80,12 @@ export function Sidebar() {
             );
           })}
         </nav>
+
+        <CopyrightNotice
+          className={`shrink-0 px-4 pb-4 text-[9px] leading-4 ${
+            gameMode ? "text-[#24483b]/65" : "text-[#7d8ba0]"
+          }`}
+        />
       </aside>
     </div>
   );
