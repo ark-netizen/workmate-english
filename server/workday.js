@@ -10,7 +10,9 @@ const APP_BASE_URL = process.env.APP_BASE_URL || 'https://www.enmate.co.kr'
 
 // 카카오 나에게 보내기 text 템플릿은 길이 제한이 있어서, 건수만이 아니라 실제 표현도 보여주되
 // 각 항목은 1~2개로 추리고 전체 길이도 한 번 더 잘라낸다(안전망)
-const KAKAO_TEXT_MAX = 300
+// 카카오 나에게 보내기 기본 텍스트 템플릿은 text 필드가 최대 200자로 API 자체에서 제한되고
+// "더보기" 펼침 기능이 없다 — 안전하게 여유를 두고 190자로 자른다
+const KAKAO_TEXT_MAX = 190
 function truncate(s, max) {
   if (!s) return s
   return s.length > max ? `${s.slice(0, max - 1)}…` : s
@@ -21,11 +23,8 @@ function buildKakaoReportText(report) {
   const memorize = report?.recommended_expressions || []
   const lines = [`[부캐영어] 오늘의 업무일지가 도착했어요 📋`]
   lines.push(`잘한 표현 ${good.length}건 · 교정 ${corrections.length}건 · 꼭 기억할 표현 ${memorize.length}건`)
-  if (good[0]?.text) lines.push(`✅ "${truncate(good[0].text, 60)}"`)
-  if (memorize.length) {
-    lines.push('📌 꼭 기억할 표현')
-    memorize.slice(0, 2).forEach((m) => lines.push(`- ${truncate(m.en, 40)} (${truncate(m.ko, 30)})`))
-  }
+  if (good[0]?.text) lines.push(`✅ "${truncate(good[0].text, 40)}"`)
+  if (memorize[0]?.en) lines.push(`📌 ${truncate(memorize[0].en, 30)} (${truncate(memorize[0].ko, 20)})`)
   return truncate(lines.join('\n'), KAKAO_TEXT_MAX)
 }
 import { getProfile } from './profile.js'
@@ -1686,7 +1685,7 @@ export async function devAdvanceToNextDay(userId) {
 // 정식 배치(크론)가 아직 없어서, 조건 체크 없이 곧장 보낸다 — 그 배치를 만들 때도 이 문구는 그대로 재사용
 export async function devSendKakaoInactiveReminder(userId) {
   return sendKakaoToUser(userId, {
-    text: '[부캐영어] 이틀째 소식이 없으시네요 🙂 오늘 하루 1분만 투자해서 영어로 출근해보세요!',
+    text: '[부캐영어] 오늘도 1분이면 충분해요! 잠깐 출근해서 영어로 새 하루를 만나보세요 ✨',
     url: `${APP_BASE_URL}/`,
     buttonTitle: '지금 출근하기',
   })
