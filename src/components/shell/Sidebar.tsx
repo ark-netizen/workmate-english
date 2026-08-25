@@ -33,7 +33,7 @@ export function Sidebar() {
         }`}
       >
         <div
-          className={`sticky top-0 z-10 flex h-16 shrink-0 items-center px-5 ${gameMode ? "bg-[#5fb8b0]" : "bg-white"}`}
+          className={`sticky top-0 z-10 flex h-16 shrink-0 items-center justify-center px-5 ${gameMode ? "bg-[#5fb8b0]" : "bg-white"}`}
         >
           <Link to="/">
             <Logo />
