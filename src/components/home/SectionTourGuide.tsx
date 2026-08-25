@@ -182,16 +182,18 @@ export function SectionTourGuide({
     const lastRect = rowRects[rowRects.length - 1].rect;
 
     // HomePage에는 zoom:1.1이 적용돼 있다. fixed 패널을 그 내부에서 렌더링하면 좌표까지 1.1배 되어
-    // 사이드바와 패널 사이에 빈틈이 생긴다. 아래 패널은 body portal로 렌더링해 viewport 좌표를 그대로 쓴다.
-    const panelLeft = clamp(anchorRect.right, 8, window.innerWidth - ANCHOR_WIDTH - 8);
+    // 사이드바와 패널 사이 위치가 어긋난다. body portal로 렌더링하고, 사이드바 실제 오른쪽 경계보다
+    // 10px 바깥에서 시작시켜 메뉴 영역을 절대 덮지 않도록 한다.
+    const sidebarRight = document.querySelector<HTMLElement>("#tour-nav-desktop")?.getBoundingClientRect().right ?? anchorRect.right;
+    const panelLeft = clamp(Math.ceil(sidebarRight) + 10, 8, window.innerWidth - ANCHOR_WIDTH - 8);
     // 데스크톱 TopBar가 정확히 64px이므로 메뉴 패널도 그 아래에서 시작시켜 상단바와 겹치지 않게 한다.
     const panelTop = clamp(64, 8, window.innerHeight - 100);
     const panelBottom = lastRect.bottom + PAD;
     const panelHeight = panelBottom - panelTop;
 
     const panelClass = gameMode
-      ? "border-y-2 border-r-2 border-[#315d53] bg-[#d9efe9] text-[#24483b] shadow-[4px_4px_0_rgba(40,53,47,.14)]"
-      : "border-y border-r border-[#c6d5eb] bg-[#edf3ff] text-[#294f7c] shadow-[0_10px_28px_rgba(49,89,138,.10)]";
+      ? "border-2 border-[#315d53] bg-[#d9efe9] text-[#24483b] shadow-[4px_4px_0_rgba(40,53,47,.14)]"
+      : "border border-[#c6d5eb] bg-[#edf3ff] text-[#294f7c] shadow-[0_10px_28px_rgba(49,89,138,.10)]";
     const guideClass = gameMode
       ? "border-2 border-[#28352f] bg-[#fff9e9] text-[#28352f] shadow-[4px_4px_0_#28352f]"
       : "border border-[#cbd6e6] bg-white text-[#172033] shadow-xl";
@@ -205,7 +207,7 @@ export function SectionTourGuide({
     return createPortal(
       <>
         <div
-          className={`fixed z-[10000] w-[17rem] max-w-[calc(100vw-1rem)] rounded-r-lg ${panelClass}`}
+          className={`fixed z-[10000] w-[17rem] max-w-[calc(100vw-1rem)] rounded-lg ${panelClass}`}
           style={{ top: panelTop, left: panelLeft, height: panelHeight }}
         >
           <div className="flex h-9 items-center justify-between px-3">
