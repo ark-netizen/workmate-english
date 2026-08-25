@@ -173,12 +173,14 @@ export function SectionTourGuide({
   // 투어 진행 버튼은 계속 보던 위치인 우측 중앙에 따로 둔다. 메뉴를 자동으로 훑거나
   // 순차 점멸시키지 않아 사용자가 자기 속도로 이름과 기능을 살펴볼 수 있게 한다.
   if (current.step.rowItems && extendPanel && anchorRect && rowRects.length > 0 && typeof window !== "undefined") {
-    const HEADER_H = 38;
+    // 헤더 실제 높이(h-9=36px)와 정확히 맞춰야 헤더 바로 아래에 첫 항목이 붙는다 —
+    // 여기에 추가로 PAD까지 빼면 헤더와 첫 항목 사이에 빈 틈이 생겨버린다(실제로 그렇게 보인 버그).
+    const HEADER_H = 36;
     const PAD = 8;
     const firstRect = rowRects[0].rect;
     const lastRect = rowRects[rowRects.length - 1].rect;
     const panelLeft = clamp(anchorRect.right, 8, window.innerWidth - ANCHOR_WIDTH - 8);
-    const panelTop = clamp(firstRect.top - HEADER_H - PAD, 8, window.innerHeight - 100);
+    const panelTop = clamp(firstRect.top - HEADER_H, 8, window.innerHeight - 100);
     const panelBottom = lastRect.bottom + PAD;
     const panelHeight = panelBottom - panelTop;
 
