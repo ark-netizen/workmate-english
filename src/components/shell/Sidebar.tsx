@@ -71,11 +71,7 @@ export function Sidebar() {
                 <Icon className="size-4 shrink-0" strokeWidth={2} />
                 <span className="flex-1">{item.label}</span>
                 {unread > 0 && (
-                  <span
-                    className={`inline-flex h-4 min-w-4 shrink-0 items-center justify-center rounded-full px-1 text-[10px] font-semibold ${
-                      gameMode ? "bg-[#f09a63] text-[#28352f]" : "bg-[#1a56ff] text-white"
-                    }`}
-                  >
+                  <span className="inline-flex h-4 min-w-4 shrink-0 items-center justify-center rounded-full bg-[#e53935] px-1 text-[10px] font-bold text-white">
                     {unread}
                   </span>
                 )}
