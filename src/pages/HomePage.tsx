@@ -20,7 +20,7 @@ import { useBusinessMode } from "@/context/useBusinessMode";
 // 심사 기간 등 외부에 라이브 사이트를 공개하는 동안은, 데이터를 실제로 지우거나 조작하는
 // 위험한 QA 버튼(초기화/승급 게이트 채우기 등)은 숨긴다 — 실수로 눌러도 안전한 "연락 바로
 // 받기" 계열만 남겨서 기능 시연은 여전히 가능하게 함. 기간이 끝나면 true로 되돌리면 됨.
-const SHOW_DESTRUCTIVE_QA_TOOLS = false;
+const SHOW_DESTRUCTIVE_QA_TOOLS = true;
 
 // 직급별 승급에 필요한 "연속 출근일수" — server/promotion.js의 DAYS_PER_STEP(30)와 반드시 같은 값이어야 함
 const RANK_DAYS_PER_STEP = 30;
