@@ -72,7 +72,7 @@ export function AttendanceCalendar({
   const current = todayKey();
 
   return (
-    <section className="space-y-3 rounded-xl border border-border bg-surface p-5">
+    <section className="max-w-[380px] space-y-3 rounded-xl border border-border bg-surface p-5">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-medium text-foreground/70">
           {year}년 {month + 1}월
