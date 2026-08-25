@@ -70,7 +70,7 @@ export function AccountButton() {
       type="button"
       onClick={() => setIdCardOpen(true)}
       aria-label="사원증 보기"
-      className="shrink-0 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full leading-none focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
     >
       {photoUrl ? (
         <img
@@ -140,7 +140,7 @@ export function AccountButton() {
           setOpen(true);
         }}
         aria-label="로그인 / 회원가입"
-        className={`rounded-full border p-2 ${
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border p-0 ${
           businessMode ? "border-white/50 text-white hover:bg-white/10" : "border-border text-foreground/70 hover:bg-black/[.03]"
         }`}
       >
