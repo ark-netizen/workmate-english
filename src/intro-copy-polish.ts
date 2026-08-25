@@ -68,9 +68,40 @@ function polishMobilePreviewCopy() {
   }
 }
 
+function polishIntroAboutLink(page: HTMLElement) {
+  const navGroup = page.querySelector<HTMLElement>(".intro-nav-inner > div:last-child > div:first-child");
+  const sampleNavLink = navGroup?.querySelector<HTMLElement>(".intro-nav-link");
+  if (!navGroup || !sampleNavLink) return;
+
+  let aboutLink = navGroup.querySelector<HTMLAnchorElement>(".intro-about-link");
+  const expectedClassName = `${sampleNavLink.className} intro-about-link`;
+
+  if (!aboutLink) {
+    aboutLink = document.createElement("a");
+    aboutLink.href = "https://www.idealwhy.com";
+    aboutLink.textContent = "About";
+    aboutLink.setAttribute("aria-label", "About");
+    aboutLink.className = expectedClassName;
+    navGroup.appendChild(aboutLink);
+    return;
+  }
+
+  if (aboutLink.href !== "https://www.idealwhy.com/") {
+    aboutLink.href = "https://www.idealwhy.com";
+  }
+  if (aboutLink.textContent !== "About") {
+    aboutLink.textContent = "About";
+  }
+  if (aboutLink.className !== expectedClassName) {
+    aboutLink.className = expectedClassName;
+  }
+}
+
 function polishIntroCopy() {
   const page = document.querySelector<HTMLElement>(".intro-page");
   if (!page) return;
+
+  polishIntroAboutLink(page);
 
   const heroCopy = page.querySelector<HTMLElement>(".hero .copy > p");
   if (heroCopy && heroCopy.dataset.copyPolished !== "true") {
