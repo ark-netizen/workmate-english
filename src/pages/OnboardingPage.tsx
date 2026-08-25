@@ -6,7 +6,7 @@ import { subscribePush } from "@/lib/push";
 import { isAnonymousSession, endGuestTrial } from "@/lib/session";
 import { useAvatarPhoto } from "@/hooks/useAvatarPhoto";
 import { EmployeeIdCard } from "@/components/profile/EmployeeIdCard";
-import { TrialActionBar } from "@/components/trial/TrialActionBar";
+import { TrialOnboardingReveal } from "@/components/onboarding/TrialOnboardingReveal";
 import type { EnglishLevel, ProfileResponse } from "@/types/api";
 
 // "1분 체험하기" 게스트는 직접 입력하지 않아도 바로 다음으로 넘어갈 수 있도록 미리 채워두는 값
@@ -23,34 +23,6 @@ const englishLevels: { value: EnglishLevel; label: string }[] = [
   { value: "intermediate", label: "중급" },
   { value: "advanced", label: "고급" },
 ];
-
-const englishLevelLabel: Record<EnglishLevel, string> = {
-  beginner: "초급",
-  intermediate: "중급",
-  advanced: "고급",
-};
-
-function ProfileSummary({ profile }: { profile: ProfileResponse }) {
-  const workHours = [profile.start_time, profile.end_time].filter(Boolean).join("–");
-  const rows = [
-    { label: "주요 업무·상황", value: profile.main_tasks },
-    { label: "자주 소통하는 대상", value: profile.contacts },
-    { label: "근무시간", value: workHours },
-    { label: "영어 난이도", value: profile.english_level ? englishLevelLabel[profile.english_level] : undefined },
-    { label: "하루 알림", value: profile.daily_count ? `${profile.daily_count}회` : undefined },
-  ].filter((row) => row.value);
-
-  return (
-    <dl className="grid gap-px overflow-hidden border-[3px] border-[#2b463b] bg-[#2b463b] text-left sm:grid-cols-2">
-      {rows.map((row) => (
-        <div key={row.label} className="bg-[#fff9e9] px-4 py-3">
-          <dt className="text-[11px] font-bold text-[#2f795d]">{row.label}</dt>
-          <dd className="mt-1 break-keep text-sm leading-relaxed text-[#24312c]">{row.value}</dd>
-        </div>
-      ))}
-    </dl>
-  );
-}
 
 export function OnboardingPage() {
   const { refresh } = useWorkday();
@@ -70,9 +42,6 @@ export function OnboardingPage() {
   const [isTrialSession, setIsTrialSession] = useState(false);
   const [advancing, setAdvancing] = useState(false);
   const { photoUrl } = useAvatarPhoto();
-  // 사원증이 뚝 하고 갑자기 나타나는 느낌을 줄이려고, 체험판 화면임이 확정된 다음 프레임에
-  // 살짝 위로 밀려 올라오며 페이드인 되게 함
-  const [trialEntered, setTrialEntered] = useState(false);
 
   useEffect(() => {
     isAnonymousSession().then((isTrial) => {
@@ -89,12 +58,6 @@ export function OnboardingPage() {
       setIsTrialSession(true);
     });
   }, []);
-
-  useEffect(() => {
-    if (!isTrialSession) return;
-    const raf = requestAnimationFrame(() => setTrialEntered(true));
-    return () => cancelAnimationFrame(raf);
-  }, [isTrialSession]);
 
   const resolvedIndustry = industry === "기타" ? customIndustry.trim() : industry;
   const draftProfile: ProfileResponse = {
@@ -158,8 +121,8 @@ export function OnboardingPage() {
     }
   };
 
-  // 체험판은 폼을 직접 채우게 하지 않고, 미리 정해진 프로필로 바로 사원증을 보여준 뒤
-  // (실제 온보딩 폼은 축소 미리보기로만 보여줌) 한 번에 저장+진입까지 처리한다
+  // 체험판은 실제 폼을 직접 채우게 하지 않고, 무료체험용 preset과 실제 온보딩 선택 구조를
+  // 한 화면에서 함께 보여준 뒤 시작한다. 가입 후에는 같은 항목을 사용자가 직접 고를 수 있다.
   const handleTrialContinue = async () => {
     if (submitting) return;
     setSubmitting(true);
@@ -177,32 +140,14 @@ export function OnboardingPage() {
 
   if (isTrialSession) {
     return (
-      <div className="flex min-h-dvh items-center justify-center bg-[linear-gradient(#bde7f5,#edf8ed)] px-4 py-10">
-        <section className={`w-full max-w-3xl border-[3px] border-[#2b463b] bg-[#fff9e9] shadow-[9px_9px_0_rgba(43,70,59,.28)] transition-all duration-500 ease-out ${trialEntered ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"}`}>
-          <header className="flex h-12 items-center justify-between border-b-[3px] border-[#2b463b] bg-[#5fb8b0] px-4 text-xs font-black text-[#183d37]">
-            <span>WORKMATE HR · EMPLOYEE CARD ISSUED</span>
-            <span className="border-2 border-[#2b463b] bg-[#eef8ed] px-2 py-1">— □ ×</span>
-          </header>
-          <div className="space-y-5 p-6 sm:p-8">
-            <div className="text-center">
-              <h1 className="break-keep text-xl font-bold text-[#24312c]">1분 무료체험을 위한 사원증 발급 완료!</h1>
-              <p className="mt-2 text-sm text-[#59675f]">입력한 온보딩 정보가 실제 업무 프로필에 반영됐어요.</p>
-            </div>
-            <div className="mx-auto max-w-2xl space-y-4">
-              <EmployeeIdCard profile={draftProfile} photoUrl={photoUrl} hideAvatarPicker />
-              <ProfileSummary profile={draftProfile} />
-            </div>
-            {error && <p className="text-center text-sm text-red-600">{error}</p>}
-          </div>
-        </section>
-        <TrialActionBar
-          message="이 프로필로 오늘 하루를 체험해요"
-          primaryLabel={submitting ? "불러오는 중..." : "체험 시작하기"}
-          primaryDisabled={submitting}
-          onPrimary={handleTrialContinue}
-          onEnd={handleEndTrial}
-        />
-      </div>
+      <TrialOnboardingReveal
+        profile={draftProfile}
+        photoUrl={photoUrl}
+        loading={submitting}
+        error={error}
+        onStart={handleTrialContinue}
+        onEnd={handleEndTrial}
+      />
     );
   }
 
@@ -391,4 +336,3 @@ export function OnboardingPage() {
 
   return <div className="mx-auto flex min-h-screen max-w-xl flex-col justify-center">{form}</div>;
 }
-
