@@ -29,8 +29,6 @@ export function TrialActionBar({
   const barRef = useRef<HTMLDivElement>(null);
   const [showNudge, setShowNudge] = useState(false);
   const { businessMode } = useBusinessMode();
-  // 이 프로젝트에서는 businessMode=true가 실제 게임 모드다.
-  const gameMode = businessMode;
   const isBusinessMode = !businessMode;
   const [entered, setEntered] = useState(false);
 
