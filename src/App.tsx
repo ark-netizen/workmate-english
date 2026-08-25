@@ -75,6 +75,55 @@ function StandalonePage({ children, mintFooter = false }: { children: ReactNode;
   );
 }
 
+function IntroTextRhythmStyles() {
+  return (
+    <style>{`
+      .intro-page h1,
+      .intro-page h2,
+      .intro-page .intro-section-title,
+      .intro-page .intro-business-feature-card p[class*="font-bold"],
+      .intro-page .intro-game-feature-window p[class*="font-bold"],
+      .intro-page .intro-trial-heading h2,
+      .intro-page .intro-final-cta h2 {
+        word-break: keep-all;
+        overflow-wrap: normal;
+        text-wrap: balance;
+      }
+
+      .intro-page p,
+      .intro-page .feat span,
+      .intro-page .intro-business-feature-card p:not([class*="font-bold"]),
+      .intro-page .intro-game-feature-window p:not([class*="font-bold"]),
+      .intro-page .intro-process-heading p,
+      .intro-page .intro-final-copy,
+      .intro-page .intro-review-card p {
+        word-break: keep-all;
+        overflow-wrap: normal;
+        text-wrap: pretty;
+      }
+
+      .intro-page .intro-business-feature-card p[class*="text-[26px]"],
+      .intro-page .intro-game-feature-window p[class*="text-[26px]"] {
+        max-width: 17ch;
+      }
+
+      .intro-page .intro-business-feature-card p[class*="text-[17px]"],
+      .intro-page .intro-game-feature-window p[class*="text-[17px]"] {
+        max-width: 30ch;
+      }
+
+      @media (max-width: 767px) {
+        .intro-page .intro-business-feature-card p[class*="text-[26px]"],
+        .intro-page .intro-game-feature-window p[class*="text-[26px]"],
+        .intro-page .intro-business-feature-card p[class*="text-[17px]"],
+        .intro-page .intro-game-feature-window p[class*="text-[17px]"] {
+          max-width: none;
+        }
+      }
+    `}</style>
+  );
+}
+
 function AppRoutes() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -165,6 +214,7 @@ function AppRoutes() {
     }
     return (
       <StandalonePage mintFooter={introGameMode}>
+        <IntroTextRhythmStyles />
         <IntroPage
           onContinueWithoutLogin={async () => {
             await startFreshGuestTrial();
