@@ -1,0 +1,36 @@
+/* Mobile trial fidelity fixes: use the same rank character art as the real promotion UI. */
+.mtp-rank-line > div i {
+  display: block !important;
+  width: 40px !important;
+  height: 58px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  background-image: url("/rank-avatars.svg") !important;
+  background-repeat: no-repeat !important;
+  background-size: 700% auto !important;
+  background-position-y: center !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  overflow: visible !important;
+}
+
+.mtp-rank-line:first-of-type > div:nth-of-type(1) i { background-position-x: 0% !important; }
+.mtp-rank-line:first-of-type > div:nth-of-type(2) i { background-position-x: 16.6667% !important; }
+.mtp-rank-line:first-of-type > div:nth-of-type(3) i { background-position-x: 33.3333% !important; }
+.mtp-rank-line:first-of-type > div:nth-of-type(4) i { background-position-x: 50% !important; }
+.mtp-rank-line.second > div:nth-of-type(1) i { background-position-x: 66.6667% !important; }
+.mtp-rank-line.second > div:nth-of-type(2) i { background-position-x: 83.3333% !important; }
+.mtp-rank-line.second > div:nth-of-type(3) i { background-position-x: 100% !important; }
+
+.mtp-rank-line > div.active i {
+  outline: 2px solid var(--mtp-accent) !important;
+  outline-offset: 2px;
+}
+
+@media (max-width: 374px) {
+  .mtp-rank-line > div i {
+    width: 35px !important;
+    height: 51px !important;
+  }
+}
