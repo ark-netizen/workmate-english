@@ -580,29 +580,24 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* isTrial 확인이 비동기라, 확정되기 전에 마운트하면 SectionTourGuide 내부 localStorage
-          체크가 (나중에 바뀔) persist=true 기준으로 먼저 굳어버린다 — 확정된 뒤에만 마운트 */}
-      {isTrial !== null && (
+      {/* 홈 화면의 단계 안내·링 강조는 1분 무료체험 전용. 일반 로그인 계정에는 절대 마운트하지 않는다. */}
+      {isTrial === true && (
         <SectionTourGuide
           steps={tourSteps}
-          persist={!isTrial}
+          persist={false}
           // 체험판은 동료·상사·거래처 연락이 전부 예약 상태로 시작해서 투어 도중엔 아무도 안
           // 보이다가, 투어를 다 보거나 닫는 순간 첫 연락(동료)이 도착함과 동시에 그 화면으로
           // 바로 이동시킨다("~에게 가기" 버튼을 따로 누르게 하지 않음)
-          onDismiss={
-            isTrial
-              ? () => {
-                  deliverNext()
-                    .then((result) => {
-                      const r = result as { delivered?: boolean; conversationId?: string; channel?: string } | null;
-                      if (r?.delivered && r.conversationId) {
-                        navigate(r.channel === "email" ? `/email/${r.conversationId}` : `/messenger/${r.conversationId}`);
-                      }
-                    })
-                    .catch(() => {});
+          onDismiss={() => {
+            deliverNext()
+              .then((result) => {
+                const r = result as { delivered?: boolean; conversationId?: string; channel?: string } | null;
+                if (r?.delivered && r.conversationId) {
+                  navigate(r.channel === "email" ? `/email/${r.conversationId}` : `/messenger/${r.conversationId}`);
                 }
-              : undefined
-          }
+              })
+              .catch(() => {});
+          }}
         />
       )}
 
