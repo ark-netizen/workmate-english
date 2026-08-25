@@ -34,7 +34,7 @@ export function EvaluationPage() {
   const progressPct = Math.min(100, Math.round((workdayCount / requiredDays) * 100));
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 px-4 py-6 md:px-8 md:py-8">
+    <div className="mx-auto max-w-[1600px] space-y-6 px-4 py-6 md:px-8 md:py-8">
       <div>
         <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-foreground/40">Performance Review</p>
         <h1 className="mt-1 text-lg font-semibold">인사평가</h1>

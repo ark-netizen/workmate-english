@@ -47,7 +47,7 @@ export function NotificationsPage() {
   const visibleItems = filter === "unread" ? items.filter((item) => !item.read) : items;
 
   return (
-    <div className="mx-auto max-w-2xl space-y-4 px-4 py-6 md:px-8 md:py-8">
+    <div className="mx-auto max-w-[1600px] space-y-4 px-4 py-6 md:px-8 md:py-8">
       <div>
         <h1 className="text-lg font-semibold">알림센터</h1>
         <p className="mt-1 text-sm text-foreground/60">
