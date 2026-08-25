@@ -19,10 +19,11 @@ export function RankLineup({
   const barPosition = topPercent != null ? Math.min(96, Math.max(4, 100 - topPercent)) : null;
 
   return (
-    <div>
+    <div className="mx-auto w-full max-w-[920px]">
       <svg
-        viewBox="0 -34 640 150"
-        className="h-auto w-full"
+        viewBox="0 -34 640 190"
+        preserveAspectRatio="xMidYMid meet"
+        className="mx-auto block h-auto w-full"
         role="img"
         aria-label={`직급 라인업, 현재 ${currentRank ?? "사원"}`}
       >
@@ -49,7 +50,7 @@ export function RankLineup({
       </svg>
 
       {/* 전체 사용자 대비 위치 — 텍스트 대신 막대 그래프 + 마커로 한눈에 보이게 */}
-      <div className="relative mt-8 px-1">
+      <div className="relative mt-3 px-1">
         {barPosition != null ? (
           <span
             className="absolute -top-6 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-white shadow-sm"
