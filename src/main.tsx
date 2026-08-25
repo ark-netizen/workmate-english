@@ -12,6 +12,7 @@ import "./mobile-trial-preview.css";
 import "./mobile-trial-preview-v2.css";
 import "./mobile-trial-fidelity.css";
 import "./mobile-spacing-pass.css";
+import "./intro-nav-responsive.css";
 import "./enable-mobile-intro-trial";
 
 createRoot(document.getElementById("root")!).render(
