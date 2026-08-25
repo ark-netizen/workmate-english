@@ -70,7 +70,7 @@ function polishMobilePreviewCopy() {
 
 function polishIntroAboutLink(page: HTMLElement) {
   const navGroup = page.querySelector<HTMLElement>(".intro-nav-inner > div:last-child > div:first-child");
-  const sampleNavLink = navGroup?.querySelector<HTMLElement>(".intro-nav-link");
+  const sampleNavLink = navGroup?.querySelector<HTMLElement>(".intro-nav-link:not(.intro-about-link)");
   if (!navGroup || !sampleNavLink) return;
 
   let aboutLink = navGroup.querySelector<HTMLAnchorElement>(".intro-about-link");
@@ -82,8 +82,6 @@ function polishIntroAboutLink(page: HTMLElement) {
     aboutLink.textContent = "About";
     aboutLink.setAttribute("aria-label", "About");
     aboutLink.className = expectedClassName;
-    navGroup.appendChild(aboutLink);
-    return;
   }
 
   if (aboutLink.href !== "https://www.idealwhy.com/") {
@@ -94,6 +92,11 @@ function polishIntroAboutLink(page: HTMLElement) {
   }
   if (aboutLink.className !== expectedClassName) {
     aboutLink.className = expectedClassName;
+  }
+
+  // About은 항상 미리보기보다 왼쪽(네비게이션 첫 항목)에 둔다.
+  if (navGroup.firstElementChild !== aboutLink) {
+    navGroup.insertBefore(aboutLink, navGroup.firstElementChild);
   }
 }
 
