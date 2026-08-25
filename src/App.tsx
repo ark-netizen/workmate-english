@@ -6,6 +6,7 @@ import { startFreshGuestTrial, hasRealSession } from "@/lib/session";
 import { AppShell } from "@/components/shell/AppShell";
 import { CopyrightNotice } from "@/components/ui/CopyrightNotice";
 import { BusinessModeProvider } from "@/context/BusinessModeContext";
+import { useBusinessMode } from "@/context/useBusinessMode";
 import { WorkdayProvider } from "@/context/WorkdayContext";
 import { useWorkday } from "@/context/useWorkday";
 import { HomePage } from "@/pages/HomePage";
@@ -30,6 +31,32 @@ import { EvaluationPage } from "@/pages/EvaluationPage";
 import { SettingsPage } from "@/pages/SettingsPage";
 import { NoticePage } from "@/pages/NoticePage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
+
+// 최상위 로딩 화면 — 아직 AppShell(사이드바 등)이 마운트되기 전이라 게임/비즈니스 테마 CSS
+// 변수(--background 등)가 적용 안 된 상태라서, 여기서 직접 모드별 색을 분기해줘야 한다.
+// 그냥 배경이 없으면 기본값(미색에 가까운 흰색)으로 보여서 화면 전환이 어색해 보였다.
+function FullScreenLoading() {
+  const { businessMode } = useBusinessMode();
+  const gameMode = businessMode;
+  return (
+    <div
+      className={`flex min-h-screen items-center justify-center ${gameMode ? "bg-[#eef5ec]" : "bg-white"}`}
+    >
+      <div
+        className={`flex flex-col items-center gap-3 text-sm font-medium ${
+          gameMode ? "text-[#28352f]/70" : "text-foreground/50"
+        }`}
+      >
+        <span
+          className={`h-5 w-5 animate-spin rounded-full border-2 ${
+            gameMode ? "border-[#28352f]/20 border-t-[#2f795d]" : "border-border border-t-accent"
+          }`}
+        />
+        불러오는 중...
+      </div>
+    </div>
+  );
+}
 
 function StandalonePage({ children, mintFooter = false }: { children: ReactNode; mintFooter?: boolean }) {
   return (
@@ -127,14 +154,7 @@ function AppRoutes() {
   }
 
   if (!entered && checkingRealSession) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="flex flex-col items-center gap-3 text-sm text-foreground/50">
-          <span className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-accent" />
-          불러오는 중...
-        </div>
-      </div>
-    );
+    return <FullScreenLoading />;
   }
 
   if (!entered) {
@@ -161,14 +181,7 @@ function AppRoutes() {
   }
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="flex flex-col items-center gap-3 text-sm text-foreground/50">
-          <span className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-accent" />
-          불러오는 중...
-        </div>
-      </div>
-    );
+    return <FullScreenLoading />;
   }
 
   if (error) {
