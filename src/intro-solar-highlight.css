@@ -1,0 +1,12 @@
+/* Intro business mode: Solar 하이라이트가 위치/폰트 크기에 따라 다르게 보이지 않도록
+   동일한 단색 형광펜 배경으로 강제한다. 게임 모드의 노란 하이라이트는 건드리지 않는다. */
+.intro-page.intro-business .solar-mark {
+  background-color: #8de6b0 !important;
+  background-image: none !important;
+  color: inherit !important;
+  padding: 0 0.14em !important;
+  margin: 0 -0.04em !important;
+  border-radius: 2px !important;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
