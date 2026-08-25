@@ -176,6 +176,7 @@ body {
   letter-spacing: -0.01em;
 }
 .intro-mode-toggle { border-radius: 11px !important; padding: 3px !important; }
+.intro-nav-link { font-size: 16px !important; }
 
 .intro-game .intro-nav {
   border-bottom: 3px solid #244f3d !important;
