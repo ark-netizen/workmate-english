@@ -1,4 +1,4 @@
-import { Briefcase, Check, ChevronRight, Gamepad2 } from "lucide-react";
+import { Briefcase, Check, ChevronRight, Gamepad2, Lock } from "lucide-react";
 import { RankAvatar } from "@/components/promotion/RankAvatar";
 import { useBusinessMode } from "@/context/useBusinessMode";
 import { setStoredBusinessMode } from "@/lib/businessModePref";
@@ -34,8 +34,8 @@ export function TrialOnboardingReveal({
     ? "border-2 border-[#28352f] bg-[#fffdf7] shadow-[4px_4px_0_rgba(40,53,47,.18)]"
     : "rounded-xl border border-[#dfe5ef] bg-white shadow-[0_10px_28px_rgba(71,98,142,.08)]";
   const fieldClass = gameMode
-    ? "border border-[#c7bfa9] bg-[#fffaf0] text-[#28352f]"
-    : "border border-[#dfe5ef] bg-[#f8fbff] text-[#334155]";
+    ? "cursor-not-allowed border border-[#c7bfa9] bg-[#f3f0e6] text-[#4f5b55]"
+    : "cursor-not-allowed border border-[#dfe5ef] bg-[#f1f4f8] text-[#64748b]";
 
   const selectMode = (nextGameMode: boolean) => {
     if (gameMode === nextGameMode) return;
@@ -201,51 +201,79 @@ export function TrialOnboardingReveal({
               </div>
             </aside>
 
-            <div className={`p-4 sm:p-5 ${panelClass}`}>
-              <div className="mb-4 flex flex-wrap items-end justify-between gap-2 border-b border-black/10 pb-3">
+            <div className={`p-4 sm:p-5 ${panelClass}`} aria-disabled="true">
+              <div className="mb-3 flex flex-wrap items-end justify-between gap-2 border-b border-black/10 pb-3">
                 <div>
                   <p className={`text-sm font-black ${gameMode ? "text-[#28352f]" : "text-[#11213a]"}`}>실제 온보딩 미리보기</p>
-                  <p className={`mt-1 text-xs ${gameMode ? "text-[#6f7a73]" : "text-[#7b8799]"}`}>가입하면 아래 항목을 직접 선택하고 입력해요.</p>
+                  <p className={`mt-1 text-xs ${gameMode ? "text-[#6f7a73]" : "text-[#7b8799]"}`}>
+                    가입 후 직접 선택하는 화면이에요. 무료체험 중에는 아래 값이 고정돼 있어요.
+                  </p>
                 </div>
-                <span className={`text-[10px] font-bold ${gameMode ? "text-[#2f795d]" : "text-[#1a56ff]"}`}>현재 무료체험 값 표시</span>
+                <span
+                  className={`inline-flex items-center gap-1 px-2 py-1 text-[10px] font-black ${
+                    gameMode
+                      ? "border border-[#9f9783] bg-[#e9e5d9] text-[#5f675f]"
+                      : "rounded-full border border-[#d7dee8] bg-[#f1f4f8] text-[#64748b]"
+                  }`}
+                >
+                  <Lock className="size-3" strokeWidth={2.5} />
+                  읽기 전용 · 변경 불가
+                </span>
               </div>
 
-              <div className="grid gap-5 md:grid-cols-2">
+              <div
+                className={`mb-4 flex items-center gap-2 px-3 py-2 text-xs font-bold ${
+                  gameMode
+                    ? "border border-[#c7bfa9] bg-[#f3f0e6] text-[#59645e]"
+                    : "rounded-lg border border-[#dde3eb] bg-[#f4f6f9] text-[#64748b]"
+                }`}
+              >
+                <Lock className="size-3.5 shrink-0" strokeWidth={2.5} />
+                <span>이 화면은 선택 가능한 항목을 보여주는 미리보기예요. 값 변경은 가입 후 온보딩에서 할 수 있어요.</span>
+              </div>
+
+              <div className="grid cursor-not-allowed gap-5 md:grid-cols-2">
                 <div className="space-y-4 md:border-r md:border-black/10 md:pr-5">
                   <div>
                     <p className={`text-sm font-black ${gameMode ? "text-[#28352f]" : "text-[#334155]"}`}>1. 기본 정보를 선택해주세요</p>
                   </div>
 
                   <div>
-                    <p className="mb-2 text-xs font-bold">업종</p>
+                    <p className="mb-2 flex items-center gap-1.5 text-xs font-bold">
+                      업종
+                      <Lock className="size-3 opacity-45" strokeWidth={2.5} />
+                    </p>
                     <div className="flex flex-wrap gap-1.5">
                       {visibleIndustries.map((item) => {
                         const selected = item === profile.industry;
                         return (
                           <span
                             key={item}
-                            className={`px-2.5 py-1.5 text-[11px] font-medium ${
+                            className={`cursor-not-allowed px-2.5 py-1.5 text-[11px] font-medium ${
                               selected
                                 ? gameMode
                                   ? "border-2 border-[#28352f] bg-[#2f795d] text-white shadow-[2px_2px_0_#28352f]"
                                   : "rounded-full border border-[#1a56ff] bg-[#eef3ff] text-[#1a56ff]"
                                 : gameMode
-                                  ? "border border-[#c7bfa9] bg-[#fffaf0] text-[#56645d]"
-                                  : "rounded-full border border-[#dfe5ef] bg-white text-[#64748b]"
+                                  ? "border border-[#c7bfa9] bg-[#f3f0e6] text-[#7a817c] opacity-65"
+                                  : "rounded-full border border-[#dfe5ef] bg-[#f1f4f8] text-[#94a3b8] opacity-70"
                             }`}
                           >
                             {item}
                           </span>
                         );
                       })}
-                      <span className={`px-2.5 py-1.5 text-[11px] ${gameMode ? "border border-[#c7bfa9] bg-[#fffaf0] text-[#7b817d]" : "rounded-full border border-[#dfe5ef] text-[#94a3b8]"}`}>
+                      <span className={`cursor-not-allowed px-2.5 py-1.5 text-[11px] ${gameMode ? "border border-[#c7bfa9] bg-[#f3f0e6] text-[#8a8f8b] opacity-65" : "rounded-full border border-[#dfe5ef] bg-[#f1f4f8] text-[#a0aaba] opacity-70"}`}>
                         +{Math.max(0, industries.length - visibleIndustries.length)}개 더
                       </span>
                     </div>
                   </div>
 
                   <div>
-                    <p className="mb-2 text-xs font-bold">직무</p>
+                    <p className="mb-2 flex items-center gap-1.5 text-xs font-bold">
+                      직무
+                      <Lock className="size-3 opacity-45" strokeWidth={2.5} />
+                    </p>
                     <div className={`px-3 py-2 text-sm ${fieldClass}`}>{profile.job_role || "서비스 기획자"}</div>
                   </div>
                 </div>
@@ -254,31 +282,40 @@ export function TrialOnboardingReveal({
                   <p className={`text-sm font-black ${gameMode ? "text-[#28352f]" : "text-[#334155]"}`}>2. 업무 및 환경을 설정해주세요</p>
 
                   <div>
-                    <p className="mb-1.5 text-xs font-bold">주요 업무</p>
+                    <p className="mb-1.5 flex items-center gap-1.5 text-xs font-bold">
+                      주요 업무
+                      <Lock className="size-3 opacity-45" strokeWidth={2.5} />
+                    </p>
                     <div className={`min-h-12 px-3 py-2 text-xs leading-relaxed ${fieldClass}`}>{profile.main_tasks}</div>
                   </div>
 
                   <div>
-                    <p className="mb-1.5 text-xs font-bold">자주 소통하는 대상</p>
+                    <p className="mb-1.5 flex items-center gap-1.5 text-xs font-bold">
+                      자주 소통하는 대상
+                      <Lock className="size-3 opacity-45" strokeWidth={2.5} />
+                    </p>
                     <div className={`px-3 py-2 text-xs ${fieldClass}`}>{profile.contacts}</div>
                   </div>
 
                   <div>
-                    <p className="mb-1.5 text-xs font-bold">영어 난이도</p>
+                    <p className="mb-1.5 flex items-center gap-1.5 text-xs font-bold">
+                      영어 난이도
+                      <Lock className="size-3 opacity-45" strokeWidth={2.5} />
+                    </p>
                     <div className="flex gap-1.5">
                       {["초급", "중급", "고급"].map((level) => {
                         const selected = level === englishLevel;
                         return (
                           <span
                             key={level}
-                            className={`flex-1 px-2 py-1.5 text-center text-[11px] font-bold ${
+                            className={`flex-1 cursor-not-allowed px-2 py-1.5 text-center text-[11px] font-bold ${
                               selected
                                 ? gameMode
                                   ? "border-2 border-[#28352f] bg-[#2f795d] text-white"
                                   : "rounded-md border border-[#1a56ff] bg-[#eef3ff] text-[#1a56ff]"
                                 : gameMode
-                                  ? "border border-[#c7bfa9] bg-[#fffaf0] text-[#6b756f]"
-                                  : "rounded-md border border-[#dfe5ef] bg-white text-[#64748b]"
+                                  ? "border border-[#c7bfa9] bg-[#f3f0e6] text-[#858b87] opacity-65"
+                                  : "rounded-md border border-[#dfe5ef] bg-[#f1f4f8] text-[#94a3b8] opacity-70"
                             }`}
                           >
                             {level}
@@ -290,13 +327,19 @@ export function TrialOnboardingReveal({
 
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <p className="mb-1.5 text-xs font-bold">근무시간</p>
+                      <p className="mb-1.5 flex items-center gap-1.5 text-xs font-bold">
+                        근무시간
+                        <Lock className="size-3 opacity-45" strokeWidth={2.5} />
+                      </p>
                       <div className={`px-2.5 py-2 text-xs ${fieldClass}`}>
                         {profile.start_time || "09:00"}–{profile.end_time || "18:00"}
                       </div>
                     </div>
                     <div>
-                      <p className="mb-1.5 text-xs font-bold">하루 알림 횟수</p>
+                      <p className="mb-1.5 flex items-center gap-1.5 text-xs font-bold">
+                        하루 알림 횟수
+                        <Lock className="size-3 opacity-45" strokeWidth={2.5} />
+                      </p>
                       <div className={`px-2.5 py-2 text-xs ${fieldClass}`}>{profile.daily_count || 3}회</div>
                     </div>
                   </div>
