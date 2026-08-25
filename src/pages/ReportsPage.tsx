@@ -555,7 +555,7 @@ export function ReportsPage() {
   const [view, setView] = useState<ReportView>("daily");
 
   return (
-    <div className="mx-auto max-w-[1230px] [zoom:1.15] space-y-6 px-4 py-6 md:px-8 md:py-8">
+    <div className="mx-auto max-w-[1230px] [zoom:1.1] space-y-6 px-4 py-6 md:px-8 md:py-8">
       {/* 제목 옆 탭 — 스크롤 없이 일간/주간/월간 리포트를 바로 전환 */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-lg font-semibold">영어 업무일지</h1>

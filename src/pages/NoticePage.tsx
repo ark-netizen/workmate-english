@@ -261,7 +261,7 @@ export function NoticePage() {
   if (isTrial) return <TrialLockedPage title="공지사항" />;
 
   return (
-    <div className="mx-auto max-w-[1230px] [zoom:1.15] space-y-6 px-4 py-6 md:px-8 md:py-8">
+    <div className="mx-auto max-w-[1230px] [zoom:1.1] space-y-6 px-4 py-6 md:px-8 md:py-8">
       <div>
         <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-foreground/40">Notice</p>
         <h1 className="mt-1 text-lg font-semibold">공지사항</h1>

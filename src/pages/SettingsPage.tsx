@@ -395,7 +395,7 @@ export function SettingsPage() {
   );
 
   return (
-    <div className="mx-auto max-w-[1230px] [zoom:1.15] space-y-6 px-4 py-6 pb-24 md:px-8 md:py-8">
+    <div className="mx-auto max-w-[1230px] [zoom:1.1] space-y-6 px-4 py-6 pb-24 md:px-8 md:py-8">
       <div>
         <h1 className="text-lg font-semibold">설정</h1>
         <p className="mt-1 text-sm text-foreground/60">업무 환경과 알림을 관리하세요.</p>

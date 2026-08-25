@@ -13,6 +13,8 @@ interface ChatEntry {
 
 type Stage = "start" | "preset" | "freeform" | "inquiry";
 
+const GREETING_STORAGE_KEY = "go:support-chat-greeting-dismissed";
+
 // 자주 묻는 질문 — 탭하면 LLM 호출 없이 바로 답변(사전 제공된 답변 우선 노출)
 const FAQ_PRESETS: { question: string; answer: string }[] = [
   {
@@ -66,6 +68,22 @@ export function SupportChatWidget({
   const [entries, setEntries] = useState<ChatEntry[]>([]);
   const [inquirySent, setInquirySent] = useState(false);
   const [surveySource, setSurveySource] = useState<SurveySource | null>(null);
+  // 트리거 옆 인사 말풍선은 한 번 닫으면 다시 안 뜨게(챗봇 자체는 계속 열 수 있음)
+  const [greetingDismissed, setGreetingDismissed] = useState(() => {
+    try {
+      return localStorage.getItem(GREETING_STORAGE_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
+  const dismissGreeting = () => {
+    setGreetingDismissed(true);
+    try {
+      localStorage.setItem(GREETING_STORAGE_KEY, "1");
+    } catch {
+      // 저장 실패해도 이번 세션에서는 닫힌 채로 유지됨
+    }
+  };
 
   const resetChat = () => {
     setStage("start");
@@ -123,14 +141,29 @@ export function SupportChatWidget({
       <>
         {showTrigger && (
           <div className="fixed bottom-20 right-5 z-40 flex flex-col items-end gap-2 md:bottom-5">
-            <button
-              type="button"
-              onClick={() => onOpenChange(true)}
-              className="max-w-[280px] rounded-2xl border border-border bg-surface px-3.5 py-2.5 text-left text-xs leading-relaxed text-foreground shadow-lg hover:bg-black/[.02]"
-              aria-label="도움말 챗봇 열기"
-            >
-              안녕하세요! Upstage Solar 기반 AI가 부캐영어 이용 중 궁금한 점을 도와드릴게요.
-            </button>
+            {!greetingDismissed && (
+              <div className="relative max-w-[280px]">
+                <button
+                  type="button"
+                  onClick={() => onOpenChange(true)}
+                  className="w-full rounded-2xl border border-border bg-surface px-3.5 py-2.5 pr-7 text-left text-xs leading-relaxed text-foreground shadow-lg hover:bg-black/[.02]"
+                  aria-label="도움말 챗봇 열기"
+                >
+                  안녕하세요! Upstage Solar 기반 AI가 부캐영어 이용 중 궁금한 점을 도와드릴게요.
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    dismissGreeting();
+                  }}
+                  aria-label="안내 메시지 닫기"
+                  className="absolute top-1.5 right-1.5 rounded p-1 text-foreground/40 hover:bg-black/[.05] hover:text-foreground/70"
+                >
+                  <X className="size-3.5" />
+                </button>
+              </div>
+            )}
             <button
               type="button"
               onClick={() => onOpenChange(true)}
