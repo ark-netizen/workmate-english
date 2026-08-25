@@ -26,7 +26,7 @@ export function WorkHoursPage() {
   const todayMinutes = days[days.length - 1]?.minutes ?? 0;
 
   return (
-    <div className="mx-auto max-w-[1230px] [zoom:1.3] space-y-6 px-4 py-6 md:px-8 md:py-8">
+    <div className="mx-auto max-w-[1230px] [zoom:1.15] space-y-6 px-4 py-6 md:px-8 md:py-8">
       <div>
         <h1 className="text-lg font-semibold">근무 시간</h1>
         <p className="mt-1 text-sm text-foreground/60">최근 2주간의 하루 근무 시간을 확인하세요.</p>
