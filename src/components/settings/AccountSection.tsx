@@ -78,9 +78,17 @@ export function AccountSection({
         if (finalized) onAccountChanged();
       })
       .catch((err) => setKakaoError(err instanceof Error ? err.message : "카톡 알림 연동에 실패했어요."));
-    supabase?.auth.getUser().then(({ data }) => {
-      setKakaoLinked((data.user?.identities || []).some((i) => i.provider === "kakao"));
-    });
+    supabase?.auth
+      .getUser()
+      .then(({ data }) => {
+        setKakaoLinked((data.user?.identities || []).some((i) => i.provider === "kakao"));
+      })
+      .catch(() => {
+        // getUser()가 네트워크 문제로 실패해도, 로컬에 저장된 세션의 identities로 한 번 더 시도
+        supabase?.auth.getSession().then(({ data }) => {
+          setKakaoLinked((data.session?.user?.identities || []).some((i) => i.provider === "kakao"));
+        });
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -101,11 +109,15 @@ export function AccountSection({
     }
   };
 
-  if (profile.email) {
+  if (profile.email || kakaoLinked) {
     return (
       <section className="space-y-2 rounded-xl border border-border bg-surface p-5">
         <h2 className="text-sm font-medium text-foreground/70">계정</h2>
-        <p className="text-sm">{profile.email}</p>
+        {profile.email ? (
+          <p className="text-sm">{profile.email}</p>
+        ) : (
+          <p className="text-sm">카카오 계정으로 로그인되어 있어요</p>
+        )}
         <p className="text-xs text-foreground/40">계정으로 로그인되어 있어 다른 기기에서도 이어서 사용할 수 있어요.</p>
 
         {kakaoLinked && (
