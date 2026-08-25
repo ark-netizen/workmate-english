@@ -15,7 +15,6 @@ export const RANK_SUBLABELS: Record<string, string> = {
 
 const OUTLINE = "#202723";
 const FUR = "#9a6a3a";
-const FUR_DARK = "#6f4728";
 const MUZZLE = "#f4dfc2";
 const PAW = "#8a5b34";
 
