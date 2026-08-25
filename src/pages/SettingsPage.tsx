@@ -4,7 +4,8 @@ import { ChevronDown } from "lucide-react";
 import * as api from "@/lib/api";
 import { useWorkday } from "@/context/useWorkday";
 import { subscribePush, unsubscribePush } from "@/lib/push";
-import { signOut } from "@/lib/auth";
+import { signOut, startKakaoNotifyConsent } from "@/lib/auth";
+import { supabase } from "@/lib/supabaseClient.js";
 import { industries } from "@/lib/industries";
 import { Avatar } from "@/components/ui/Avatar";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -176,6 +177,11 @@ export function SettingsPage() {
   const [pushRequesting, setPushRequesting] = useState(false);
   const [pushError, setPushError] = useState<string | null>(null);
   const [pushUnsubscribing, setPushUnsubscribing] = useState(false);
+  // 카카오로 로그인한 계정에만 의미가 있는 항목이라, 지금 계정에 카카오 identity가
+  // 실제로 연동돼 있는지 확인해서 이 섹션 노출 여부를 정한다
+  const [kakaoLinked, setKakaoLinked] = useState(false);
+  const [kakaoBusy, setKakaoBusy] = useState(false);
+  const [kakaoError, setKakaoError] = useState<string | null>(null);
   // 업종은 온보딩과 같은 칩 선택 UI — 저장된 값이 목록에 없으면 "기타"로 취급하고 원래 값을 커스텀 입력에 채운다
   const [industryChip, setIndustryChip] = useState<string>("");
   const [customIndustry, setCustomIndustry] = useState("");
@@ -205,7 +211,35 @@ export function SettingsPage() {
         }
       }
     });
+    supabase?.auth
+      .getUser()
+      .then(({ data }) => {
+        setKakaoLinked((data.user?.identities || []).some((i) => i.provider === "kakao"));
+      })
+      .catch(() => {
+        supabase?.auth.getSession().then(({ data }) => {
+          setKakaoLinked((data.session?.user?.identities || []).some((i) => i.provider === "kakao"));
+        });
+      });
   }, []);
+
+  const handleToggleKakaoNotify = async (next: boolean) => {
+    setKakaoError(null);
+    setKakaoBusy(true);
+    try {
+      if (next) {
+        await startKakaoNotifyConsent(); // 성공 시 카카오 재동의 페이지로 이동하며 여기서 끝남(브라우저가 떠남)
+      } else {
+        const { profile: updated } = await api.disconnectKakaoNotify();
+        setProfile(updated);
+        setOriginalProfile(updated);
+      }
+    } catch (err) {
+      setKakaoError(err instanceof Error ? err.message : "처리 중 문제가 발생했습니다.");
+    } finally {
+      setKakaoBusy(false);
+    }
+  };
 
   const updateField =
     (field: keyof ProfileResponse) => (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -670,6 +704,42 @@ export function SettingsPage() {
           차단으로 바꿔주세요.
         </div>
       </CollapsibleSection>
+
+      {kakaoLinked && (
+        <CollapsibleSection
+          id="settings-kakao-notify"
+          title="카톡 알림"
+          description="놓친 연락·리포트 완성 알림을 카카오톡 '나와의 채팅'으로도 받아요."
+        >
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-xs text-foreground/50">
+              웹 알림을 못 봤을 때 놓치지 않도록 보조로 보내는 채널이에요. 야간(22시~7시)에는 발송하지 않아요.
+            </p>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={Boolean(profile.kakao_notify_enabled)}
+              disabled={kakaoBusy}
+              onClick={() => handleToggleKakaoNotify(!profile.kakao_notify_enabled)}
+              className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-50 ${
+                profile.kakao_notify_enabled ? "bg-accent" : "bg-foreground/15"
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-white shadow transition-transform ${
+                  profile.kakao_notify_enabled ? "translate-x-5" : ""
+                }`}
+              />
+            </button>
+          </div>
+          {kakaoError && <p className="text-xs text-red-600">{kakaoError}</p>}
+          {!profile.kakao_notify_enabled && (
+            <div className="rounded-lg bg-black/[.02] p-3 text-xs leading-relaxed text-foreground/50">
+              켜면 카카오 재동의 화면으로 이동해요. 동의하면 바로 알림이 시작돼요.
+            </div>
+          )}
+        </CollapsibleSection>
+      )}
 
       <section className="space-y-3 rounded-xl border border-red-200 bg-red-50/40 p-5">
         <div>

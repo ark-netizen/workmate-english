@@ -1,15 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import * as api from "@/lib/api";
-import {
-  finalizePendingConsent,
-  finalizePendingKakaoNotify,
-  signIn,
-  signInWithKakao,
-  signUp,
-  signUpWithKakao,
-  startKakaoNotifyConsent,
-} from "@/lib/auth";
+import { finalizePendingConsent, signIn, signInWithKakao, signUp, signUpWithKakao } from "@/lib/auth";
 import { supabase } from "@/lib/supabaseClient.js";
 import type { ProfileResponse } from "@/types/api";
 
@@ -61,53 +53,28 @@ export function AccountSection({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // talk_message 재동의(카톡 알림 켜기)는 카카오로 로그인한 계정에만 의미가 있어서,
-  // 지금 계정에 카카오 identity가 실제로 연동돼 있는지 확인해서 토글 노출 여부를 정한다
+  // "계정" 카드를 보여줄지 판단할 때, 이메일 없이 카카오로만 로그인한 경우(이메일 동의 안 함)도
+  // 놓치지 않도록 identity 목록을 같이 확인한다 — 안 그러면 이 케이스는 회원가입 폼으로 빠진다
   const [kakaoLinked, setKakaoLinked] = useState(false);
-  const [kakaoBusy, setKakaoBusy] = useState(false);
-  const [kakaoError, setKakaoError] = useState<string | null>(null);
 
   // 카카오 로그인은 브라우저가 통째로 리다이렉트됐다 돌아오는 방식이라, 돌아온 직후
-  // 대기 중이던 개인정보처리방침 동의(또는 카톡 알림 재동의)를 마저 기록하고 최신 프로필을 다시 읽어와야 함
+  // 대기 중이던 개인정보처리방침 동의를 마저 기록하고 최신 프로필을 다시 읽어와야 함
   useEffect(() => {
     finalizePendingConsent().then((finalized) => {
       if (finalized) onAccountChanged();
     });
-    finalizePendingKakaoNotify()
-      .then((finalized) => {
-        if (finalized) onAccountChanged();
-      })
-      .catch((err) => setKakaoError(err instanceof Error ? err.message : "카톡 알림 연동에 실패했어요."));
     supabase?.auth
       .getUser()
       .then(({ data }) => {
         setKakaoLinked((data.user?.identities || []).some((i) => i.provider === "kakao"));
       })
       .catch(() => {
-        // getUser()가 네트워크 문제로 실패해도, 로컬에 저장된 세션의 identities로 한 번 더 시도
         supabase?.auth.getSession().then(({ data }) => {
           setKakaoLinked((data.session?.user?.identities || []).some((i) => i.provider === "kakao"));
         });
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const handleToggleKakaoNotify = async (next: boolean) => {
-    setKakaoError(null);
-    setKakaoBusy(true);
-    try {
-      if (next) {
-        await startKakaoNotifyConsent(); // 성공 시 카카오 재동의 페이지로 이동하며 여기서 끝남
-      } else {
-        await api.disconnectKakaoNotify();
-        await onAccountChanged();
-      }
-    } catch (err) {
-      setKakaoError(err instanceof Error ? err.message : "처리 중 문제가 발생했습니다.");
-    } finally {
-      setKakaoBusy(false);
-    }
-  };
 
   if (profile.email || kakaoLinked) {
     return (
@@ -119,34 +86,6 @@ export function AccountSection({
           <p className="text-sm">카카오 계정으로 로그인되어 있어요</p>
         )}
         <p className="text-xs text-foreground/40">계정으로 로그인되어 있어 다른 기기에서도 이어서 사용할 수 있어요.</p>
-
-        {kakaoLinked && (
-          <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
-            <div>
-              <p className="text-sm font-medium">카톡 알림 받기</p>
-              <p className="text-xs text-foreground/40">
-                놓친 연락·리포트 완성 알림을 카카오톡 "나와의 채팅"으로도 받아요. 야간(22시~7시)에는 안 보내요.
-              </p>
-            </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={Boolean(profile.kakao_notify_enabled)}
-              disabled={kakaoBusy}
-              onClick={() => handleToggleKakaoNotify(!profile.kakao_notify_enabled)}
-              className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-50 ${
-                profile.kakao_notify_enabled ? "bg-accent" : "bg-foreground/15"
-              }`}
-            >
-              <span
-                className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-white shadow transition-transform ${
-                  profile.kakao_notify_enabled ? "translate-x-5" : ""
-                }`}
-              />
-            </button>
-          </div>
-        )}
-        {kakaoError && <p className="text-xs text-red-600">{kakaoError}</p>}
       </section>
     );
   }

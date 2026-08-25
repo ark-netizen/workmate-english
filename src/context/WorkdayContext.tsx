@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import * as api from "@/lib/api";
 import { ensureSession } from "@/lib/session";
-import { finalizePendingConsent } from "@/lib/auth";
+import { finalizePendingConsent, finalizePendingKakaoNotify } from "@/lib/auth";
 import { isAutoAdvanceEnabled, QA_ACTIONS_CHANNEL } from "@/lib/qaAutoAdvance";
 import type { TodayResponse } from "@/types/api";
 import type { TodayItem } from "@/types/domain";
@@ -127,6 +127,9 @@ export function WorkdayProvider({ children }: { children: ReactNode }) {
       await ensureSession();
       // 카카오 로그인처럼 브라우저가 리다이렉트됐다 돌아온 경우, 대기 중인 동의 기록을 여기서 마저 처리
       await finalizePendingConsent().catch(() => {});
+      // 카톡 알림 재동의(talk_message)도 같은 방식으로 리다이렉트됐다 돌아오므로 여기서 같이 처리 —
+      // 어느 페이지로 돌아오든(리다이렉트는 항상 origin 루트) refresh()가 전역에서 불려서 놓치지 않음
+      await finalizePendingKakaoNotify().catch(() => {});
       const next = await api.getTodayWorkday();
       if (seq !== refreshSeqRef.current) return // 그 사이 더 최신 refresh()가 시작됐으면 이 낡은 응답은 버림
 
