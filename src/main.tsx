@@ -6,6 +6,8 @@ import "./index.css";
 import "./intro-solar-highlight.css";
 import "./game-mode-workspace.css";
 import "./intro-mobile.css";
+import "./intro-mobile-hotfix.css";
+import "./enable-mobile-intro-trial";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
