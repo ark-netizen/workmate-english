@@ -49,49 +49,8 @@
     width: 100%;
   }
 
-  /* WORK PROCESS 카드 중앙 여백:
-     텍스트 칼럼이 카드 폭 비율로 계속 커지면서 빈 공간이 생기지 않도록
-     설명 영역 폭을 280~340px로 제한하고 바로 옆부터 예시 UI가 시작되게 한다. */
-  .intro-game .intro-game-feature-window > div:last-child {
-    grid-template-columns: minmax(280px, 340px) minmax(0, 1fr) !important;
-    column-gap: 14px !important;
-  }
-
-  .intro-business .intro-business-features > div:first-child > div:nth-child(odd) .intro-business-feature-card {
-    grid-template-columns: minmax(280px, 340px) minmax(0, 1fr) !important;
-    column-gap: 14px !important;
-  }
-
-  /* 비즈니스 모드 짝수 카드는 좌우 순서가 뒤집혀 있다. */
-  .intro-business .intro-business-features > div:first-child > div:nth-child(even) .intro-business-feature-card {
-    grid-template-columns: minmax(0, 1fr) minmax(280px, 340px) !important;
-    column-gap: 14px !important;
-  }
-
-  /* 설명은 억지로 여러 줄을 만들지 않고, 정해진 칼럼 안에서 어절 기준 자연 줄바꿈만 한다. */
-  .intro-game .intro-game-feature-window > div:last-child > div:first-child,
-  .intro-business .intro-business-feature-card > div:first-child {
-    min-width: 0 !important;
-    max-width: 340px !important;
-  }
-
-  .intro-game .intro-game-feature-window > div:last-child > div:first-child > p,
-  .intro-business .intro-business-feature-card > div:first-child > p {
-    word-break: keep-all !important;
-    overflow-wrap: normal !important;
-    text-wrap: pretty;
-  }
-
-  .intro-game .intro-game-feature-window > div:last-child > div:first-child > p:nth-of-type(2),
-  .intro-business .intro-business-feature-card > div:first-child > p:nth-of-type(2) {
-    line-height: 1.62 !important;
-  }
-
-  .intro-game .intro-game-feature-visual,
-  .intro-business .intro-business-feature-card > div:last-child {
-    width: 100% !important;
-    min-width: 0 !important;
-  }
+  /* WORK PROCESS 카드 내부의 열 비율, 중앙 간격, 텍스트/그래픽 폭은 여기서 건드리지 않는다.
+     IntroPage 컴포넌트의 원래 sm:grid-cols-2 / sm:gap-8 / sm:p-8 정렬을 그대로 사용한다. */
 
   /* 1분 체험/후기는 한 화면에 내용이 안정적으로 담기되 과한 빈 공간은 줄인다. */
   .intro-trial-showcase,
