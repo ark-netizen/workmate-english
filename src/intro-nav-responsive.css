@@ -1,0 +1,219 @@
+/* Intro navbar responsive guard.
+   768~1080px 사이에서 데스크톱 규칙과 모바일 규칙이 충돌해
+   '미리보기/기능/후기'가 한 글자씩 세로로 찢어지는 문제를 막는다. */
+
+@media (max-width: 1080px) {
+  .intro-page .intro-nav-inner {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 56px !important;
+    height: auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: nowrap !important;
+    gap: 6px !important;
+    padding: 6px 10px !important;
+    overflow: hidden !important;
+  }
+
+  .intro-page .intro-nav-inner > img:first-of-type {
+    display: none !important;
+  }
+
+  .intro-page .intro-nav-inner > img:nth-of-type(2) {
+    display: block !important;
+    width: clamp(102px, 14vw, 142px) !important;
+    max-width: 142px !important;
+    height: 32px !important;
+    flex: 0 0 auto !important;
+    object-fit: contain !important;
+    object-position: left center !important;
+  }
+
+  .intro-page .intro-nav-inner > div:last-child {
+    display: flex !important;
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    flex-wrap: nowrap !important;
+    gap: 4px !important;
+    overflow: hidden !important;
+  }
+
+  .intro-page .intro-nav-inner > div:last-child > div:first-child {
+    display: flex !important;
+    width: auto !important;
+    min-width: 0 !important;
+    flex: 0 1 auto !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    flex-wrap: nowrap !important;
+    gap: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .intro-page .intro-nav-link,
+  .intro-page .intro-login-btn,
+  .intro-page .intro-trial-btn,
+  .intro-page .intro-mode-option {
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    word-break: keep-all !important;
+    overflow-wrap: normal !important;
+    white-space: nowrap !important;
+  }
+
+  .intro-page .intro-nav-link {
+    min-width: max-content !important;
+    min-height: 32px !important;
+    padding: 5px 6px !important;
+    font-size: clamp(10px, 1.15vw, 13px) !important;
+    line-height: 1 !important;
+  }
+
+  .intro-page .intro-nav-inner > div:last-child > span {
+    flex: 0 0 1px !important;
+    margin-inline: 2px !important;
+  }
+
+  .intro-page .intro-login-btn,
+  .intro-page .intro-trial-btn {
+    min-width: max-content !important;
+    min-height: 34px !important;
+    padding: 6px 9px !important;
+    font-size: clamp(10px, 1.1vw, 12.5px) !important;
+    line-height: 1 !important;
+  }
+
+  .intro-page .intro-mode-toggle {
+    min-width: max-content !important;
+    min-height: 36px !important;
+    flex: 0 0 auto !important;
+    padding: 2px !important;
+  }
+
+  .intro-page .intro-mode-option {
+    min-width: max-content !important;
+    min-height: 30px !important;
+    padding: 4px 7px !important;
+    font-size: clamp(10px, 1vw, 12px) !important;
+    line-height: 1 !important;
+  }
+
+  .intro-page .intro-mode-option svg {
+    width: 14px !important;
+    height: 14px !important;
+    flex: 0 0 14px !important;
+  }
+}
+
+/* 태블릿에 가까운 좁은 폭에서는 로그인 버튼만 먼저 덜어내고
+   핵심 탐색/체험/모드 전환은 한 줄에 유지한다. */
+@media (min-width: 768px) and (max-width: 860px) {
+  .intro-page .intro-login-btn {
+    display: none !important;
+  }
+
+  .intro-page .intro-nav-inner > div:last-child > span {
+    display: none !important;
+  }
+
+  .intro-page .intro-nav-inner > img:nth-of-type(2) {
+    width: clamp(108px, 15vw, 124px) !important;
+    max-width: 124px !important;
+  }
+
+  .intro-page .intro-nav-link {
+    padding-inline: 5px !important;
+    font-size: 10.5px !important;
+  }
+
+  .intro-page .intro-trial-btn {
+    padding-inline: 8px !important;
+    font-size: 10.5px !important;
+  }
+
+  .intro-page .intro-mode-option {
+    padding-inline: 6px !important;
+    font-size: 10.5px !important;
+  }
+}
+
+/* 실제 모바일: 풀 로고와 섹션 링크를 유지하되 한 줄 안에서만 축소한다. */
+@media (max-width: 767px) {
+  .intro-page .intro-nav-inner {
+    min-height: 52px !important;
+    height: 52px !important;
+    padding: 5px 7px !important;
+    gap: 3px !important;
+  }
+
+  .intro-page .intro-nav-inner > img:nth-of-type(2) {
+    width: clamp(82px, 22vw, 104px) !important;
+    max-width: 104px !important;
+    height: 29px !important;
+  }
+
+  .intro-page .intro-login-btn,
+  .intro-page .intro-nav-inner > div:last-child > span {
+    display: none !important;
+  }
+
+  .intro-page .intro-nav-inner > div:last-child {
+    gap: 2px !important;
+  }
+
+  .intro-page .intro-nav-link {
+    min-height: 28px !important;
+    padding: 3px 4px !important;
+    font-size: clamp(8px, 2.3vw, 9.5px) !important;
+  }
+
+  .intro-page .intro-trial-btn {
+    min-height: 30px !important;
+    padding: 5px 6px !important;
+    font-size: clamp(8.5px, 2.35vw, 9.8px) !important;
+  }
+
+  .intro-page .intro-mode-toggle {
+    min-height: 32px !important;
+  }
+
+  .intro-page .intro-mode-option {
+    min-height: 26px !important;
+    padding: 3px 5px !important;
+    font-size: 9px !important;
+  }
+}
+
+/* 640~767px에서 Tailwind sm 규칙이 게임/비즈니스 텍스트를 다시 노출하면
+   한 줄 폭이 갑자기 커지므로 아이콘 모드로 유지한다. */
+@media (min-width: 640px) and (max-width: 767px) {
+  .intro-page .intro-mode-option > span {
+    display: none !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .intro-page .intro-nav-inner > img:nth-of-type(2) {
+    width: 82px !important;
+    max-width: 82px !important;
+  }
+
+  .intro-page .intro-nav-link {
+    padding-inline: 3px !important;
+    font-size: 8px !important;
+  }
+
+  .intro-page .intro-trial-btn {
+    padding-inline: 5px !important;
+    font-size: 8.5px !important;
+  }
+
+  .intro-page .intro-mode-option {
+    padding-inline: 4px !important;
+  }
+}
