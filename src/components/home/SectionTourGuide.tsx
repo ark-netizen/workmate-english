@@ -283,32 +283,57 @@ export function SectionTourGuide({
     }
   }
 
+  // 게임 모드에서는 메뉴 단계뿐 아니라 프로필/근무현황/업무상황 등 모든 투어 카드가
+  // 같은 크림+진초록+하드 섀도 문법을 사용한다. 비즈니스 모드는 기존 SaaS 스타일 유지.
+  const gameCardBase = "border-2 border-[#28352f] bg-[#fff9e9] text-[#28352f] shadow-[4px_4px_0_#28352f]";
+  const businessCardBase = "border border-accent/30 bg-surface shadow-xl";
+
   const cardClassName = extendPanel
     ? `fixed z-30 w-[17rem] max-w-[calc(100vw-1rem)] rounded-r-xl p-3 transition-[top,left,bottom] duration-200 ease-out ${extendPanel.bg}`
     : anchor
-      ? "fixed z-30 w-[17rem] max-w-[calc(100vw-1rem)] rounded-xl border border-accent/30 bg-surface p-3 shadow-xl transition-[top,left,bottom] duration-200 ease-out"
-      : "fixed inset-x-4 top-1/2 z-30 mx-auto max-w-sm -translate-y-1/2 rounded-xl border border-accent/30 bg-surface p-4 shadow-xl md:inset-x-auto md:right-6 md:w-80";
+      ? `fixed z-30 w-[17rem] max-w-[calc(100vw-1rem)] rounded-xl p-3 transition-[top,left,bottom] duration-200 ease-out ${gameMode ? gameCardBase : businessCardBase}`
+      : `fixed inset-x-4 top-1/2 z-30 mx-auto max-w-sm -translate-y-1/2 rounded-xl p-4 md:inset-x-auto md:right-6 md:w-80 ${gameMode ? gameCardBase : businessCardBase}`;
 
-  const titleClass = extendPanel ? `text-xs font-semibold ${extendPanel.title}` : "text-xs font-semibold text-accent";
+  const titleClass = extendPanel
+    ? `text-xs font-semibold ${extendPanel.title}`
+    : gameMode
+      ? "text-xs font-bold text-[#2f795d]"
+      : "text-xs font-semibold text-accent";
   const closeClass = extendPanel
     ? `shrink-0 rounded p-0.5 ${extendPanel.close}`
-    : "shrink-0 rounded p-0.5 text-foreground/40 hover:bg-black/[.05] hover:text-foreground/70";
-  const bodyClass = extendPanel ? `mt-2 text-sm ${extendPanel.body}` : "mt-2 text-sm text-foreground/80";
+    : gameMode
+      ? "shrink-0 rounded p-0.5 text-[#28352f]/45 hover:bg-[#28352f]/5 hover:text-[#28352f]/75"
+      : "shrink-0 rounded p-0.5 text-foreground/40 hover:bg-black/[.05] hover:text-foreground/70";
+  const bodyClass = extendPanel
+    ? `mt-2 text-sm ${extendPanel.body}`
+    : gameMode
+      ? "mt-2 text-sm font-medium text-[#38443f]"
+      : "mt-2 text-sm text-foreground/80";
   const itemsListClass = extendPanel
     ? "mt-2.5 max-h-64 space-y-1.5 overflow-y-auto border-t border-white/20 pt-2.5"
-    : "mt-2.5 max-h-64 space-y-1.5 overflow-y-auto border-t border-border pt-2.5";
-  const itemClass = extendPanel ? `text-xs ${extendPanel.item}` : "text-xs text-foreground/60";
+    : gameMode
+      ? "mt-2.5 max-h-64 space-y-1.5 overflow-y-auto border-t border-[#315d53]/20 pt-2.5"
+      : "mt-2.5 max-h-64 space-y-1.5 overflow-y-auto border-t border-border pt-2.5";
+  const itemClass = extendPanel
+    ? `text-xs ${extendPanel.item}`
+    : gameMode
+      ? "text-xs text-[#52615a]"
+      : "text-xs text-foreground/60";
   const prevBtnClass = extendPanel
     ? `flex h-7 w-7 items-center justify-center rounded-full border disabled:opacity-30 ${extendPanel.prevBtn}`
-    : "flex h-7 w-7 items-center justify-center rounded-full border border-border text-foreground/60 hover:bg-black/[.03] disabled:opacity-30";
+    : gameMode
+      ? "flex h-7 w-7 items-center justify-center rounded-full border-2 border-[#315d53] bg-[#eef8ed] text-[#24483b] hover:bg-white disabled:opacity-30"
+      : "flex h-7 w-7 items-center justify-center rounded-full border border-border text-foreground/60 hover:bg-black/[.03] disabled:opacity-30";
   const nextBtnClass = extendPanel
     ? `flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium hover:opacity-90 ${extendPanel.nextBtn}`
-    : "flex items-center gap-1 rounded-full bg-accent px-3 py-1.5 text-xs font-medium text-white hover:opacity-90";
+    : gameMode
+      ? "flex items-center gap-1 rounded-full border-2 border-[#28352f] bg-[#2f795d] px-3 py-1.5 text-xs font-semibold text-white shadow-[2px_2px_0_#28352f] hover:bg-[#286b52]"
+      : "flex items-center gap-1 rounded-full bg-accent px-3 py-1.5 text-xs font-medium text-white hover:opacity-90";
 
   return (
     <div className={cardClassName} style={anchorStyle ?? undefined}>
       {leaving ? (
-        <p className={`flex items-center gap-2 text-sm ${extendPanel ? extendPanel.body : "text-foreground/70"}`}>
+        <p className={`flex items-center gap-2 text-sm ${extendPanel ? extendPanel.body : gameMode ? "text-[#38443f]" : "text-foreground/70"}`}>
           <span className="size-3.5 shrink-0 animate-spin rounded-full border-2 border-current/30 border-t-current" />
           곧 다음 화면으로 이동해요...
         </p>
