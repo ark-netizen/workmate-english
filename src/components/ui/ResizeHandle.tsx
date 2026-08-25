@@ -10,6 +10,15 @@ export function ResizeHandle({
   className?: string;
 }) {
   const isX = axis === "x";
+  // 세로 크기 조절 바는 부모 섹션의 경계선과 겹치면 두 줄처럼 보여 산만해진다.
+  // 위치/여백 관련 커스텀 클래스는 유지하되, y축 핸들에 추가된 border 계열만 제거한다.
+  const handleClassName = isX
+    ? className
+    : className
+        .split(/\s+/)
+        .filter((token) => !["border-b", "border-t", "border-border"].includes(token))
+        .join(" ");
+
   return (
     <div
       role="separator"
@@ -17,7 +26,7 @@ export function ResizeHandle({
       onMouseDown={onMouseDown}
       onDoubleClick={onDoubleClick}
       title="드래그해서 크기 조절 (더블클릭: 원래 크기)"
-      className={`group relative shrink-0 select-none ${isX ? "w-3 cursor-col-resize" : "h-3 cursor-row-resize"} ${className}`}
+      className={`group relative shrink-0 select-none ${isX ? "w-3 cursor-col-resize" : "h-3 cursor-row-resize"} ${handleClassName}`}
     >
       {isX ? (
         <div className="absolute left-1/2 top-1/2 flex h-9 w-3 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-border/80 bg-surface/95 shadow-sm transition-colors group-hover:border-accent/55 group-hover:bg-surface group-active:border-accent">
