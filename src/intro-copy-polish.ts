@@ -3,23 +3,23 @@ let introCopyObserver: MutationObserver | null = null;
 const processCopy = [
   {
     title: "동료·상사·거래처, 다른 표현",
-    body: '같은 상황도 상대에 따라<br class="hidden sm:block"/>캐주얼·격식·보수적 톤을 구분해 배우고,<br class="hidden sm:block"/>대화가 쌓일수록 더 고도화돼요.',
+    body: "같은 상황도 상대에 따라 캐주얼·격식·보수적 톤을 구분해 배우고, 대화가 쌓일수록 더 고도화돼요.",
   },
   {
     title: "내 업종·직무 맞춤 시나리오",
-    body: '업종·직무만 입력하면<br class="hidden sm:block"/>나만의 동료·상사·거래처가 매일 자동으로 생겨요.',
+    body: "업종·직무만 입력하면 나만의 동료·상사·거래처가 매일 자동으로 생겨요.",
   },
   {
-    title: '웹·카카오톡으로<br class="hidden sm:block"/>놓치지 않는 알림',
-    body: '새 업무 연락과 리마인더를<br class="hidden sm:block"/>웹과 카카오톡으로 받을 수 있어요.<br class="hidden sm:block"/>바쁠 때는 \'외근 중\'으로 미루면 30분 뒤 다시 알려드려요.',
+    title: "웹·카카오톡으로 놓치지 않는 알림",
+    body: "새 업무 연락과 리마인더를 웹과 카카오톡으로 받을 수 있어요. 바쁠 때는 '외근 중'으로 미루면 30분 뒤 다시 알려드려요.",
   },
   {
     title: "하루·주간·월간 리포트",
-    body: '퇴근 리포트부터<br class="hidden sm:block"/>매주·매달 성장 흐름까지 정리해드려요.',
+    body: "퇴근 리포트부터 매주·매달 성장 흐름까지 정리해드려요.",
   },
   {
-    title: '스트레스 받을 때는,<br class="hidden sm:block"/>고함항아리에 소리질러봐요!',
-    body: '영어를 배우는 걸 넘어서,<br class="hidden sm:block"/>영어로 솔직하게 털어놓을 수 있는 스트레스 공유 동료가 생겨요.<br class="hidden sm:block"/>바쁜 하루가 감지되면 먼저 위로와 표현을 건네고,<br class="hidden sm:block"/>내가 먼저 말을 걸 수도 있어요.',
+    title: "스트레스 받을 때는, 고함항아리에 소리질러봐요!",
+    body: "영어를 배우는 걸 넘어서, 영어로 솔직하게 털어놓을 수 있는 스트레스 공유 동료가 생겨요. 바쁜 하루가 감지되면 먼저 위로와 표현을 건네고, 내가 먼저 말을 걸 수도 있어요.",
   },
 ] as const;
 
@@ -40,8 +40,8 @@ function polishProcessCopy(page: HTMLElement) {
 
     if (!title || !body) return;
 
-    title.innerHTML = copy.title;
-    body.innerHTML = copy.body;
+    title.textContent = copy.title;
+    body.textContent = copy.body;
     card.dataset.processCopyPolished = "true";
   });
 }
