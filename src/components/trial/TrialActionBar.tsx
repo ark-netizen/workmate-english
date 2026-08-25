@@ -56,16 +56,16 @@ export function TrialActionBar({
   return (
     <div
       ref={barRef}
-      className={`fixed inset-x-4 top-1/2 z-30 mx-auto max-w-sm -translate-y-1/2 rounded-xl p-4 transition-[transform,opacity] duration-300 ease-out md:inset-x-auto md:right-6 md:w-80 ${
+      className={`fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+76px)] top-auto z-30 mx-auto max-w-none rounded-xl p-3 transition-[transform,opacity] duration-300 ease-out md:inset-x-auto md:bottom-auto md:right-6 md:top-1/2 md:w-80 md:max-w-sm md:-translate-y-1/2 md:p-4 ${
         isBusinessMode
           ? "border-2 border-[#1a56ff] bg-[#eef4ff] shadow-[0_18px_45px_rgba(26,86,255,0.24)]"
           : "border-2 border-[#28352f] bg-[#fffaf0] text-[#28352f] shadow-[4px_4px_0_#28352f]"
       } ${entered ? "translate-x-0 opacity-100" : "translate-x-6 opacity-0"}`}
     >
       {showNudge && (
-        <div className="absolute inset-x-0 -top-10 flex justify-center px-4">
+        <div className="absolute inset-x-0 -top-10 flex justify-center px-2 sm:px-4">
           <div
-            className={`animate-bounce rounded-full px-4 py-2 text-xs font-medium text-white shadow-lg ${
+            className={`animate-bounce rounded-full px-3 py-2 text-center text-[11px] font-medium text-white shadow-lg sm:px-4 sm:text-xs ${
               isBusinessMode ? "bg-[#1a56ff]" : "bg-[#2f795d]"
             }`}
           >
@@ -74,7 +74,7 @@ export function TrialActionBar({
         </div>
       )}
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <span
           className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${
             isBusinessMode
@@ -85,11 +85,11 @@ export function TrialActionBar({
           체험판
         </span>
         {dotsTotal != null && (
-          <div className="flex shrink-0 items-center gap-1">
+          <div className="flex min-w-0 items-center gap-1">
             {Array.from({ length: dotsTotal }).map((_, i) => (
               <span
                 key={i}
-                className={`h-1.5 w-5 rounded-full ${
+                className={`h-1.5 w-4 rounded-full sm:w-5 ${
                   i < (dotsFilled ?? 0)
                     ? isBusinessMode
                       ? "bg-[#1a56ff]"
@@ -105,14 +105,14 @@ export function TrialActionBar({
       </div>
 
       <p
-        className={`mt-2.5 text-sm leading-relaxed ${
+        className={`mt-2 text-[13px] leading-relaxed sm:mt-2.5 sm:text-sm ${
           isBusinessMode ? "font-medium text-[#17345f]" : "font-medium text-[#38443f]"
         }`}
       >
         {message}
       </p>
 
-      <div className="mt-3 flex items-center justify-end gap-1.5">
+      <div className="mt-3 flex flex-wrap items-center justify-end gap-1.5">
         <button
           type="button"
           onClick={onEnd}
@@ -135,14 +135,14 @@ export function TrialActionBar({
             type="button"
             onClick={onPrimary}
             disabled={primaryDisabled}
-            className={`flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-60 ${
+            className={`flex min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-60 sm:flex-none ${
               isBusinessMode
                 ? "bg-[#1a56ff]"
                 : "border-2 border-[#28352f] bg-[#2f795d] shadow-[2px_2px_0_#28352f]"
             }`}
           >
-            {primaryLabel}
-            <ArrowRight className="size-3.5" strokeWidth={2.5} />
+            <span className="min-w-0 truncate">{primaryLabel}</span>
+            <ArrowRight className="size-3.5 shrink-0" strokeWidth={2.5} />
           </button>
         )}
       </div>
