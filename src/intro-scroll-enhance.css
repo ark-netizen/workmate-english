@@ -49,22 +49,23 @@
     width: 100%;
   }
 
-  /* WORK PROCESS 카드의 가운데 빈 공간을 줄인다.
-     텍스트 영역은 조금 좁히고 실제 UI 예시 영역을 넓혀 두 덩어리가 더 붙어 보이게 한다. */
+  /* WORK PROCESS 카드: 실제로 비어 보이는 중앙 공간을 확실히 줄인다.
+     이전 45:55는 텍스트 칼럼 자체가 여전히 넓어 변화가 거의 안 보였기 때문에
+     텍스트 37 / 예시 UI 63 비율로 조정하고 실제 column gap도 줄인다. */
   .intro-game .intro-game-feature-window > div:last-child {
-    grid-template-columns: minmax(0, 45fr) minmax(0, 55fr) !important;
-    column-gap: 24px !important;
+    grid-template-columns: minmax(260px, 37fr) minmax(0, 63fr) !important;
+    column-gap: 16px !important;
   }
 
   .intro-business .intro-business-features > div:first-child > div:nth-child(odd) .intro-business-feature-card {
-    grid-template-columns: minmax(0, 45fr) minmax(0, 55fr) !important;
-    column-gap: 24px !important;
+    grid-template-columns: minmax(260px, 37fr) minmax(0, 63fr) !important;
+    column-gap: 16px !important;
   }
 
-  /* 비즈니스 모드의 짝수 카드는 좌우가 뒤집히므로 UI 예시 쪽을 동일하게 넓힌다. */
+  /* 비즈니스 모드 짝수 카드는 좌우 순서가 뒤집혀 있으므로 예시 UI가 동일하게 63을 차지한다. */
   .intro-business .intro-business-features > div:first-child > div:nth-child(even) .intro-business-feature-card {
-    grid-template-columns: minmax(0, 55fr) minmax(0, 45fr) !important;
-    column-gap: 24px !important;
+    grid-template-columns: minmax(0, 63fr) minmax(260px, 37fr) !important;
+    column-gap: 16px !important;
   }
 
   /* 1분 체험/후기는 한 화면에 내용이 안정적으로 담기되 과한 빈 공간은 줄인다. */
@@ -86,14 +87,29 @@
     width: 100%;
   }
 
-  /* 마지막 CTA는 풀스크린으로 늘리지 않는다. */
+  /* 마지막 CTA는 풀스크린으로 늘리지 않는다.
+     flex-column의 기본 align-items: stretch 때문에 로그인 버튼이 가로 전체로 늘어나던 것도 막는다. */
   .intro-final-cta {
     box-sizing: border-box;
     min-height: 360px;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
     scroll-margin-top: var(--intro-nav-offset, 72px);
+  }
+
+  .intro-final-cta .intro-final-button {
+    width: fit-content !important;
+    min-width: 190px !important;
+    max-width: min(280px, calc(100% - 32px)) !important;
+    align-self: center !important;
+    padding-inline: 26px !important;
+  }
+
+  .intro-game .intro-final-cta .intro-final-button {
+    border-color: #244f3d !important;
+    box-shadow: 4px 4px 0 #1f1f1f !important;
   }
 }
 
@@ -148,6 +164,26 @@
 
   .intro-hero-copy-secondary {
     margin-top: 8px;
+  }
+
+  /* 모바일에서도 마지막 로그인 버튼은 콘텐츠 폭만 사용한다. */
+  .intro-final-cta {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+
+  .intro-final-cta .intro-final-button {
+    width: auto !important;
+    min-width: 176px !important;
+    max-width: calc(100% - 32px) !important;
+    align-self: center !important;
+    padding-inline: 22px !important;
+  }
+
+  .intro-game .intro-final-cta .intro-final-button {
+    border-color: #244f3d !important;
+    box-shadow: 4px 4px 0 #1f1f1f !important;
   }
 
   /* 실제 터치 모바일에서는 오른쪽 점이 콘텐츠를 가리지 않게 숨긴다. */
