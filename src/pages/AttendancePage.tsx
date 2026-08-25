@@ -64,21 +64,19 @@ export function AttendancePage() {
   if (isTrial) return <TrialLockedPage title="출석" />;
 
   return (
-    <div className="mx-auto max-w-[1230px] [zoom:1.1] space-y-6 px-4 py-6 md:px-8 md:py-8">
+    <div className="mx-auto max-w-[1180px] space-y-5 px-4 py-6 md:px-8 md:py-7">
       <div>
         <h1 className="text-lg font-semibold">출석</h1>
         <p className="mt-1 text-sm text-foreground/60">근태 기록과 마일스톤을 확인하세요.</p>
       </div>
 
-      <section className="rounded-xl border border-border bg-surface p-5">
+      <section className="rounded-xl border border-border bg-surface p-4">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           <StatTile label="현재 연속 출석" value={`${streak}일`} />
           <StatTile label="누적 출석" value={`${totalAttended}일`} />
           <StatTile
             label="다음 마일스톤"
-            value={
-              milestones.find((m) => !m.achieved)?.label ?? "모든 마일스톤 달성"
-            }
+            value={milestones.find((m) => !m.achieved)?.label ?? "모든 마일스톤 달성"}
           />
         </div>
       </section>
@@ -137,16 +135,17 @@ export function AttendancePage() {
           불러오는 중...
         </div>
       ) : (
-        <AttendanceCalendar
-          year={cursor.year}
-          month={cursor.month}
-          days={history}
-          onPrevMonth={goToPrevMonth}
-          onNextMonth={goToNextMonth}
-        />
+        <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[380px_minmax(0,1fr)]">
+          <AttendanceCalendar
+            year={cursor.year}
+            month={cursor.month}
+            days={history}
+            onPrevMonth={goToPrevMonth}
+            onNextMonth={goToNextMonth}
+          />
+          <MilestoneBadges milestones={milestones} />
+        </div>
       )}
-
-      <MilestoneBadges milestones={milestones} />
     </div>
   );
 }
