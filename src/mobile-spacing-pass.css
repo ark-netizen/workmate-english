@@ -1,0 +1,261 @@
+/* Mobile spacing pass — 1분 체험 미리보기와 Intro의 표/카드형 UI 여백을 일관되게 정리한다. */
+@media (max-width: 767px) {
+  /* Intro: 표처럼 보이는 시스템/프로세스 블록이 화면 가장자리에 붙지 않도록 공통 안전 여백. */
+  .intro-game .hero > .hero-system {
+    width: calc(100% - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    margin: 10px auto 0 !important;
+  }
+
+  .intro-page .intro-features-section {
+    padding-inline: 14px !important;
+  }
+
+  .intro-page .intro-game-feature-window,
+  .intro-page .intro-business-feature-card {
+    margin-inline: auto !important;
+  }
+
+  .intro-page .intro-game-feature-window > div:last-child,
+  .intro-business .intro-business-feature-card {
+    padding: 20px 16px !important;
+  }
+
+  .intro-page .intro-trial-showcase {
+    padding-inline: 14px !important;
+  }
+
+  .intro-page .intro-trial-flow {
+    gap: 14px !important;
+    padding: 18px 14px !important;
+  }
+
+  .intro-page .intro-trial-flow > div {
+    padding: 14px 15px !important;
+  }
+
+  /* 모바일 1분 체험: 화면 전체 outer spacing. */
+  .mtp-main {
+    padding: 14px 12px 18px !important;
+  }
+
+  .mtp-intro,
+  .mtp-tabs,
+  .mtp-device,
+  .mtp-swipe-hint,
+  .mtp-dots {
+    width: 100%;
+    max-width: 430px;
+  }
+
+  .mtp-details {
+    gap: 7px !important;
+    margin-top: 10px !important;
+    padding: 11px 12px !important;
+  }
+
+  .mtp-tabs {
+    margin: 12px auto 10px !important;
+    gap: 5px !important;
+    padding: 1px 1px 3px !important;
+  }
+
+  .mtp-tabs button {
+    padding: 7px 10px !important;
+  }
+
+  /* 모든 미리보기 화면의 기본 여백을 12~14px 리듬으로 통일. */
+  .mtp-page {
+    gap: 12px !important;
+    padding: 14px !important;
+  }
+
+  .mtp-grid-2,
+  .mtp-grid-3 {
+    gap: 9px !important;
+  }
+
+  .mtp-stat,
+  .mtp-grid-3 > div {
+    min-height: 58px;
+    padding: 10px 8px !important;
+  }
+
+  .mtp-card,
+  .mtp-mail-card,
+  .mtp-reply-card,
+  .mtp-report-headline {
+    padding: 12px 13px !important;
+  }
+
+  .mtp-section-title,
+  .mtp-reply-title {
+    margin-bottom: 9px !important;
+  }
+
+  .mtp-contact {
+    gap: 9px !important;
+    padding: 9px 0 !important;
+  }
+
+  /* Messenger / Email도 상하 여백이 다른 화면과 같은 리듬을 갖게 한다. */
+  .mtp-chat {
+    padding: 0 !important;
+  }
+
+  .mtp-chat-body {
+    gap: 11px !important;
+    padding: 14px 13px 12px !important;
+  }
+
+  .mtp-hint-open {
+    padding: 9px 10px !important;
+  }
+
+  .mtp-compose {
+    padding: 10px 11px !important;
+  }
+
+  .mtp-reply-card > p {
+    margin-top: 10px !important;
+    padding-top: 10px !important;
+  }
+
+  /* 리포트: 표/요약 블록이 너무 붙어 보이지 않도록 행·셀 간격 통일. */
+  .mtp-report-headline {
+    gap: 5px !important;
+  }
+
+  .mtp-report-section {
+    padding: 12px 13px !important;
+  }
+
+  .mtp-report-index {
+    gap: 8px !important;
+    padding-bottom: 7px !important;
+  }
+
+  .mtp-report-item,
+  .mtp-correction {
+    padding: 9px 0 3px !important;
+  }
+
+  .mtp-key-grid {
+    gap: 8px !important;
+    padding-top: 9px !important;
+  }
+
+  .mtp-key-grid > div {
+    min-height: 50px;
+    padding: 8px !important;
+  }
+
+  .mtp-tone-row {
+    grid-template-columns: 40px minmax(0, 1fr) auto !important;
+    gap: 7px !important;
+    padding: 8px 0 !important;
+  }
+
+  /* 출석: 캘린더/통계/마일스톤의 바깥과 안쪽 여백을 동일하게. */
+  .mtp-attendance .mtp-grid-3 > div {
+    min-height: 62px;
+  }
+
+  .mtp-calendar-card {
+    padding: 12px !important;
+  }
+
+  .mtp-calendar-head {
+    margin: 4px 0 6px !important;
+  }
+
+  .mtp-calendar {
+    row-gap: 3px !important;
+  }
+
+  .mtp-calendar span {
+    min-height: 27px !important;
+  }
+
+  .mtp-calendar-legend {
+    gap: 10px !important;
+    margin-top: 9px !important;
+    padding-top: 8px !important;
+  }
+
+  .mtp-badges {
+    gap: 6px !important;
+  }
+
+  .mtp-badges span {
+    padding: 5px 8px !important;
+  }
+
+  /* 승급: 실제 아바타가 들어간 표형 라인업에 숨 쉴 공간을 추가. */
+  .mtp-promotion .mtp-card {
+    padding: 13px !important;
+  }
+
+  .mtp-rank-line {
+    gap: 6px !important;
+    padding: 8px 0 5px !important;
+  }
+
+  .mtp-rank-line.second {
+    padding-top: 4px !important;
+  }
+
+  .mtp-rank-line > div {
+    gap: 4px !important;
+  }
+
+  .mtp-rank-caption {
+    margin-top: 9px !important;
+  }
+
+  .mtp-review-title {
+    margin-bottom: 8px !important;
+  }
+
+  .mtp-review-lock .mtp-progress {
+    margin-top: 9px;
+  }
+
+  .mtp-promotion-preview button {
+    margin-top: 9px !important;
+  }
+
+  .mtp-rank-note {
+    gap: 4px !important;
+    padding: 10px 11px !important;
+  }
+}
+
+@media (max-width: 374px) {
+  .mtp-main {
+    padding-inline: 10px !important;
+  }
+
+  .mtp-page {
+    gap: 10px !important;
+    padding: 11px !important;
+  }
+
+  .mtp-card,
+  .mtp-mail-card,
+  .mtp-reply-card,
+  .mtp-report-headline,
+  .mtp-report-section,
+  .mtp-promotion .mtp-card {
+    padding-inline: 10px !important;
+  }
+
+  .mtp-grid-2,
+  .mtp-grid-3 {
+    gap: 6px !important;
+  }
+
+  .mtp-rank-line {
+    gap: 3px !important;
+  }
+}
