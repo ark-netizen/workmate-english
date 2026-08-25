@@ -478,12 +478,12 @@ function FeatureWindowScrollList({ items }: { items: typeof features }) {
 
 
 const heroSystemItems = [
-  ["MESSENGER · EMAIL", "실제 업무처럼 답장하고 메일 쓰기"],
   ["RELATIONSHIP TONE", "동료 · 상사 · 거래처별 표현"],
   ["3-STEP HINT", "단어 → 문장 뼈대 → 예시 답안"],
   ["SOLAR FEEDBACK", "문법 · 표현 · 관계별 뉘앙스 첨삭"],
   ["AWAY MODE", "외근 중이면 30분 뒤 다시 알림"],
   ["WORK REPORT", "퇴근 리포트부터 매주·매달 성장 흐름까지 정리"],
+  ["KAKAO ALERT", "새 업무 알림과 리마인더를 카카오톡으로 받기"],
 ] as const;
 
 // "Solar"/"SOLAR"가 들어간 문구에서 그 부분만 형광펜 표시로 강조
