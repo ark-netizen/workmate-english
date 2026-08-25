@@ -18,7 +18,8 @@ export const RANK_SUBLABELS: Record<string, string> = {
 const FRAME_WIDTH = 140;
 const FRAME_HEIGHT = 190;
 const SPRITE_WIDTH = FRAME_WIDTH * RANKS.length;
-const SPRITE_PATH = "/characters/rank-otters.webp";
+// GitHub Pages는 /workmate-english/ 같은 base path 아래 배포되므로 사이트 루트(/characters/...)를 쓰면 404가 난다.
+const SPRITE_PATH = `${import.meta.env.BASE_URL}characters/rank-otters.webp`;
 
 function OtterRankImage({ index }: { index: number }) {
   return (
