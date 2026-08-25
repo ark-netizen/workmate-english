@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import * as api from "@/lib/api";
 import { startFreshGuestTrial, hasRealSession } from "@/lib/session";
 import { AppShell } from "@/components/shell/AppShell";
+import { CopyrightNotice } from "@/components/ui/CopyrightNotice";
 import { BusinessModeProvider } from "@/context/BusinessModeContext";
 import { WorkdayProvider } from "@/context/WorkdayContext";
 import { useWorkday } from "@/context/useWorkday";
@@ -28,6 +30,17 @@ import { EvaluationPage } from "@/pages/EvaluationPage";
 import { SettingsPage } from "@/pages/SettingsPage";
 import { NoticePage } from "@/pages/NoticePage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
+
+function StandalonePage({ children }: { children: ReactNode }) {
+  return (
+    <div className="flex min-h-screen flex-col">
+      <div className="flex-1">{children}</div>
+      <footer className="border-t border-border/60 bg-background px-4 py-4 text-center">
+        <CopyrightNotice className="text-[10px] leading-4 text-foreground/40" />
+      </footer>
+    </div>
+  );
+}
 
 function AppRoutes() {
   const location = useLocation();
@@ -88,7 +101,11 @@ function AppRoutes() {
 
   // 로그인/온보딩 상태와 무관하게 항상 열람 가능해야 함
   if (location.pathname === "/privacy") {
-    return <PrivacyPolicyPage />;
+    return (
+      <StandalonePage>
+        <PrivacyPolicyPage />
+      </StandalonePage>
+    );
   }
   if (location.pathname === "/admin") {
     return <AdminPage />;
@@ -119,19 +136,21 @@ function AppRoutes() {
       return <Navigate to="/intro" replace />;
     }
     return (
-      <IntroPage
-        onContinueWithoutLogin={async () => {
-          await startFreshGuestTrial();
-          await refresh();
-          setEntered(true);
-        }}
-        onLoggedIn={async () => {
-          // refresh()와 관리자 여부 확인은 서로 결과가 필요 없는 독립적인 요청이라
-          // 병렬로 실행 — 순서대로 기다리면 그만큼 전환이 버벅거려 보임.
-          const [, isAdmin] = await Promise.all([refresh(), redirectIfAdmin()]);
-          if (!isAdmin) setEntered(true);
-        }}
-      />
+      <StandalonePage>
+        <IntroPage
+          onContinueWithoutLogin={async () => {
+            await startFreshGuestTrial();
+            await refresh();
+            setEntered(true);
+          }}
+          onLoggedIn={async () => {
+            // refresh()와 관리자 여부 확인은 서로 결과가 필요 없는 독립적인 요청이라
+            // 병렬로 실행 — 순서대로 기다리면 그만큼 전환이 버벅거려 보임.
+            const [, isAdmin] = await Promise.all([refresh(), redirectIfAdmin()]);
+            if (!isAdmin) setEntered(true);
+          }}
+        />
+      </StandalonePage>
     );
   }
 
@@ -164,7 +183,14 @@ function AppRoutes() {
   if (needsOnboarding) {
     return (
       <Routes>
-        <Route path="*" element={<OnboardingPage />} />
+        <Route
+          path="*"
+          element={
+            <StandalonePage>
+              <OnboardingPage />
+            </StandalonePage>
+          }
+        />
       </Routes>
     );
   }
