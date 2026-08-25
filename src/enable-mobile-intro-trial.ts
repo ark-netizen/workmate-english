@@ -51,7 +51,7 @@ const steps: PreviewStep[] = [
     title: "메신저에서는 짧고 자연스럽게 답장해요",
     subtitle: "바로 정답을 보여주는 대신 한국어 → 단어 → 문장 뼈대 순으로 필요한 만큼 힌트를 열 수 있어요.",
     points: [
-      "답장을 보내면 Solar가 문법만 보는 게 아니라 ‘동료에게 이 정도 톤이 자연스러운지’까지 같이 피드백해요.",
+      "한국어·단어·문장 뼈대 힌트를 단계별로 열어보면서도 마지막 문장은 직접 완성하도록 구성돼요.",
       "바로 답하기 어려울 때는 외근 모드로 미뤄 실제 업무처럼 30분 뒤 다시 알림을 받을 수 있어요.",
     ],
     screen: `
@@ -61,7 +61,6 @@ const steps: PreviewStep[] = [
           <div class="mtp-bubble theirs"><small>Jake · 오전 10:30</small><p>Can you check the new build by 3? 🙏</p></div>
           <div class="mtp-hint-open"><b>2단계 · 단어 힌트</b><span>check · new build · before 3 · share feedback</span></div>
           <div class="mtp-bubble mine"><p>Sure! I’ll check it and share feedback before 3.</p><small>오전 10:32</small></div>
-          <div class="mtp-feedback"><b>SOLAR FEEDBACK</b><span><strong>좋아요.</strong> 동료에게 자연스럽고 간결한 표현이에요. “share feedback”도 협업 상황에서 잘 어울려요.</span></div>
         </div>
         <div class="mtp-compose">
           <div class="mtp-hints"><span>한국어 힌트</span><span>단어 힌트</span><span>🔒 문장 힌트</span></div>
@@ -76,7 +75,7 @@ const steps: PreviewStep[] = [
     subtitle: "메신저와 같은 상황이라도 제목·인사·본문·마무리까지 업무 메일 문맥에 맞춰 연습해요.",
     points: [
       "상사·거래처 메일에서는 단순 번역보다 요청 강도, 완곡함, 마감 표현처럼 관계에 따른 뉘앙스를 확인해요.",
-      "작성 중에도 단어·문장 뼈대 힌트를 사용할 수 있고, 보낸 뒤에는 실제 작성문을 기준으로 피드백이 남아요.",
+      "작성 중에는 단어·문장 뼈대 힌트를 사용할 수 있고, 내가 보낸 문장은 퇴근 후 리포트에서 다시 확인해요.",
     ],
     screen: `
       <div class="mtp-appbar"><b>Email</b><span>Ellen · 상사</span></div>
@@ -92,7 +91,6 @@ const steps: PreviewStep[] = [
           <p>Hi Ellen,<br><br>I’ve reviewed the proposal. I’ll send my comments by this afternoon.<br><br>Best regards,</p>
           <button type="button" tabindex="-1">보내기</button>
         </section>
-        <div class="mtp-feedback"><b>SOLAR FEEDBACK</b><span>상사에게 보고하는 메일로 자연스러워요. 완료 사실과 전달 시점을 명확하게 분리했어요.</span></div>
       </div>
     `,
   },
