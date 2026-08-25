@@ -37,6 +37,8 @@ export function QaPanelPage() {
   const [backfillingDays, setBackfillingDays] = useState<number | null>(null);
   const [advancingDay, setAdvancingDay] = useState(false);
   const [resettingAccount, setResettingAccount] = useState(false);
+  const [testingKakaoInactive, setTestingKakaoInactive] = useState(false);
+  const [kakaoTestResult, setKakaoTestResult] = useState<string | null>(null);
 
   const handleDeliver = async (key: DeliverFilterKey, filter?: { role?: "colleague" | "manager" | "client"; kind?: "review" }) => {
     if (deliveringKey) return;
@@ -96,6 +98,18 @@ export function QaPanelPage() {
       notifyQaAction();
     } finally {
       setAdvancingDay(false);
+    }
+  };
+
+  const handleTestKakaoInactive = async () => {
+    if (testingKakaoInactive) return;
+    setTestingKakaoInactive(true);
+    setKakaoTestResult(null);
+    try {
+      const result = await api.devTestKakaoInactive();
+      setKakaoTestResult(result.sent ? "발송됨" : `안 보냄 (${result.reason || "알 수 없음"})`);
+    } finally {
+      setTestingKakaoInactive(false);
     }
   };
 
@@ -165,6 +179,16 @@ export function QaPanelPage() {
         >
           {triggeringVent ? "처리 중..." : "고함항아리 바로 받기"}
         </button>
+        <button
+          type="button"
+          onClick={handleTestKakaoInactive}
+          disabled={testingKakaoInactive}
+          title="48시간 무접속 조건 체크 없이, 카톡 알림 트리거 2(무접속 리마인더) 문구를 바로 테스트 발송합니다"
+          className="w-full rounded-md border border-dashed border-yellow-400 px-2.5 py-1.5 text-left text-xs font-medium text-yellow-700 hover:bg-yellow-50 disabled:opacity-50"
+        >
+          {testingKakaoInactive ? "발송 중..." : "카톡 무접속 알림 테스트 발송"}
+        </button>
+        {kakaoTestResult && <p className="px-0.5 text-[10px] text-foreground/50">→ {kakaoTestResult}</p>}
       </div>
       {SHOW_DESTRUCTIVE_QA_TOOLS && (
         <>

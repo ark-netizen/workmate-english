@@ -43,6 +43,8 @@ function QaControlPanel({
   advancingDay,
   onResetAccount,
   resettingAccount,
+  onTestKakaoInactive,
+  testingKakaoInactive,
 }: {
   onDeliverNext: () => void;
   deliveringNext: boolean;
@@ -54,6 +56,8 @@ function QaControlPanel({
   advancingDay: boolean;
   onResetAccount: () => void;
   resettingAccount: boolean;
+  onTestKakaoInactive: () => void;
+  testingKakaoInactive: boolean;
 }) {
   const [collapsed, setCollapsed] = useState(false);
   const [autoAdvance, setAutoAdvanceState] = useState(() => isAutoAdvanceEnabled());
@@ -121,6 +125,15 @@ function QaControlPanel({
         className="w-full rounded-md border border-dashed border-amber-400 px-2.5 py-1.5 text-left text-xs font-medium text-amber-600 hover:bg-amber-50 disabled:opacity-50"
       >
         {deliveringNext ? "받는 중..." : "연락 바로 받기"}
+      </button>
+      <button
+        type="button"
+        onClick={onTestKakaoInactive}
+        disabled={testingKakaoInactive}
+        title="48시간 무접속 조건 체크 없이, 카톡 알림 트리거 2(무접속 리마인더) 문구를 바로 테스트 발송합니다"
+        className="w-full rounded-md border border-dashed border-yellow-400 px-2.5 py-1.5 text-left text-xs font-medium text-yellow-700 hover:bg-yellow-50 disabled:opacity-50"
+      >
+        {testingKakaoInactive ? "발송 중..." : "카톡 무접속 알림 테스트"}
       </button>
       {SHOW_DESTRUCTIVE_QA_TOOLS && (
         <>
@@ -238,6 +251,7 @@ export function HomePage() {
   const [backfillingDays, setBackfillingDays] = useState<number | null>(null);
   const [advancingDay, setAdvancingDay] = useState(false);
   const [resettingAccount, setResettingAccount] = useState(false);
+  const [testingKakaoInactive, setTestingKakaoInactive] = useState(false);
   const [promotion, setPromotion] = useState<PromotionStatus | null>(null);
   const [isTrial, setIsTrial] = useState<boolean | null>(null);
 
@@ -334,6 +348,17 @@ export function HomePage() {
       await refresh();
     } finally {
       setResettingAccount(false);
+    }
+  };
+
+  const handleTestKakaoInactive = async () => {
+    if (testingKakaoInactive) return;
+    setTestingKakaoInactive(true);
+    try {
+      const result = await api.devTestKakaoInactive();
+      window.alert(result.sent ? "카톡으로 발송됐어요." : `발송 안 됨 (${result.reason || "알 수 없음"})`);
+    } finally {
+      setTestingKakaoInactive(false);
     }
   };
 
@@ -612,6 +637,8 @@ export function HomePage() {
         advancingDay={advancingDay}
         onResetAccount={handleResetAccount}
         resettingAccount={resettingAccount}
+        onTestKakaoInactive={handleTestKakaoInactive}
+        testingKakaoInactive={testingKakaoInactive}
       />
 
       <ConfirmDialog

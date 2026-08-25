@@ -7,6 +7,27 @@ import { sendKakaoToUser } from './kakao.js'
 
 // 카카오 "나에게 보내기"는 웹 푸시와 달리 상대경로가 아니라 완전한 URL이 있어야 링크 버튼이 동작한다
 const APP_BASE_URL = process.env.APP_BASE_URL || 'https://www.enmate.co.kr'
+
+// 카카오 나에게 보내기 text 템플릿은 길이 제한이 있어서, 건수만이 아니라 실제 표현도 보여주되
+// 각 항목은 1~2개로 추리고 전체 길이도 한 번 더 잘라낸다(안전망)
+const KAKAO_TEXT_MAX = 300
+function truncate(s, max) {
+  if (!s) return s
+  return s.length > max ? `${s.slice(0, max - 1)}…` : s
+}
+function buildKakaoReportText(report) {
+  const good = report?.good_expressions || []
+  const corrections = report?.corrections || []
+  const memorize = report?.recommended_expressions || []
+  const lines = [`[부캐영어] 오늘의 업무일지가 도착했어요 📋`]
+  lines.push(`잘한 표현 ${good.length}건 · 교정 ${corrections.length}건 · 꼭 기억할 표현 ${memorize.length}건`)
+  if (good[0]?.text) lines.push(`✅ "${truncate(good[0].text, 60)}"`)
+  if (memorize.length) {
+    lines.push('📌 꼭 기억할 표현')
+    memorize.slice(0, 2).forEach((m) => lines.push(`- ${truncate(m.en, 40)} (${truncate(m.ko, 30)})`))
+  }
+  return truncate(lines.join('\n'), KAKAO_TEXT_MAX)
+}
 import { getProfile } from './profile.js'
 import { getActiveSurveyForUser } from './support.js'
 import { TRIAL_SCENARIO, TRIAL_CHARACTERS, TRIAL_REPLY, TRIAL_DAILY_REPORT } from './trialContent.js'
@@ -1155,11 +1176,8 @@ export async function closeWorkday(workdayId) {
 
   // 카톡 알림 트리거 3(리포트 완성) — 하루 1번뿐인 이벤트라 무응답 대기 없이 웹 푸시와 동시 발송,
   // 야간 조용시간이면 sendKakaoToUser 내부에서 스스로 건너뛴다(재시도 큐는 아직 없음 — 그 회차는 건너뜀)
-  const goodCount = report?.good_expressions?.length ?? 0
-  const correctionCount = report?.corrections?.length ?? 0
-  const memorizeCount = report?.recommended_expressions?.length ?? 0
   await sendKakaoToUser(workday.user_id, {
-    text: `[부캐영어] 오늘의 업무일지가 도착했어요 📋\n잘한 표현 ${goodCount}건 · 교정 ${correctionCount}건 · 꼭 기억할 표현 ${memorizeCount}건`,
+    text: buildKakaoReportText(report),
     url: `${APP_BASE_URL}/reports`,
     buttonTitle: '전체 리포트 보기',
   })
@@ -1662,4 +1680,14 @@ export async function devAdvanceToNextDay(userId) {
 
   unwrap(await sb.from('workdays').update({ work_date: pastDate }).eq('id', workday.id))
   return { advanced: true, movedTo: pastDate }
+}
+
+// [개발용 QA 도구] 카톡 트리거 2(48시간 무접속 리마인더)를 실제로 이틀을 기다리지 않고 바로 테스트 발송.
+// 정식 배치(크론)가 아직 없어서, 조건 체크 없이 곧장 보낸다 — 그 배치를 만들 때도 이 문구는 그대로 재사용
+export async function devSendKakaoInactiveReminder(userId) {
+  return sendKakaoToUser(userId, {
+    text: '[부캐영어] 이틀째 소식이 없으시네요 🙂 오늘 하루 1분만 투자해서 영어로 출근해보세요!',
+    url: `${APP_BASE_URL}/`,
+    buttonTitle: '지금 출근하기',
+  })
 }

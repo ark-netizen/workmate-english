@@ -3,14 +3,26 @@
 // body에 { advanceDay: true }만 있으면 [개발용 QA] 오늘을 마감하고 다음 접속 시 새로운 하루로 취급되게 함
 // body에 { resetAccount: true }만 있으면 [개발용 QA] 이 계정의 진행상황을 전부 지우고 온보딩부터 다시 시작
 import { requireUser } from '../../server/auth.js'
-import { closeWorkday, devResetToday, devAdvanceToNextDay, resetAccountProgress } from '../../server/workday.js'
+import {
+  closeWorkday,
+  devResetToday,
+  devAdvanceToNextDay,
+  devSendKakaoInactiveReminder,
+  resetAccountProgress,
+} from '../../server/workday.js'
 import { admin } from '../../server/db.js'
 import { withErrors } from '../../server/http.js'
 import { sendPushToUser } from '../../server/push.js'
 
 export default withErrors('POST', async (req, res) => {
   const userId = await requireUser(req)
-  const { workdayId, reset, advanceDay, resetAccount } = req.body || {}
+  const { workdayId, reset, advanceDay, resetAccount, testKakaoInactive } = req.body || {}
+
+  if (testKakaoInactive) {
+    const result = await devSendKakaoInactiveReminder(userId)
+    res.status(200).json(result)
+    return
+  }
 
   if (reset) {
     const result = await devResetToday(userId)

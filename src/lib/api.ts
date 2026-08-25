@@ -226,6 +226,14 @@ export function devResetAccount() {
   });
 }
 
+// [개발용 QA 도구] 카톡 트리거 2(48시간 무접속 리마인더)를 조건 체크 없이 바로 테스트 발송
+export function devTestKakaoInactive() {
+  return apiFetch<{ sent?: boolean; reason?: string }>("/api/workday/close", {
+    method: "POST",
+    body: JSON.stringify({ testKakaoInactive: true }),
+  });
+}
+
 export function goOnFieldWork() {
   return apiFetch<FieldWorkResponse>("/api/workday/field-work", { method: "POST" });
 }
