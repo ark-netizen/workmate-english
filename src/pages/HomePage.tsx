@@ -438,7 +438,7 @@ export function HomePage() {
   // 끝나면 onDismiss에서 첫 연락을 받아와 바로 그 화면으로 자동 이동시킨다(아래 참고).
 
   return (
-    <div className="mx-auto max-w-[1600px] space-y-6 px-4 py-6 md:px-8 md:py-8">
+    <div className="mx-auto max-w-[1230px] [zoom:1.3] space-y-6 px-4 py-6 md:px-8 md:py-8">
       <div>
         <h1 className="text-lg font-semibold">Today&apos;s Workday</h1>
         <p className="mt-1 text-sm text-foreground/60">{dateLabel}</p>

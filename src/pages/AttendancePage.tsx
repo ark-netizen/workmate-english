@@ -64,7 +64,7 @@ export function AttendancePage() {
   if (isTrial) return <TrialLockedPage title="출석" />;
 
   return (
-    <div className="mx-auto max-w-[1600px] space-y-6 px-4 py-6 md:px-8 md:py-8">
+    <div className="mx-auto max-w-[1230px] [zoom:1.3] space-y-6 px-4 py-6 md:px-8 md:py-8">
       <div>
         <h1 className="text-lg font-semibold">출석</h1>
         <p className="mt-1 text-sm text-foreground/60">근태 기록과 마일스톤을 확인하세요.</p>
