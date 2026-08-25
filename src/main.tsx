@@ -7,6 +7,7 @@ import "./intro-solar-highlight.css";
 import "./game-mode-workspace.css";
 import "./intro-mobile.css";
 import "./intro-mobile-hotfix.css";
+import "./mobile-responsive-v2.css";
 import "./enable-mobile-intro-trial";
 
 createRoot(document.getElementById("root")!).render(
