@@ -1,0 +1,26 @@
+/* WORK PROCESS visual balance pass.
+   중앙 여백을 줄이면서 과하게 늘어난 우측 예시 UI는 살짝 축소하고 칼럼 중앙에 둔다. */
+
+@media (min-width: 768px) {
+  .intro-game .intro-game-feature-visual,
+  .intro-business .intro-business-feature-card > div:last-child {
+    width: min(94%, 620px) !important;
+    max-width: 620px !important;
+    justify-self: center !important;
+    margin-inline: auto !important;
+  }
+
+  /* 예시 UI 내부 카드가 부모 폭을 따라 과도하게 좌우로 퍼지지 않도록 제한한다. */
+  .intro-game .intro-game-feature-visual > *,
+  .intro-business .intro-business-feature-card > div:last-child > * {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 리포트 예시의 마지막 코멘트는 축소된 카드 안에서 시각적으로 중앙에 오도록 정렬한다. */
+  .intro-game .intro-game-feature-visual > div > p:last-child,
+  .intro-business .intro-business-feature-card > div:last-child > div > p:last-child {
+    text-align: center;
+  }
+}
