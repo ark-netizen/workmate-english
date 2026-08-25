@@ -323,6 +323,22 @@ body {
   overflow:hidden;
   font-family:Pretendard,"Malgun Gothic",sans-serif;
 }
+.intro-business-mesh{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background:
+    radial-gradient(220px 220px at 20% 30%, rgba(26,86,255,.14), transparent 70%),
+    radial-gradient(260px 260px at 80% 70%, rgba(160,120,255,.14), transparent 70%);
+  background-size:180% 180%;
+  animation:intro-mesh-pan 14s ease-in-out infinite;
+}
+@keyframes intro-mesh-pan{
+  0%,100%{background-position:0% 0%, 100% 100%}
+  50%{background-position:30% 20%, 70% 80%}
+}
+@media(prefers-reduced-motion:reduce){.intro-business-mesh{animation:none}}
 .intro-page .hero .wrap{
   position:relative;
   z-index:2;

@@ -668,6 +668,7 @@ export function IntroPage({
       </nav>
 
       <section id="preview" className="intro-hero hero">
+        {!businessMode && <div className="intro-business-mesh" aria-hidden="true" />}
         <div className="wrap">
           <Reveal className="copy">
             <span className="eyebrow">WORKMATE ENGLISH</span>
