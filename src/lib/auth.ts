@@ -114,6 +114,9 @@ export async function finalizePendingKakaoNotify() {
   await saveKakaoNotifyToken({
     accessToken: session.provider_token,
     refreshToken: session.provider_refresh_token,
+    // Supabase 세션 객체는 카카오 access token 자체의 만료 시각을 안 넘겨줘서, 카카오 기본값(6시간)으로
+    // 가정한다 — 어차피 sendKakaoToUser는 401을 받으면 한 번 더 갱신을 시도하는 안전망이 있음
+    expiresIn: 21599,
   });
   return true;
 }

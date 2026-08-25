@@ -1162,7 +1162,11 @@ export async function closeWorkday(workdayId) {
     text: `[부캐영어] 오늘의 업무일지가 도착했어요 📋\n잘한 표현 ${goodCount}건 · 교정 ${correctionCount}건 · 꼭 기억할 표현 ${memorizeCount}건`,
     url: `${APP_BASE_URL}/reports`,
     buttonTitle: '전체 리포트 보기',
-  }).catch(() => {})
+  })
+    .then((result) => {
+      if (!result?.sent) console.error('[kakao] 리포트 알림 발송 안 됨:', result)
+    })
+    .catch((err) => console.error('[kakao] 리포트 알림 발송 실패:', err))
 
   return { report }
 }
