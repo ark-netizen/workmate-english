@@ -17,6 +17,9 @@ const KEYS = [
   "SOLAR_MODEL",
   "SOLAR_API_KEY",
   "CRON_SECRET",
+  "KAKAO_REST_API_KEY",
+  "KAKAO_CLIENT_SECRET",
+  "APP_BASE_URL",
 ];
 
 for (const key of KEYS) {
