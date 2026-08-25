@@ -181,11 +181,10 @@ export function SectionTourGuide({
     const PAD = 8;
     const lastRect = rowRects[rowRects.length - 1].rect;
 
-    // HomePage에는 zoom:1.1이 적용돼 있다. fixed 패널을 그 내부에서 렌더링하면 좌표까지 1.1배 되어
-    // 사이드바와 패널 사이 위치가 어긋난다. body portal로 렌더링하고, 사이드바 실제 오른쪽 경계보다
-    // 10px 바깥에서 시작시켜 메뉴 영역을 절대 덮지 않도록 한다.
+    // HomePage에는 zoom:1.1이 적용돼 있으므로 body portal로 viewport 좌표를 그대로 사용한다.
+    // 패널은 사이드바의 실제 오른쪽 경계에 바로 붙여 빈틈도, 메뉴 침범도 만들지 않는다.
     const sidebarRight = document.querySelector<HTMLElement>("#tour-nav-desktop")?.getBoundingClientRect().right ?? anchorRect.right;
-    const panelLeft = clamp(Math.ceil(sidebarRight) + 10, 8, window.innerWidth - ANCHOR_WIDTH - 8);
+    const panelLeft = clamp(sidebarRight, 8, window.innerWidth - ANCHOR_WIDTH - 8);
     // 데스크톱 TopBar가 정확히 64px이므로 메뉴 패널도 그 아래에서 시작시켜 상단바와 겹치지 않게 한다.
     const panelTop = clamp(64, 8, window.innerHeight - 100);
     const panelBottom = lastRect.bottom + PAD;
@@ -226,12 +225,8 @@ export function SectionTourGuide({
           {rowRects.map(({ desc, rect }, i) => (
             <p
               key={i}
-              className="fixed z-[10001] truncate px-3 text-xs font-medium leading-none"
-              style={{
-                top: rect.top + rect.height / 2 - 6,
-                left: panelLeft,
-                width: ANCHOR_WIDTH,
-              }}
+              className="absolute left-0 z-[1] w-full truncate px-3 text-xs font-medium leading-none"
+              style={{ top: rect.top + rect.height / 2 - panelTop - 6 }}
             >
               {desc}
             </p>
