@@ -512,6 +512,90 @@ function withSolarBold(text: string) {
   );
 }
 
+// 비즈니스 모드 히어로 배경 — 점들이 떠다니다 가까워지면 선으로 이어지는 은은한 네트워크 효과.
+// 모션을 줄이고 싶은 사용자를 위해 prefers-reduced-motion이면 아예 렌더링하지 않는다.
+function BusinessHeroParticles() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx) return;
+
+    const DOT_COUNT = 46;
+    const LINK_DIST = 130;
+    let width = 0;
+    let height = 0;
+    let dots: { x: number; y: number; vx: number; vy: number }[] = [];
+
+    const resize = () => {
+      const rect = canvas.parentElement!.getBoundingClientRect();
+      width = rect.width;
+      height = rect.height;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    const seed = () => {
+      dots = Array.from({ length: DOT_COUNT }, () => ({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.25,
+        vy: (Math.random() - 0.5) * 0.25,
+      }));
+    };
+    resize();
+    seed();
+
+    let frameId: number;
+    const tick = () => {
+      ctx.clearRect(0, 0, width, height);
+      for (const d of dots) {
+        d.x += d.vx;
+        d.y += d.vy;
+        if (d.x < 0 || d.x > width) d.vx *= -1;
+        if (d.y < 0 || d.y > height) d.vy *= -1;
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(26,86,255,0.35)";
+        ctx.fill();
+      }
+      for (let i = 0; i < dots.length; i++) {
+        for (let j = i + 1; j < dots.length; j++) {
+          const dx = dots[i].x - dots[j].x;
+          const dy = dots[i].y - dots[j].y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < LINK_DIST) {
+            ctx.beginPath();
+            ctx.moveTo(dots[i].x, dots[i].y);
+            ctx.lineTo(dots[j].x, dots[j].y);
+            ctx.strokeStyle = `rgba(26,86,255,${0.12 * (1 - dist / LINK_DIST)})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        }
+      }
+      frameId = requestAnimationFrame(tick);
+    };
+    frameId = requestAnimationFrame(tick);
+
+    const handleResize = () => {
+      resize();
+    };
+    window.addEventListener("resize", handleResize);
+    return () => {
+      cancelAnimationFrame(frameId);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="intro-business-particles" aria-hidden="true" />;
+}
+
 function HeroSystem() {
   return (
     <div className="features hero-system">
@@ -668,6 +752,7 @@ export function IntroPage({
       </nav>
 
       <section id="preview" className="intro-hero hero">
+        {!businessMode && <BusinessHeroParticles />}
         <div className="wrap">
           <Reveal className="copy">
             <span className="eyebrow">WORKMATE ENGLISH</span>
