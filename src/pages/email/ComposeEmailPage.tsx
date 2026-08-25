@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { SquarePen } from "lucide-react";
 import { useWorkday } from "@/context/useWorkday";
-import { Avatar } from "@/components/ui/Avatar";
+import { ContactAvatar } from "@/components/ui/ContactAvatar";
 import { VoiceInputButton } from "@/components/reply/VoiceInputButton";
 import { SpellFixButton } from "@/components/reply/SpellFixButton";
 import type { Contact } from "@/types/domain";
@@ -96,7 +96,7 @@ export function ComposeEmailPage() {
                     : "border-border text-foreground/70 hover:bg-black/[.03]"
                 }`}
               >
-                <Avatar name={contact.name} size="sm" />
+                <ContactAvatar name={contact.name} role={contact.role} size="sm" />
                 {contact.name}
                 <span className="text-xs text-foreground/40">· {ROLE_LABELS[contact.role]}</span>
               </button>
