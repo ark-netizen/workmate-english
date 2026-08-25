@@ -1,117 +1,66 @@
-/* WORK PROCESS visual balance
-   게임 모드와 비즈니스 모드는 구조가 다르므로 서로 다른 기준으로 조정한다.
-   이전의 공통 고정폭/홀짝별 column 비율 강제값은 제거한다. */
+/* WORK PROCESS layout reset.
+   최근 공통 여백 보정이 게임/비즈니스 카드의 원래 2열 구조와 홀짝 정렬을 깨뜨려서
+   두 모드를 서로 독립적으로 원래 컴포넌트 기준으로 되돌린다. */
 
 @media (min-width: 768px) {
-  /* ------------------------------
-     GAME MODE
-     창 형태 카드 안에서 설명은 조금 좁게, 실제 UI는 조금 넓게 둔다.
-     두 영역 사이 간격만 줄이고 예시 UI 자체를 과하게 늘리지는 않는다.
-  ------------------------------ */
+  /* GAME MODE — 원래 WorkMate 창 내부의 sm:grid-cols-2 / sm:gap-8 / sm:p-8 기준. */
   .intro-game .intro-game-feature-window > div:last-child {
-    grid-template-columns: minmax(250px, 40%) minmax(0, 60%) !important;
-    column-gap: 20px !important;
-    padding-inline: 30px !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    column-gap: 32px !important;
+    row-gap: 32px !important;
+    align-items: center !important;
+    padding: 32px !important;
   }
 
   .intro-game .intro-game-feature-window > div:last-child > div:first-child {
-    width: 100% !important;
-    max-width: 320px !important;
+    width: auto !important;
+    max-width: none !important;
     min-width: 0 !important;
-    justify-self: end !important;
+    justify-self: stretch !important;
   }
 
   .intro-game .intro-game-feature-visual {
-    width: min(94%, 470px) !important;
-    max-width: 470px !important;
+    width: auto !important;
+    max-width: none !important;
     min-width: 0 !important;
     margin: 0 !important;
-    justify-self: start !important;
-    align-self: center !important;
+    justify-self: stretch !important;
   }
 
   .intro-game .intro-game-feature-visual > * {
     width: 100% !important;
-    max-width: 100% !important;
+    max-width: none !important;
     box-sizing: border-box !important;
   }
 
-  /* ------------------------------
-     BUSINESS MODE
-     기본 2열 구조를 되살리고, 홀짝 카드의 좌우 배치는 React의 order에 맡긴다.
-     핵심은 두 칼럼을 같은 폭으로 유지하면서 내용만 중앙 쪽으로 붙이는 것.
-  ------------------------------ */
+  /* BUSINESS MODE — 원래 sm:grid-cols-2 / sm:gap-8 / sm:p-8 기준.
+     홀짝 카드는 React의 order 클래스만 담당하게 두고 CSS에서 열 비율을 따로 뒤집지 않는다. */
   .intro-business .intro-business-feature-card {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    column-gap: 24px !important;
-    padding: 30px !important;
+    column-gap: 32px !important;
+    row-gap: 32px !important;
+    align-items: center !important;
+    padding: 32px !important;
   }
 
   .intro-business .intro-business-feature-card > div:first-child {
-    width: 100% !important;
-    max-width: 380px !important;
+    width: auto !important;
+    max-width: none !important;
     min-width: 0 !important;
-    align-self: center !important;
+    justify-self: stretch !important;
   }
 
   .intro-business .intro-business-feature-card > div:last-child {
-    width: min(100%, 520px) !important;
-    max-width: 520px !important;
+    width: auto !important;
+    max-width: none !important;
     min-width: 0 !important;
     margin: 0 !important;
-    align-self: center !important;
+    justify-self: stretch !important;
   }
 
   .intro-business .intro-business-feature-card > div:last-child > * {
     width: 100% !important;
-    max-width: 100% !important;
+    max-width: none !important;
     box-sizing: border-box !important;
-  }
-
-  /* 홀수: 설명 왼쪽 / 예시 오른쪽 — 둘 다 중앙 쪽으로 붙인다. */
-  .intro-business .intro-business-features > div:first-child > div:nth-child(odd) .intro-business-feature-card > div:first-child {
-    justify-self: end !important;
-  }
-
-  .intro-business .intro-business-features > div:first-child > div:nth-child(odd) .intro-business-feature-card > div:last-child {
-    justify-self: start !important;
-  }
-
-  /* 짝수: 예시 왼쪽 / 설명 오른쪽 — React order를 유지한 채 중앙 쪽으로 붙인다. */
-  .intro-business .intro-business-features > div:first-child > div:nth-child(even) .intro-business-feature-card > div:first-child {
-    justify-self: start !important;
-  }
-
-  .intro-business .intro-business-features > div:first-child > div:nth-child(even) .intro-business-feature-card > div:last-child {
-    justify-self: end !important;
-  }
-
-  /* 리포트 예시의 마지막 코멘트는 예시 카드 안에서 중앙 정렬한다. */
-  .intro-game .intro-game-feature-visual > div > p:last-child,
-  .intro-business .intro-business-feature-card > div:last-child > div > p:last-child {
-    text-align: center !important;
-  }
-}
-
-/* 작은 노트북/태블릿 폭에서는 고정 비율 대신 거의 1:1로 안정적으로 유지한다. */
-@media (min-width: 768px) and (max-width: 980px) {
-  .intro-game .intro-game-feature-window > div:last-child {
-    grid-template-columns: minmax(230px, 42%) minmax(0, 58%) !important;
-    column-gap: 16px !important;
-    padding-inline: 24px !important;
-  }
-
-  .intro-business .intro-business-feature-card {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    column-gap: 18px !important;
-    padding: 24px !important;
-  }
-
-  .intro-business .intro-business-feature-card > div:first-child {
-    max-width: 340px !important;
-  }
-
-  .intro-business .intro-business-feature-card > div:last-child {
-    max-width: 460px !important;
   }
 }
