@@ -1,0 +1,36 @@
+/* Business intro WORK PROCESS layout.
+   비즈니스 모드만 별도로 다룬다.
+   데스크톱에서는 텍스트와 그래픽을 좌/우 끝에 두고 남는 공간을 가운데로 배분한다.
+   짝수 카드는 기존 React order 규칙을 그대로 사용해 그래픽이 왼쪽, 텍스트가 오른쪽에 온다. */
+
+@media (min-width: 768px) {
+  .intro-business .intro-business-feature-card {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 0 !important;
+  }
+
+  .intro-business .intro-business-feature-card > div:first-child {
+    flex: 0 1 45% !important;
+    width: auto !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+  }
+
+  .intro-business .intro-business-feature-card > div:last-child {
+    flex: 0 1 50% !important;
+    width: auto !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+  }
+
+  .intro-business .intro-business-feature-card > div:last-child > * {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+}
