@@ -954,6 +954,65 @@ const POLICY_SECTIONS: PolicySectionData[] = [
       </>
     ),
   },
+  {
+    id: "policy-kakao",
+    title: "카카오톡 알림",
+    keywords:
+      "카카오톡 알림 카톡 kakao talk_message 나에게 보내기 무응답 무접속 야간 조용시간 quiet hours",
+    render: () => (
+      <>
+        <p>
+          카카오 로그인 사용자에게 <code className="rounded bg-black/[.04] px-1 py-0.5 text-xs">talk_message</code>{" "}
+          스코프(이용 중 동의)로 발급받은 토큰으로 "나에게 보내기" API를 호출한다. 알림톡(대행사·심사·과금) 대신
+          쓰는 방식이라 별도 사업자 인증이나 건당 비용이 없다. 정상적으로 반응하는 사용자에게는 안 가는 게
+          원칙 — 웹 푸시를 놓친 사람에게만 가는 보조 채널.
+        </p>
+        <p className="font-medium text-foreground">공통 규칙: 야간 조용시간(22:00~07:00, 실제 시각 기준)</p>
+        <p>
+          이 시간대에는 트리거 종류와 무관하게 발송하지 않는다. 즉시성 이벤트(트리거 3)도 큐에 담아뒀다가 07:00
+          이후로 미뤄서 보낸다.
+        </p>
+        <table className="w-full text-left text-sm">
+          <thead>
+            <tr className="border-b border-border text-xs text-foreground/50">
+              <th className="px-3 py-2 font-medium">트리거</th>
+              <th className="px-3 py-2 font-medium">대상</th>
+              <th className="px-3 py-2 font-medium">조건</th>
+              <th className="px-3 py-2 font-medium">발송 시점</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="border-b border-border">
+              <td className="px-3 py-2 text-foreground/70">1. 무응답 알림</td>
+              <td className="px-3 py-2 text-foreground/70">
+                낮 근무자만(start_time이 야간대 18:00~05:00면 대상 자체에서 제외)
+              </td>
+              <td className="px-3 py-2 text-foreground/70">그날 답장 안 한 연락 1건 이상</td>
+              <td className="px-3 py-2">
+                본인 출퇴근시간(start_time/end_time) 중간 지점(점심 무렵), 1일 1회, 밀린 건 있으면 모아서 한 통으로
+              </td>
+            </tr>
+            <tr className="border-b border-border">
+              <td className="px-3 py-2 text-foreground/70">2. 무접속 리마인더</td>
+              <td className="px-3 py-2 text-foreground/70">전체</td>
+              <td className="px-3 py-2 text-foreground/70">마지막 접속(last_seen) 48시간 경과</td>
+              <td className="px-3 py-2">1일 1회 배치 체크(조용시간 피해서 실행), 재발송 없이 1회만</td>
+            </tr>
+            <tr>
+              <td className="px-3 py-2 text-foreground/70">3. 리포트 완성</td>
+              <td className="px-3 py-2 text-foreground/70">전체</td>
+              <td className="px-3 py-2 text-foreground/70">업무일지 리포트 생성 시</td>
+              <td className="px-3 py-2">즉시(웹 푸시와 동시), 조용시간이면 07:00 이후로 지연</td>
+            </tr>
+          </tbody>
+        </table>
+        <p className="text-xs text-foreground/50">
+          고함항아리·리포트 미확인은 "반드시 반응해야 하는" 항목이 아니라서 트리거 1(무응답)에서 제외. 사용자는
+          Settings에서 카톡 알림 수신 여부를 언제든 끌 수 있고, 끄면 토큰이 남아있어도 발송하지 않는다.
+        </p>
+      </>
+    ),
+  },
 ];
 
 // 관리자 전용 — 승급/연차 정책 상세(내부 구현 규칙 포함, 필드명 포함). 유저용 요약은 /notice 페이지 참고.
