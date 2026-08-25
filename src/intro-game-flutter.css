@@ -24,7 +24,6 @@
   width: 34px;
   height: 34px;
   opacity: 0.58;
-  transform: translate3d(0, 0, 0) scale(var(--flutter-scale));
   animation: intro-game-flutter-drift var(--flutter-duration) ease-in-out var(--flutter-delay) infinite alternate;
   will-change: transform;
   perspective: 500px;
@@ -35,7 +34,7 @@
   inset: 0;
   display: block;
   transform-origin: center;
-  animation: intro-game-flutter-flap calc(var(--flutter-duration) * 0.34) ease-in-out var(--flutter-delay) infinite alternate;
+  animation: intro-game-flutter-flap var(--flutter-flap-duration) ease-in-out var(--flutter-delay) infinite alternate;
   will-change: transform;
 }
 
@@ -122,13 +121,13 @@
     transform: translate3d(-26px, -16px, 0) scale(var(--flutter-scale)) rotate(-7deg);
   }
   28% {
-    transform: translate3d(calc(18px * var(--flutter-direction)), 13px, 0) scale(var(--flutter-scale)) rotate(5deg);
+    transform: translate3d(var(--flutter-x1), 13px, 0) scale(var(--flutter-scale)) rotate(5deg);
   }
   58% {
-    transform: translate3d(calc(-15px * var(--flutter-direction)), 31px, 0) scale(var(--flutter-scale)) rotate(-4deg);
+    transform: translate3d(var(--flutter-x2), 31px, 0) scale(var(--flutter-scale)) rotate(-4deg);
   }
   100% {
-    transform: translate3d(calc(38px * var(--flutter-direction)), 54px, 0) scale(var(--flutter-scale)) rotate(8deg);
+    transform: translate3d(var(--flutter-x3), 54px, 0) scale(var(--flutter-scale)) rotate(8deg);
   }
 }
 
@@ -150,7 +149,6 @@
 @media (max-width: 767px) {
   .intro-game-flutter-particle {
     opacity: 0.42;
-    transform: scale(calc(var(--flutter-scale) * 0.82));
   }
 
   .intro-game-flutter-particle:nth-child(3n) {
