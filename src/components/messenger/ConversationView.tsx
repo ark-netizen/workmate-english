@@ -170,13 +170,15 @@ export function ConversationView({ conversation }: { conversation: Conversation 
           >
             <div
               className={`max-w-[75%] rounded-2xl px-4 py-2 text-sm transition-shadow ${
-                message.from === "user" ? "bg-accent text-white" : "bg-black/[.025] text-foreground"
+                message.from === "user"
+                  ? "bg-accent text-white"
+                  : "border border-border bg-surface text-foreground shadow-sm"
               } ${message.id === highlightedMessageId ? "ring-2 ring-accent ring-offset-2 animate-pulse" : ""}`}
             >
               <p>{message.body}</p>
               <p
                 className={`mt-1 text-[10px] ${
-                  message.from === "user" ? "text-white/70" : "text-foreground/40"
+                  message.from === "user" ? "text-white/70" : "text-foreground/50"
                 }`}
               >
                 {formatTime(message.timestamp)}
@@ -192,7 +194,7 @@ export function ConversationView({ conversation }: { conversation: Conversation 
         ))}
         {showSending && (
           <div className="flex justify-start">
-            <div className="max-w-[75%] rounded-2xl bg-black/[.025] px-4 py-2 text-sm text-foreground/50">
+            <div className="max-w-[75%] rounded-2xl border border-border bg-surface px-4 py-2 text-sm text-foreground/60 shadow-sm">
               {isVent ? "고함항아리" : contact?.name ?? "상대방"}님이 답장을 작성 중...
             </div>
           </div>
