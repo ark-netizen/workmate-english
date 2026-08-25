@@ -1,6 +1,23 @@
 /* Intro navbar responsive guard.
    768~1080px 사이에서 데스크톱 규칙과 모바일 규칙이 충돌해
-   '미리보기/기능/후기'가 한 글자씩 세로로 찢어지는 문제를 막는다. */
+   네비게이션 항목이 한 글자씩 세로로 찢어지는 문제를 막는다. */
+
+.intro-page .intro-nav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  font-family: inherit;
+  font-style: normal;
+  text-decoration: none;
+  vertical-align: middle;
+}
+
+.intro-page .intro-about-link {
+  font: inherit;
+  color: inherit;
+  text-decoration: none;
+}
 
 @media (max-width: 1080px) {
   .intro-page .intro-nav-inner {
@@ -69,8 +86,11 @@
   .intro-page .intro-nav-link {
     min-width: max-content !important;
     min-height: 32px !important;
+    height: 32px !important;
     padding: 5px 6px !important;
+    font-family: inherit !important;
     font-size: clamp(10px, 1.15vw, 13px) !important;
+    font-weight: 500 !important;
     line-height: 1 !important;
   }
 
@@ -127,8 +147,11 @@
   }
 
   .intro-page .intro-nav-link {
+    height: 30px !important;
+    min-height: 30px !important;
     padding-inline: 5px !important;
     font-size: 10.5px !important;
+    font-weight: 500 !important;
   }
 
   .intro-page .intro-trial-btn {
@@ -168,8 +191,10 @@
 
   .intro-page .intro-nav-link {
     min-height: 28px !important;
+    height: 28px !important;
     padding: 3px 4px !important;
     font-size: clamp(8px, 2.3vw, 9.5px) !important;
+    font-weight: 500 !important;
   }
 
   .intro-page .intro-trial-btn {
@@ -204,8 +229,11 @@
   }
 
   .intro-page .intro-nav-link {
+    height: 27px !important;
+    min-height: 27px !important;
     padding-inline: 3px !important;
     font-size: 8px !important;
+    font-weight: 500 !important;
   }
 
   .intro-page .intro-trial-btn {
