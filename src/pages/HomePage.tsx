@@ -626,20 +626,24 @@ export function HomePage() {
         />
       )}
 
-      <QaControlPanel
-        onDeliverNext={handleDeliverNext}
-        deliveringNext={deliveringNext}
-        onResetToday={handleResetToday}
-        resettingToday={resettingToday}
-        onBackfillDays={handleBackfillDays}
-        backfillingDays={backfillingDays}
-        onAdvanceDay={handleAdvanceDay}
-        advancingDay={advancingDay}
-        onResetAccount={handleResetAccount}
-        resettingAccount={resettingAccount}
-        onTestKakaoInactive={handleTestKakaoInactive}
-        testingKakaoInactive={testingKakaoInactive}
-      />
+      {/* 1분 체험 세션은 이미 별도의 자동 진행 로직(qaAutoAdvance)이 있고, 실제 체험 사용자에게
+          내부용 QA 패널이 노출될 이유가 없어서 체험 중에는 띄우지 않는다 */}
+      {!isTrial && (
+        <QaControlPanel
+          onDeliverNext={handleDeliverNext}
+          deliveringNext={deliveringNext}
+          onResetToday={handleResetToday}
+          resettingToday={resettingToday}
+          onBackfillDays={handleBackfillDays}
+          backfillingDays={backfillingDays}
+          onAdvanceDay={handleAdvanceDay}
+          advancingDay={advancingDay}
+          onResetAccount={handleResetAccount}
+          resettingAccount={resettingAccount}
+          onTestKakaoInactive={handleTestKakaoInactive}
+          testingKakaoInactive={testingKakaoInactive}
+        />
+      )}
 
       <ConfirmDialog
         open={confirmFinish}

@@ -705,41 +705,45 @@ export function SettingsPage() {
         </div>
       </CollapsibleSection>
 
-      {kakaoLinked && (
-        <CollapsibleSection
-          id="settings-kakao-notify"
-          title="카톡 알림"
-          description="놓친 연락·리포트 완성 알림을 카카오톡 '나와의 채팅'으로도 받아요."
-        >
-          <div className="flex items-center justify-between gap-4">
-            <p className="text-xs text-foreground/50">
-              웹 알림을 못 봤을 때 놓치지 않도록 보조로 보내는 채널이에요. 야간(22시~7시)에는 발송하지 않아요.
-            </p>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={Boolean(profile.kakao_notify_enabled)}
-              disabled={kakaoBusy}
-              onClick={() => handleToggleKakaoNotify(!profile.kakao_notify_enabled)}
-              className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-50 ${
-                profile.kakao_notify_enabled ? "bg-accent" : "bg-foreground/15"
+      <CollapsibleSection
+        id="settings-kakao-notify"
+        title="카톡 알림"
+        description="놓친 연락·리포트 완성 알림을 카카오톡 '나와의 채팅'으로도 받아요."
+      >
+        <div className="flex items-center justify-between gap-4">
+          <p className="text-xs text-foreground/50">
+            웹 알림을 못 봤을 때 놓치지 않도록 보조로 보내는 채널이에요. 야간(22시~7시)에는 발송하지 않아요.
+          </p>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={Boolean(profile.kakao_notify_enabled)}
+            disabled={kakaoBusy || !kakaoLinked}
+            onClick={() => handleToggleKakaoNotify(!profile.kakao_notify_enabled)}
+            className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-50 ${
+              profile.kakao_notify_enabled ? "bg-accent" : "bg-foreground/15"
+            }`}
+          >
+            <span
+              className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-white shadow transition-transform ${
+                profile.kakao_notify_enabled ? "translate-x-5" : ""
               }`}
-            >
-              <span
-                className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-white shadow transition-transform ${
-                  profile.kakao_notify_enabled ? "translate-x-5" : ""
-                }`}
-              />
-            </button>
+            />
+          </button>
+        </div>
+        {kakaoError && <p className="text-xs text-red-600">{kakaoError}</p>}
+        {!kakaoLinked ? (
+          <div className="rounded-lg bg-black/[.02] p-3 text-xs leading-relaxed text-foreground/50">
+            카카오로 로그인한 계정에서만 켤 수 있어요. 설정 상단의 계정에서 카카오 로그인을 먼저 연결해주세요.
           </div>
-          {kakaoError && <p className="text-xs text-red-600">{kakaoError}</p>}
-          {!profile.kakao_notify_enabled && (
+        ) : (
+          !profile.kakao_notify_enabled && (
             <div className="rounded-lg bg-black/[.02] p-3 text-xs leading-relaxed text-foreground/50">
               켜면 카카오 재동의 화면으로 이동해요. 동의하면 바로 알림이 시작돼요.
             </div>
-          )}
-        </CollapsibleSection>
-      )}
+          )
+        )}
+      </CollapsibleSection>
 
       <section className="space-y-3 rounded-xl border border-red-200 bg-red-50/40 p-5">
         <div>
