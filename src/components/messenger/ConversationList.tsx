@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { GripVertical } from "lucide-react";
 import { useWorkday } from "@/context/useWorkday";
 import { formatDateTime } from "@/lib/format";
-import { Avatar } from "@/components/ui/Avatar";
+import { ContactAvatar } from "@/components/ui/ContactAvatar";
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { useResizable } from "@/hooks/useResizable";
 import { applyCustomOrder, reorder } from "@/lib/listOrder";
@@ -172,7 +172,12 @@ export function ConversationList() {
                   }`}
                 >
                   <GripVertical className="size-3.5 shrink-0 self-center cursor-grab text-foreground/25" />
-                  <Avatar name={contact?.name ?? "?"} size="md" className="self-center" />
+                  <ContactAvatar
+                    name={contact?.name ?? "?"}
+                    role={contact?.role}
+                    size="md"
+                    className="self-center"
+                  />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
                       <span className="flex min-w-0 items-center gap-1.5">
