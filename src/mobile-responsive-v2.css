@@ -1,0 +1,194 @@
+/* Mobile responsive pass v2 — current Intro/guest-trial structures only. */
+@media (max-width: 767px) {
+  /* Intro top bar: keep the full brand lockup and keep section navigation visible. */
+  .intro-page .intro-nav-inner {
+    min-height: 72px !important;
+    align-items: flex-start !important;
+    flex-wrap: wrap !important;
+    padding: 8px 10px 7px !important;
+    gap: 5px 8px !important;
+  }
+  .intro-page .intro-nav-inner > img:first-of-type {
+    display: none !important;
+  }
+  .intro-page .intro-nav-inner > img:nth-of-type(2) {
+    display: block !important;
+    width: clamp(104px, 30vw, 128px) !important;
+    max-width: 128px !important;
+    height: 31px !important;
+    flex: 0 0 auto !important;
+    object-fit: contain !important;
+    object-position: left center !important;
+  }
+  .intro-page .intro-nav-inner > div:last-child {
+    flex: 1 1 190px !important;
+    min-width: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    flex-wrap: wrap !important;
+    gap: 5px !important;
+  }
+  .intro-page .intro-nav-inner > div:last-child > div:first-child {
+    display: flex !important;
+    order: 4 !important;
+    flex: 0 0 100% !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 3px !important;
+    margin-top: 1px !important;
+  }
+  .intro-page .intro-nav-link {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 0 !important;
+    padding: 3px 7px !important;
+    font-size: 10.5px !important;
+    line-height: 1.15 !important;
+    white-space: nowrap !important;
+    word-break: keep-all !important;
+  }
+  .intro-page .intro-login-btn {
+    display: none !important;
+  }
+  .intro-page .intro-trial-btn {
+    order: 1 !important;
+    min-height: 32px !important;
+    padding: 5px 9px !important;
+    font-size: 10.5px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+  .intro-page .intro-mode-toggle {
+    order: 2 !important;
+    min-height: 34px !important;
+  }
+  .intro-page .intro-mode-option {
+    min-height: 28px !important;
+    padding: 4px 7px !important;
+    white-space: nowrap !important;
+  }
+
+  /* Hero contact preview: keep each avatar inside its frame and stop tone badges from forcing bad wraps. */
+  .intro-page .hero .mailcard {
+    max-width: 100% !important;
+    overflow: hidden !important;
+  }
+  .intro-page .hero .person {
+    grid-template-columns: 46px minmax(0, 1fr) auto !important;
+    min-height: 72px !important;
+    gap: 7px !important;
+    overflow: hidden !important;
+  }
+  .intro-game .hero .avatar {
+    display: grid !important;
+    width: 46px !important;
+    height: 54px !important;
+    flex: 0 0 46px !important;
+    place-items: end center !important;
+    overflow: hidden !important;
+    border: 2px solid #28352f !important;
+    border-radius: 3px !important;
+    background: #bce5dc !important;
+    box-sizing: border-box !important;
+  }
+  .intro-game .hero .avatar > svg,
+  .intro-game .hero .avatar > img {
+    display: block !important;
+    width: 43px !important;
+    height: 50px !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
+    transform: scale(.94) !important;
+    transform-origin: center bottom !important;
+  }
+  .intro-business .hero .avatar {
+    overflow: hidden !important;
+  }
+  .intro-page .hero .tone {
+    min-width: 38px !important;
+    padding: 4px 6px !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    word-break: keep-all !important;
+  }
+
+  /* Guest trial: internal QA controls must never cover the public mobile trial. */
+  .trial-shell .fixed.right-3.top-20.z-40 {
+    display: none !important;
+  }
+
+  /* Messenger/email consume only the remaining height below the in-flow mobile trial guide. */
+  .trial-shell .messenger-layout,
+  .trial-shell .email-layout {
+    height: 100% !important;
+    min-height: 0 !important;
+  }
+
+  /* Mobile trial message composer: compact the textarea and let controls wrap. */
+  .trial-shell textarea[placeholder^="메시지를 입력하세요"] {
+    width: 100% !important;
+    flex: 1 0 100% !important;
+    height: 72px !important;
+    min-height: 72px !important;
+    max-height: 72px !important;
+  }
+  .trial-shell div:has(> textarea[placeholder^="메시지를 입력하세요"]) {
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 8px 10px !important;
+  }
+  .trial-shell div:has(> textarea[placeholder^="메시지를 입력하세요"]) > button {
+    min-height: 28px !important;
+    padding-block: 4px !important;
+    font-size: 10.5px !important;
+  }
+  .trial-shell .cursor-row-resize {
+    display: none !important;
+  }
+
+  /* Email reply composer gets the same mobile compaction. */
+  .trial-shell textarea[placeholder="회신 내용을 입력하세요"] {
+    min-height: 76px !important;
+  }
+  .trial-shell div:has(> textarea[placeholder="회신 내용을 입력하세요"]) {
+    min-height: 82px !important;
+    gap: 7px !important;
+  }
+
+  .trial-shell header {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .intro-page .intro-nav-inner > img:nth-of-type(2) {
+    width: 102px !important;
+    max-width: 102px !important;
+  }
+  .intro-page .intro-trial-btn {
+    padding-inline: 7px !important;
+    font-size: 10px !important;
+  }
+  .intro-page .intro-mode-option {
+    padding-inline: 5px !important;
+    font-size: 9.5px !important;
+  }
+  .intro-page .intro-nav-link {
+    padding-inline: 6px !important;
+    font-size: 10px !important;
+  }
+  .intro-page .hero .person {
+    grid-template-columns: 42px minmax(0, 1fr) auto !important;
+  }
+  .intro-game .hero .avatar {
+    width: 42px !important;
+    height: 50px !important;
+  }
+}
