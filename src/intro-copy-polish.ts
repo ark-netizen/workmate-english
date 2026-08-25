@@ -47,6 +47,27 @@ function polishProcessCopy(page: HTMLElement) {
   });
 }
 
+function polishMobilePreviewCopy() {
+  const heading = document.querySelector<HTMLElement>(".intro-device-preview-head b");
+  const subheading = document.querySelector<HTMLElement>(".intro-device-preview-head span");
+  const note = document.querySelector<HTMLElement>(".intro-device-preview-note");
+
+  if (heading && heading.textContent !== "모바일 화면 미리보기") {
+    heading.textContent = "모바일 화면 미리보기";
+  }
+  if (subheading && subheading.textContent !== "390px 화면 기준") {
+    subheading.textContent = "390px 화면 기준";
+  }
+  if (note && note.textContent !== "모바일에서 보이는 화면과 1분 무료체험 흐름을 미리 확인해보세요.") {
+    note.textContent = "모바일에서 보이는 화면과 1분 무료체험 흐름을 미리 확인해보세요.";
+  }
+
+  const mobilePickerCopy = document.querySelector<HTMLElement>('[data-preview-device="mobile"] span');
+  if (mobilePickerCopy && mobilePickerCopy.textContent !== "모바일 화면 미리보기") {
+    mobilePickerCopy.textContent = "모바일 화면 미리보기";
+  }
+}
+
 function polishIntroCopy() {
   const page = document.querySelector<HTMLElement>(".intro-page");
   if (!page) return;
@@ -61,6 +82,7 @@ function polishIntroCopy() {
   }
 
   polishProcessCopy(page);
+  polishMobilePreviewCopy();
 
   const finalHeading = page.querySelector<HTMLElement>(".intro-final-cta h2");
   if (finalHeading && finalHeading.dataset.copyPolished !== "true") {
