@@ -1,6 +1,6 @@
 const TARGET_SELECTOR = [
-  ".intro-game-feature-window",
-  ".intro-business-feature-card",
+  ".intro-game-features > div:first-child > div",
+  ".intro-business-features > div:first-child > div",
   ".intro-trial-showcase",
   ".intro-reviews",
   ".intro-final-cta",
@@ -30,14 +30,15 @@ function setup(page: HTMLElement) {
 
   const navHeight = () => (page.querySelector<HTMLElement>(".intro-nav")?.offsetHeight ?? 0) + 8;
 
+  const syncNavOffset = () => {
+    page.style.setProperty("--intro-nav-offset", `${navHeight()}px`);
+  };
+
   const scrollToTarget = (index: number) => {
     const target = targets[index];
     if (!target) return;
     const rect = target.getBoundingClientRect();
-    const isSection = target.matches(".intro-trial-showcase,.intro-reviews,.intro-final-cta");
-    const destination = isSection
-      ? window.scrollY + rect.top - navHeight()
-      : window.scrollY + rect.top - Math.max(navHeight(), (window.innerHeight - rect.height) / 2);
+    const destination = window.scrollY + rect.top - navHeight();
     window.scrollTo({ top: Math.max(0, destination), behavior: "smooth" });
   };
 
@@ -49,7 +50,8 @@ function setup(page: HTMLElement) {
 
   const findNearest = () => {
     if (!targets.length) return 0;
-    const viewportCenter = window.innerHeight / 2;
+    const viewportTop = navHeight();
+    const viewportCenter = viewportTop + (window.innerHeight - viewportTop) / 2;
     let nearest = 0;
     let distance = Number.POSITIVE_INFINITY;
     targets.forEach((target, index) => {
@@ -65,8 +67,12 @@ function setup(page: HTMLElement) {
   };
 
   const refresh = () => {
+    syncNavOffset();
     const nextTargets = Array.from(page.querySelectorAll<HTMLElement>(TARGET_SELECTOR));
-    if (nextTargets.length === targets.length && nextTargets.every((target, index) => target === targets[index])) return;
+    if (nextTargets.length === targets.length && nextTargets.every((target, index) => target === targets[index])) {
+      setActive(findNearest());
+      return;
+    }
 
     targets = nextTargets;
     progress.replaceChildren();
@@ -82,6 +88,11 @@ function setup(page: HTMLElement) {
   };
 
   const onScroll = () => setActive(findNearest());
+
+  const onResize = () => {
+    syncNavOffset();
+    refresh();
+  };
 
   const onWheel = (event: WheelEvent) => {
     if (window.innerWidth < 768 || event.ctrlKey || Math.abs(event.deltaY) < 16 || wheelLocked || targets.length < 2) return;
@@ -100,22 +111,23 @@ function setup(page: HTMLElement) {
     setActive(next);
     scrollToTarget(next);
     window.clearTimeout(unlockTimer);
-    unlockTimer = window.setTimeout(() => { wheelLocked = false; }, 650);
+    unlockTimer = window.setTimeout(() => { wheelLocked = false; }, 720);
   };
 
   const mutationObserver = new MutationObserver(refresh);
   mutationObserver.observe(page, { childList: true, subtree: true });
   refresh();
   window.addEventListener("scroll", onScroll, { passive: true });
-  window.addEventListener("resize", refresh, { passive: true });
+  window.addEventListener("resize", onResize, { passive: true });
   window.addEventListener("wheel", onWheel, { passive: false });
 
   return () => {
     mutationObserver.disconnect();
     window.removeEventListener("scroll", onScroll);
-    window.removeEventListener("resize", refresh);
+    window.removeEventListener("resize", onResize);
     window.removeEventListener("wheel", onWheel);
     window.clearTimeout(unlockTimer);
+    page.style.removeProperty("--intro-nav-offset");
     progress.remove();
   };
 }
