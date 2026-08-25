@@ -1,16 +1,52 @@
 /* WORK PROCESS visual balance pass.
-   중앙 여백을 줄이면서 과하게 늘어난 우측 예시 UI는 살짝 축소하고 칼럼 중앙에 둔다. */
+   게임/비즈니스 모두 텍스트와 예시 UI가 서로 너무 멀어지지 않게 맞추고,
+   예시 UI는 과하게 늘리지 않되 카드의 바깥쪽보다 중앙 쪽에 붙여 배치한다. */
 
 @media (min-width: 768px) {
-  .intro-game .intro-game-feature-visual,
-  .intro-business .intro-business-feature-card > div:last-child {
-    width: min(94%, 620px) !important;
-    max-width: 620px !important;
-    justify-self: center !important;
-    margin-inline: auto !important;
+  /* 공통: 텍스트 칼럼은 충분히 읽히는 폭만 확보하고 중앙 간격은 짧게 유지한다. */
+  .intro-game .intro-game-feature-window > div:last-child {
+    grid-template-columns: minmax(300px, 330px) minmax(0, 1fr) !important;
+    column-gap: 18px !important;
   }
 
-  /* 예시 UI 내부 카드가 부모 폭을 따라 과도하게 좌우로 퍼지지 않도록 제한한다. */
+  .intro-business .intro-business-features > div:first-child > div:nth-child(odd) .intro-business-feature-card {
+    grid-template-columns: minmax(300px, 330px) minmax(0, 1fr) !important;
+    column-gap: 18px !important;
+  }
+
+  /* 비즈니스 짝수 카드는 화면상 예시 UI가 왼쪽, 설명이 오른쪽에 온다. */
+  .intro-business .intro-business-features > div:first-child > div:nth-child(even) .intro-business-feature-card {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 330px) !important;
+    column-gap: 18px !important;
+  }
+
+  .intro-game .intro-game-feature-window > div:last-child > div:first-child,
+  .intro-business .intro-business-feature-card > div:first-child {
+    width: 100% !important;
+    max-width: 330px !important;
+    min-width: 0 !important;
+  }
+
+  /* 예시 그래픽은 이전처럼 칼럼 전체를 꽉 채우지 않고 살짝만 줄인다. */
+  .intro-game .intro-game-feature-visual,
+  .intro-business .intro-business-feature-card > div:last-child {
+    width: min(94%, 560px) !important;
+    max-width: 560px !important;
+    min-width: 0 !important;
+    margin-inline: 0 !important;
+  }
+
+  /* 핵심: 중앙 여백을 다시 만들지 않도록 예시 UI를 텍스트 쪽으로 붙인다. */
+  .intro-game .intro-game-feature-visual,
+  .intro-business .intro-business-features > div:first-child > div:nth-child(odd) .intro-business-feature-card > div:last-child {
+    justify-self: start !important;
+  }
+
+  .intro-business .intro-business-features > div:first-child > div:nth-child(even) .intro-business-feature-card > div:last-child {
+    justify-self: end !important;
+  }
+
+  /* 예시 UI 내부 카드가 부모 폭을 넘어 퍼지지 않도록 제한한다. */
   .intro-game .intro-game-feature-visual > *,
   .intro-business .intro-business-feature-card > div:last-child > * {
     width: 100% !important;
@@ -18,9 +54,33 @@
     box-sizing: border-box !important;
   }
 
-  /* 리포트 예시의 마지막 코멘트는 축소된 카드 안에서 시각적으로 중앙에 오도록 정렬한다. */
+  /* 비즈니스 카드의 안쪽 여백도 홀짝 카드가 동일하게 보이도록 고정한다. */
+  .intro-business .intro-business-feature-card {
+    padding-inline: 28px !important;
+    padding-block: 28px !important;
+  }
+
+  /* 리포트 예시의 하단 코멘트는 카드 중앙에 둔다. */
   .intro-game .intro-game-feature-visual > div > p:last-child,
   .intro-business .intro-business-feature-card > div:last-child > div > p:last-child {
-    text-align: center;
+    text-align: center !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 980px) {
+  /* 태블릿~작은 노트북에서는 고정폭 때문에 다시 답답해지지 않도록 비율형으로 완화한다. */
+  .intro-game .intro-game-feature-window > div:last-child,
+  .intro-business .intro-business-features > div:first-child > div:nth-child(odd) .intro-business-feature-card {
+    grid-template-columns: minmax(260px, 40%) minmax(0, 60%) !important;
+    column-gap: 16px !important;
+  }
+
+  .intro-business .intro-business-features > div:first-child > div:nth-child(even) .intro-business-feature-card {
+    grid-template-columns: minmax(0, 60%) minmax(260px, 40%) !important;
+    column-gap: 16px !important;
+  }
+
+  .intro-business .intro-business-feature-card {
+    padding-inline: 24px !important;
   }
 }
