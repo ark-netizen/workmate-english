@@ -4,7 +4,6 @@ import { BrowserRouter } from "react-router-dom";
 import { App } from "./App";
 import "./index.css";
 import "./intro-solar-highlight.css";
-import "./intro-work-process-print.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
