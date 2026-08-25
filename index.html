@@ -32,22 +32,37 @@
     <style>
       @media (min-width: 901px) {
         .intro-page.intro-game .hero .wrap {
-          max-width: 1260px !important;
-          grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr) !important;
+          max-width: 1380px !important;
+          grid-template-columns: minmax(0, .76fr) minmax(0, 1.24fr) !important;
+          gap: 54px !important;
+        }
+        .intro-page.intro-game .hero .preview {
+          width: 100% !important;
         }
       }
       .intro-page.intro-game .hero .mailhead {
-        padding: 13px 16px !important;
+        padding: 15px 18px !important;
       }
       .intro-page.intro-game .hero .person {
-        min-height: 88px !important;
-        padding: 13px 4px !important;
-        gap: 14px !important;
+        min-height: 100px !important;
+        padding: 15px 5px !important;
+        gap: 16px !important;
+      }
+      .intro-page.intro-game .hero .person strong {
+        font-size: 15px !important;
+      }
+      .intro-page.intro-game .hero .person small {
+        margin-top: 6px !important;
+        font-size: 14px !important;
+      }
+      .intro-page.intro-game .hero .tone {
+        padding: 6px 9px !important;
+        font-size: 12px !important;
       }
       .intro-page.intro-game .hero .avatar {
-        width: 64px !important;
-        height: 72px !important;
-        flex: 0 0 64px !important;
+        width: 72px !important;
+        height: 82px !important;
+        flex: 0 0 72px !important;
         padding: 2px !important;
         overflow: hidden !important;
         box-sizing: border-box !important;
@@ -67,14 +82,24 @@
         object-fit: contain !important;
         transform: none !important;
       }
-      @media (max-width: 560px) {
+      @media (max-width: 900px) and (min-width: 561px) {
         .intro-page.intro-game .hero .avatar {
-          width: 56px !important;
-          height: 64px !important;
-          flex-basis: 56px !important;
+          width: 66px !important;
+          height: 76px !important;
+          flex-basis: 66px !important;
         }
         .intro-page.intro-game .hero .person {
-          min-height: 80px !important;
+          min-height: 92px !important;
+        }
+      }
+      @media (max-width: 560px) {
+        .intro-page.intro-game .hero .avatar {
+          width: 58px !important;
+          height: 66px !important;
+          flex-basis: 58px !important;
+        }
+        .intro-page.intro-game .hero .person {
+          min-height: 82px !important;
         }
       }
     </style>
