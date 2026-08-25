@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronDown, ChevronUp, Maximize2, Minimize2, Minus, Send } from "lucide-react";
-import type { Email, EmailThread } from "@/types/domain";
+import type { ContactRole, Email, EmailThread } from "@/types/domain";
 import { useWorkday } from "@/context/useWorkday";
 import { Avatar } from "@/components/ui/Avatar";
+import { ContactAvatar } from "@/components/ui/ContactAvatar";
 import { ReplyHints } from "@/components/reply/ReplyHints";
 import { TranslateButton } from "@/components/reply/TranslateButton";
 import { SpeakButton } from "@/components/reply/SpeakButton";
@@ -39,7 +40,7 @@ function EmailMessage({
 }: {
   email: Email;
   senderName: string;
-  senderRole?: string;
+  senderRole?: ContactRole;
   expanded: boolean;
   onToggle: () => void;
   highlighted?: boolean;
@@ -55,7 +56,11 @@ function EmailMessage({
         onClick={onToggle}
         className={`flex w-full items-center gap-3 rounded-lg border border-border bg-surface px-4 py-2.5 text-left transition-shadow hover:bg-black/[.02] ${highlightClass}`}
       >
-        <Avatar name={displayName} size="sm" />
+        {isUser ? (
+          <Avatar name={displayName} size="sm" />
+        ) : (
+          <ContactAvatar name={senderName} role={senderRole} size="sm" />
+        )}
         <span className="shrink-0 truncate text-sm font-medium text-foreground/80">{displayName}</span>
         <span className="min-w-0 flex-1 truncate text-sm text-foreground/40">{email.body}</span>
         <span className="shrink-0 text-xs text-foreground/40">{formatDateTime(email.timestamp)}</span>
@@ -67,7 +72,11 @@ function EmailMessage({
   return (
     <div className={`rounded-lg border border-border bg-surface transition-shadow ${highlightClass}`}>
       <button type="button" onClick={onToggle} className="flex w-full items-center gap-3 px-4 py-3 text-left">
-        <Avatar name={displayName} />
+        {isUser ? (
+          <Avatar name={displayName} />
+        ) : (
+          <ContactAvatar name={senderName} role={senderRole} size="md" />
+        )}
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium text-foreground">{displayName}</p>
           <p className="truncate text-xs text-foreground/40">{isUser ? `to ${senderName}` : "to 나"}</p>
