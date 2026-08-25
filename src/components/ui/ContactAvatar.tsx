@@ -28,10 +28,10 @@ export function ContactAvatar({
   const { businessMode } = useBusinessMode();
   const npcImage = role ? NPC_IMAGE_BY_ROLE[role] : undefined;
 
-  // businessMode=false가 게임모드다.
+  // 현재 앱에서는 businessMode=true가 게임모드다.
   // 게임모드의 동료·상사·거래처만 고정 수달 캐릭터를 쓰고,
   // 비즈니스모드/HR/기타 아바타는 기존 이니셜 디자인을 그대로 유지한다.
-  if (!businessMode && npcImage) {
+  if (businessMode && npcImage) {
     const baseUrl = import.meta.env.BASE_URL ?? "/";
     return (
       <img
