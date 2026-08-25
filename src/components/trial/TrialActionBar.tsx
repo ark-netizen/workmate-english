@@ -2,9 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { useBusinessMode } from "@/context/useBusinessMode";
 
-// "1분 체험하기" 전체 과정에서 공통으로 쓰는 안내 카드.
-// 게임 모드는 홈 투어 안내 카드와 같은 크림+진초록+하드 섀도 문법을 사용하고,
-// 비즈니스 모드는 기존의 블루 SaaS 스타일을 유지한다.
 const NUDGE_DURATION_MS = 2600;
 
 export function TrialActionBar({
@@ -56,11 +53,11 @@ export function TrialActionBar({
   return (
     <div
       ref={barRef}
-      className={`fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+76px)] top-auto z-30 mx-auto max-w-none rounded-xl p-3 transition-[transform,opacity] duration-300 ease-out md:inset-x-auto md:bottom-auto md:right-6 md:top-1/2 md:w-80 md:max-w-sm md:-translate-y-1/2 md:p-4 ${
+      className={`trial-action-bar relative z-30 mx-3 my-2 max-w-none rounded-xl p-3 transition-[transform,opacity] duration-300 ease-out md:fixed md:inset-x-auto md:bottom-auto md:right-6 md:top-1/2 md:mx-0 md:my-0 md:w-80 md:max-w-sm md:-translate-y-1/2 md:p-4 ${
         isBusinessMode
-          ? "border-2 border-[#1a56ff] bg-[#eef4ff] shadow-[0_18px_45px_rgba(26,86,255,0.24)]"
-          : "border-2 border-[#28352f] bg-[#fffaf0] text-[#28352f] shadow-[4px_4px_0_#28352f]"
-      } ${entered ? "translate-x-0 opacity-100" : "translate-x-6 opacity-0"}`}
+          ? "border-2 border-[#1a56ff] bg-[#eef4ff] shadow-[0_10px_24px_rgba(26,86,255,0.18)] md:shadow-[0_18px_45px_rgba(26,86,255,0.24)]"
+          : "border-2 border-[#28352f] bg-[#fffaf0] text-[#28352f] shadow-[3px_3px_0_#28352f] md:shadow-[4px_4px_0_#28352f]"
+      } ${entered ? "translate-x-0 opacity-100" : "translate-x-3 opacity-0 md:translate-x-6"}`}
     >
       {showNudge && (
         <div className="absolute inset-x-0 -top-10 flex justify-center px-2 sm:px-4">
