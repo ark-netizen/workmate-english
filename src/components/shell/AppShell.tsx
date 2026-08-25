@@ -20,8 +20,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     conversations.reduce((sum, conversation) => sum + conversation.unreadCount, 0) +
     emailThreads.reduce((sum, thread) => sum + thread.unreadCount, 0);
 
+  // 게임 모드 실사용 화면은 인트로와 같은 역할 분담으로 맞춘다:
+  // 연한 민트 아이보리=배경, 따뜻한 크림=카드, 베이지=일반 경계, 진초록=주요 강조.
+  // AppShell 안에서만 변수를 덮어써 Intro/로그인 등 다른 화면의 팔레트는 건드리지 않는다.
+  const shellTheme = gameMode
+    ? ({
+        "--background": "#eef5ec",
+        "--foreground": "#28352f",
+        "--surface": "#fff9e9",
+        "--border": "#d8cba9",
+        "--accent": "#2f795d",
+        "--accent-2": "#f09a63",
+      } as React.CSSProperties)
+    : undefined;
+
   return (
-    <div className="flex min-h-screen w-full">
+    <div className="flex min-h-screen w-full bg-background" style={shellTheme}>
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar
@@ -37,7 +51,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             aria-hidden="true"
           />
         )}
-        <main className="min-w-0 flex-1 pb-16 md:pb-0">{children}</main>
+        <main className="min-w-0 flex-1 bg-background pb-16 md:pb-0">{children}</main>
         {isTrial && <TrialGuideBar />}
       </div>
       <MobileTabBar />
