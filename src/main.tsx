@@ -5,6 +5,7 @@ import { App } from "./App";
 import "./index.css";
 import "./intro-solar-highlight.css";
 import "./game-mode-workspace.css";
+import "./intro-mobile.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
