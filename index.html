@@ -28,6 +28,54 @@
     <meta name="twitter:description" content="영어를 공부하지 마세요, 영어로 일하는 하루를 경험하세요." />
     <meta name="twitter:image" content="https://www.enmate.co.kr/brand/og-image-v2.png" />
 
+    <!-- 게임모드 인트로: TODAY'S QUEST 카드와 수달을 기존 레이아웃을 깨지 않는 범위에서 확대 -->
+    <style>
+      @media (min-width: 901px) {
+        .intro-page.intro-game .hero .wrap {
+          max-width: 1260px !important;
+          grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr) !important;
+        }
+      }
+      .intro-page.intro-game .hero .mailhead {
+        padding: 13px 16px !important;
+      }
+      .intro-page.intro-game .hero .person {
+        min-height: 88px !important;
+        padding: 13px 4px !important;
+        gap: 14px !important;
+      }
+      .intro-page.intro-game .hero .avatar {
+        width: 64px !important;
+        height: 72px !important;
+        flex: 0 0 64px !important;
+        overflow: hidden !important;
+      }
+      .intro-page.intro-game .hero .avatar > [role="img"] {
+        width: 100% !important;
+        height: 100% !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        overflow: hidden !important;
+      }
+      .intro-page.intro-game .hero .avatar > [role="img"] > img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: contain !important;
+        transform: scale(1.18) !important;
+        transform-origin: center center !important;
+      }
+      @media (max-width: 560px) {
+        .intro-page.intro-game .hero .avatar {
+          width: 56px !important;
+          height: 64px !important;
+          flex-basis: 56px !important;
+        }
+        .intro-page.intro-game .hero .person {
+          min-height: 80px !important;
+        }
+      }
+    </style>
+
     <script>
       // 404.html이 인코딩해서 보낸 원래 경로를 복원 — react-router가 초기화되기 전에 실행돼야 함
       (function () {
