@@ -1,0 +1,72 @@
+/* Intro scroll / progress polish.
+   기존 WORK PROCESS 내부 인디케이터는 숨기고, WORK PROCESS 이후 섹션까지
+   하나의 진행 인디케이터로 이어서 보여준다. */
+
+/* 게임모드 히어로 설명 박스의 과한 안쪽 여백을 줄인다. */
+.intro-game .hero .copy > p {
+  width: fit-content !important;
+  max-width: min(100%, 620px) !important;
+  margin-top: 14px !important;
+  padding: 10px 12px !important;
+  line-height: 1.55 !important;
+}
+
+/* 기존 WORK PROCESS 전용 우측 점은 새 통합 인디케이터와 중복되므로 숨긴다. */
+.intro-game .intro-game-features > .fixed,
+.intro-business .intro-business-features > .fixed {
+  display: none !important;
+}
+
+.intro-global-progress {
+  position: fixed;
+  top: 50%;
+  right: 18px;
+  z-index: 18;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  transform: translateY(-50%);
+  pointer-events: auto;
+}
+
+.intro-global-progress button {
+  display: block;
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(49, 93, 83, .22);
+  box-shadow: none;
+  cursor: pointer;
+  transition: width 180ms ease, background-color 180ms ease, opacity 180ms ease;
+}
+
+.intro-global-progress button[aria-current="true"] {
+  width: 34px;
+  background: #5fb8b0;
+}
+
+.intro-business .intro-global-progress button {
+  background: rgba(26, 86, 255, .18);
+}
+
+.intro-business .intro-global-progress button[aria-current="true"] {
+  background: #5fb8b0;
+}
+
+@media (max-width: 767px) {
+  .intro-game .hero .copy > p {
+    width: auto !important;
+    max-width: 100% !important;
+    margin-top: 11px !important;
+    padding: 8px 10px !important;
+    line-height: 1.5 !important;
+  }
+
+  /* 실제 터치 모바일에서는 오른쪽 점이 콘텐츠를 가리지 않게 숨긴다. */
+  .intro-global-progress {
+    display: none !important;
+  }
+}
