@@ -159,6 +159,7 @@ const SECTION_LINKS = [
   { id: "settings-basic", label: "기본 정보" },
   { id: "settings-personas", label: "동료·상사·거래처" },
   { id: "settings-notifications", label: "웹 브라우저 알림" },
+  { id: "settings-kakao-notify", label: "카톡 알림" },
 ];
 
 export function SettingsPage() {

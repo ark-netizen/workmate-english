@@ -79,6 +79,8 @@ function AppRoutes() {
   const location = useLocation();
   const navigate = useNavigate();
   const { loading, error, needsOnboarding, refresh } = useWorkday();
+  // IntroPage 안의 게임/비즈니스 토글과 같은 값 — 이 프로젝트 관례상 businessMode(true)가 게임(민트) 스킨이다
+  const { businessMode: introGameMode } = useBusinessMode();
 
   // 로그인한 계정이 관리자면 온보딩/홈으로 안 보내고 바로 관리자 대시보드로
   const redirectIfAdmin = async () => {
@@ -162,7 +164,7 @@ function AppRoutes() {
       return <Navigate to="/intro" replace />;
     }
     return (
-      <StandalonePage mintFooter>
+      <StandalonePage mintFooter={introGameMode}>
         <IntroPage
           onContinueWithoutLogin={async () => {
             await startFreshGuestTrial();
@@ -205,7 +207,7 @@ function AppRoutes() {
         <Route
           path="*"
           element={
-            <StandalonePage>
+            <StandalonePage mintFooter={introGameMode}>
               <OnboardingPage />
             </StandalonePage>
           }
