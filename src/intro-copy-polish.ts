@@ -1,5 +1,51 @@
 let introCopyObserver: MutationObserver | null = null;
 
+const processCopy = [
+  {
+    title: "동료·상사·거래처, 다른 표현",
+    body: '같은 상황도 상대에 따라<br class="hidden sm:block"/>캐주얼·격식·보수적 톤을 구분해 배우고,<br class="hidden sm:block"/>대화가 쌓일수록 더 고도화돼요.',
+  },
+  {
+    title: "내 업종·직무 맞춤 시나리오",
+    body: '업종·직무만 입력하면<br class="hidden sm:block"/>나만의 동료·상사·거래처가 매일 자동으로 생겨요.',
+  },
+  {
+    title: '웹·카카오톡으로<br class="hidden sm:block"/>놓치지 않는 알림',
+    body: '새 업무 연락과 리마인더를<br class="hidden sm:block"/>웹과 카카오톡으로 받을 수 있어요.<br class="hidden sm:block"/>바쁠 때는 \'외근 중\'으로 미루면 30분 뒤 다시 알려드려요.',
+  },
+  {
+    title: "하루·주간·월간 리포트",
+    body: '퇴근 리포트부터<br class="hidden sm:block"/>매주·매달 성장 흐름까지 정리해드려요.',
+  },
+  {
+    title: '스트레스 받을 때는,<br class="hidden sm:block"/>고함항아리에 소리질러봐요!',
+    body: '영어를 배우는 걸 넘어서,<br class="hidden sm:block"/>영어로 솔직하게 털어놓을 수 있는 스트레스 공유 동료가 생겨요.<br class="hidden sm:block"/>바쁜 하루가 감지되면 먼저 위로와 표현을 건네고,<br class="hidden sm:block"/>내가 먼저 말을 걸 수도 있어요.',
+  },
+] as const;
+
+function polishProcessCopy(page: HTMLElement) {
+  const cards = page.querySelectorAll<HTMLElement>(".intro-game-feature-window, .intro-business-feature-card");
+
+  cards.forEach((card, index) => {
+    const copy = processCopy[index];
+    if (!copy || card.dataset.processCopyPolished === "true") return;
+
+    const isGameCard = card.classList.contains("intro-game-feature-window");
+    const title = isGameCard
+      ? card.querySelector<HTMLElement>(":scope > div:last-child > div:first-child > p:first-of-type")
+      : card.querySelector<HTMLElement>(":scope > div:first-child > p:first-of-type");
+    const body = isGameCard
+      ? card.querySelector<HTMLElement>(":scope > div:last-child > div:first-child > p:nth-of-type(2)")
+      : card.querySelector<HTMLElement>(":scope > div:first-child > p:nth-of-type(2)");
+
+    if (!title || !body) return;
+
+    title.innerHTML = copy.title;
+    body.innerHTML = copy.body;
+    card.dataset.processCopyPolished = "true";
+  });
+}
+
 function polishIntroCopy() {
   const page = document.querySelector<HTMLElement>(".intro-page");
   if (!page) return;
@@ -12,6 +58,8 @@ function polishIntroCopy() {
       '<span class="intro-hero-copy-block intro-hero-copy-secondary">동료·상사·거래처마다 달라지는 말투까지 익히고, 잘한 표현과<br/>교정 포인트는 퇴근 후 다시 복습할 수 있어요.</span>',
     ].join("");
   }
+
+  polishProcessCopy(page);
 
   const finalHeading = page.querySelector<HTMLElement>(".intro-final-cta h2");
   if (finalHeading && finalHeading.dataset.copyPolished !== "true") {
