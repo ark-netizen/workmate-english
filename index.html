@@ -48,7 +48,9 @@
         width: 64px !important;
         height: 72px !important;
         flex: 0 0 64px !important;
+        padding: 2px !important;
         overflow: hidden !important;
+        box-sizing: border-box !important;
       }
       .intro-page.intro-game .hero .avatar > [role="img"] {
         width: 100% !important;
@@ -60,9 +62,10 @@
       .intro-page.intro-game .hero .avatar > [role="img"] > img {
         width: 100% !important;
         height: 100% !important;
+        max-width: 100% !important;
+        max-height: 100% !important;
         object-fit: contain !important;
-        transform: scale(1.18) !important;
-        transform-origin: center center !important;
+        transform: none !important;
       }
       @media (max-width: 560px) {
         .intro-page.intro-game .hero .avatar {
