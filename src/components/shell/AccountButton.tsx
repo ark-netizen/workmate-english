@@ -16,7 +16,7 @@ import { AccountModal } from "./AccountModal";
 // - 익명(체험) 상태: "로그인 / 회원가입" → 모달로 실계정 승격/로그인
 // - 로그인된 상태: 이름·이메일 + 로그아웃
 export function AccountButton() {
-  const { refresh } = useWorkday();
+  const { refresh, isTrial } = useWorkday();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
   const [open, setOpen] = useState(false);
@@ -129,7 +129,16 @@ export function AccountButton() {
       {avatarButton}
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          // 1분 체험 세션에서 그 자리에 로그인 모달을 띄우면 linkIdentity가 체험 데이터에
+          // 실계정을 연결해버려서, 체험 상태와 실사용자 데이터가 뒤섞이는 문제가 있었다.
+          // 체험 중에는 소개 페이지(/intro)로 완전히 나가서 깨끗한 상태로 로그인하게 한다.
+          if (isTrial) {
+            window.dispatchEvent(new Event("go:force-intro"));
+            return;
+          }
+          setOpen(true);
+        }}
         aria-label="로그인 / 회원가입"
         className={`rounded-full border p-2 ${
           businessMode ? "border-white/50 text-white hover:bg-white/10" : "border-border text-foreground/70 hover:bg-black/[.03]"
