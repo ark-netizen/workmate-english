@@ -27,15 +27,12 @@ export function EmployeeIdCard({
   const unlockedRanks = RANKS.slice(0, rankIndex + 1);
 
   const savedAvatarRank = profile.avatar_rank?.trim() || rank;
-  // 고르는 즉시 저장하지 않고, "저장" 버튼을 눌러야 반영 — 선택만으론 아직 아무것도 안 바뀜을 명확히 함
   const [selectedRank, setSelectedRank] = useState(savedAvatarRank);
   const [saving, setSaving] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const hasPendingChange = selectedRank !== savedAvatarRank;
-  // 예전에 올려둔 프로필 사진이 남아있으면 캐릭터를 골라도 계속 사진에 가려져 있었으므로,
-  // 저장하지 않았어도 캐릭터를 고르는 중이면 미리보기는 사진 대신 선택한 캐릭터로 보여준다
   const showPhoto = Boolean(photoUrl) && !hasPendingChange;
 
   const handleSave = async () => {
@@ -45,11 +42,10 @@ export function EmployeeIdCard({
     try {
       const updated = await api.postProfile({ avatar_rank: selectedRank });
       if ((updated.avatar_rank?.trim() || "") !== selectedRank) {
-        // 서버가 200을 줬어도 실제로는 반영 안 됐을 수 있음(과거엔 유효성 검사 실패 시 조용히 무시했음) — 응답으로 직접 확인
         setSaveError("저장에 실패했어요. 이미 승급한 직급의 캐릭터만 고를 수 있어요.");
         return;
       }
-      if (photoUrl) await onClearPhoto?.(); // 캐릭터를 저장하면 그 캐릭터가 실제로 보이도록 예전 사진은 지운다
+      if (photoUrl) await onClearPhoto?.();
       window.dispatchEvent(new Event("go:profile-updated"));
       setJustSaved(true);
       setTimeout(() => setJustSaved(false), 2000);
@@ -60,11 +56,8 @@ export function EmployeeIdCard({
     }
   };
 
-  // hideAvatarPicker 쓰는 곳(체험판)은 캐릭터 고르는 영역이 아예 없어서, 세로로 길쭉한 카드보다
-  // 실제 명함/사원증처럼 가로로 넓은 카드가 옆에 다른 콘텐츠(미리보기 폼)와 나란히 놓기도 자연스럽다
   const horizontal = hideAvatarPicker;
   // IntroPage에서 businessMode=true가 실제 "게임 모드"로 쓰인다.
-  // 1분 체험 사원증은 이미 별도 스타일을 쓰므로, 일반 사원증 모달에서만 같은 레트로 톤을 적용한다.
   const gameCard = businessMode && !horizontal;
 
   return (
@@ -146,8 +139,11 @@ export function EmployeeIdCard({
               : "border-t border-border px-5 py-4 text-center"
           }
         >
-          <p className={gameCard ? "mb-2 text-xs font-bold text-[#4d554f]" : "mb-2 text-xs font-medium text-foreground/50"}>
-            아바타 캐릭터 {unlockedRanks.length > 1 && <span className={gameCard ? "text-[#7c837e]" : "text-foreground/30"}>(승급하면 선택지가 늘어나요)</span>}
+          <p className={gameCard ? "mb-1 text-xs font-bold text-[#4d554f]" : "mb-1 text-xs font-medium text-foreground/50"}>
+            수달 캐릭터 {unlockedRanks.length > 1 && <span className={gameCard ? "text-[#7c837e]" : "text-foreground/30"}>(승급하면 선택지가 늘어나요)</span>}
+          </p>
+          <p className={gameCard ? "mb-2 text-[11px] text-[#6e756f]" : "mb-2 text-[11px] text-foreground/35"}>
+            현재는 수달 캐릭터를 제공해요 · 인간 캐릭터 모드도 준비 중이에요
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2">
             {unlockedRanks.map((r) => (
@@ -155,7 +151,7 @@ export function EmployeeIdCard({
                 key={r}
                 type="button"
                 onClick={() => setSelectedRank(r)}
-                aria-label={`${r} 캐릭터 선택`}
+                aria-label={`${r} 수달 캐릭터 선택`}
                 aria-pressed={selectedRank === r}
                 className={
                   gameCard
