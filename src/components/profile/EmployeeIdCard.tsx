@@ -2,6 +2,7 @@ import { useState } from "react";
 import * as api from "@/lib/api";
 import { RANKS } from "@/components/promotion/rankArt";
 import { RankAvatar } from "@/components/promotion/RankAvatar";
+import { useBusinessMode } from "@/context/useBusinessMode";
 import { deriveEmployeeId } from "@/lib/employeeId";
 import type { ProfileResponse } from "@/types/api";
 
@@ -17,6 +18,7 @@ export function EmployeeIdCard({
   /** 체험판 온보딩처럼 신원 확인용으로만 카드를 보여주고 캐릭터를 고를 필요 없을 때 이 섹션을 통째로 뺀다 */
   hideAvatarPicker?: boolean;
 }) {
+  const { businessMode } = useBusinessMode();
   const name = profile.display_name?.trim() || "이름 미입력";
   const department = [profile.industry, profile.job_role].filter(Boolean).join(" · ") || "직무 미입력";
   const rank = profile.job_rank?.trim() || "사원";
@@ -61,19 +63,46 @@ export function EmployeeIdCard({
   // hideAvatarPicker 쓰는 곳(체험판)은 캐릭터 고르는 영역이 아예 없어서, 세로로 길쭉한 카드보다
   // 실제 명함/사원증처럼 가로로 넓은 카드가 옆에 다른 콘텐츠(미리보기 폼)와 나란히 놓기도 자연스럽다
   const horizontal = hideAvatarPicker;
+  // IntroPage에서 businessMode=true가 실제 "게임 모드"로 쓰인다.
+  // 1분 체험 사원증은 이미 별도 스타일을 쓰므로, 일반 사원증 모달에서만 같은 레트로 톤을 적용한다.
+  const gameCard = businessMode && !horizontal;
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
-      <div className={horizontal ? "h-1.5 bg-gradient-to-r from-accent to-accent-2" : "h-2 bg-gradient-to-r from-accent to-accent-2"} />
+    <div
+      className={
+        gameCard
+          ? "overflow-hidden rounded-[2px] border-2 border-[#28352f] bg-[#fff9e9] shadow-[5px_5px_0_rgba(40,53,47,.24)]"
+          : "overflow-hidden rounded-2xl border border-border bg-surface shadow-sm"
+      }
+    >
+      <div
+        className={
+          gameCard
+            ? "hidden"
+            : horizontal
+              ? "h-1.5 bg-gradient-to-r from-accent to-accent-2"
+              : "h-2 bg-gradient-to-r from-accent to-accent-2"
+        }
+      />
       <div
         className={
           horizontal
             ? "flex items-center gap-4 p-5 text-left"
-            : "flex flex-col items-center gap-3 p-5 text-center"
+            : gameCard
+              ? "flex flex-col items-center gap-3 px-5 py-6 text-center"
+              : "flex flex-col items-center gap-3 p-5 text-center"
         }
       >
         <div className="relative shrink-0">
-          <div className={horizontal ? "h-16 w-16 overflow-hidden rounded-xl ring-1 ring-border" : "h-20 w-20 overflow-hidden rounded-xl ring-1 ring-border"}>
+          <div
+            className={
+              gameCard
+                ? "h-20 w-20 overflow-hidden rounded-none border-2 border-[#28352f] bg-[#bce5dc] shadow-[3px_3px_0_#28352f]"
+                : horizontal
+                  ? "h-16 w-16 overflow-hidden rounded-xl ring-1 ring-border"
+                  : "h-20 w-20 overflow-hidden rounded-xl ring-1 ring-border"
+            }
+          >
             {showPhoto ? (
               <img src={photoUrl ?? undefined} alt={name} className="h-full w-full object-cover" />
             ) : (
@@ -83,20 +112,42 @@ export function EmployeeIdCard({
         </div>
 
         <div className={horizontal ? "min-w-0 space-y-1" : "min-w-0 space-y-1 text-center"}>
-          <p className="text-xs font-medium uppercase tracking-wide text-foreground/40">Global Office</p>
+          <p
+            className={
+              gameCard
+                ? "text-[11px] font-black uppercase tracking-[0.14em] text-[#2f795d]"
+                : "text-xs font-medium uppercase tracking-wide text-foreground/40"
+            }
+          >
+            Global Office
+          </p>
           <div className={horizontal ? "flex items-center gap-2" : "flex items-center justify-center gap-2"}>
-            <p className="truncate text-lg font-semibold">{name}</p>
-            <span className="shrink-0 rounded-full bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent">{rank}</span>
+            <p className={gameCard ? "truncate text-lg font-black text-[#18251f]" : "truncate text-lg font-semibold"}>{name}</p>
+            <span
+              className={
+                gameCard
+                  ? "shrink-0 border border-[#2f795d] bg-[#eaf5df] px-2 py-0.5 text-xs font-bold text-[#1f6d55]"
+                  : "shrink-0 rounded-full bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent"
+              }
+            >
+              {rank}
+            </span>
           </div>
-          <p className="truncate text-sm text-foreground/60">{department}</p>
-          <p className="text-xs text-foreground/40">사번 {employeeId}</p>
+          <p className={gameCard ? "truncate text-sm font-medium text-[#4d554f]" : "truncate text-sm text-foreground/60"}>{department}</p>
+          <p className={gameCard ? "text-xs text-[#6e756f]" : "text-xs text-foreground/40"}>사번 {employeeId}</p>
         </div>
       </div>
 
       {!hideAvatarPicker && (
-        <div className="border-t border-border px-5 py-4 text-center">
-          <p className="mb-2 text-xs font-medium text-foreground/50">
-            아바타 캐릭터 {unlockedRanks.length > 1 && <span className="text-foreground/30">(승급하면 선택지가 늘어나요)</span>}
+        <div
+          className={
+            gameCard
+              ? "border-t-2 border-[#28352f] px-5 py-4 text-center"
+              : "border-t border-border px-5 py-4 text-center"
+          }
+        >
+          <p className={gameCard ? "mb-2 text-xs font-bold text-[#4d554f]" : "mb-2 text-xs font-medium text-foreground/50"}>
+            아바타 캐릭터 {unlockedRanks.length > 1 && <span className={gameCard ? "text-[#7c837e]" : "text-foreground/30"}>(승급하면 선택지가 늘어나요)</span>}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2">
             {unlockedRanks.map((r) => (
@@ -106,11 +157,19 @@ export function EmployeeIdCard({
                 onClick={() => setSelectedRank(r)}
                 aria-label={`${r} 캐릭터 선택`}
                 aria-pressed={selectedRank === r}
-                className={`rounded-full transition-all ${
-                  selectedRank === r ? "ring-2 ring-accent ring-offset-2 ring-offset-surface" : "opacity-60 hover:opacity-100"
-                }`}
+                className={
+                  gameCard
+                    ? `border-2 bg-[#fff9e9] p-0.5 transition-all ${
+                        selectedRank === r
+                          ? "border-[#2f795d] shadow-[2px_2px_0_#28352f]"
+                          : "border-transparent opacity-60 hover:opacity-100"
+                      }`
+                    : `rounded-full transition-all ${
+                        selectedRank === r ? "ring-2 ring-accent ring-offset-2 ring-offset-surface" : "opacity-60 hover:opacity-100"
+                      }`
+                }
               >
-                <RankAvatar rank={r} className="h-10 w-10 rounded-full" />
+                <RankAvatar rank={r} className={gameCard ? "h-10 w-10 rounded-none" : "h-10 w-10 rounded-full"} />
               </button>
             ))}
           </div>
@@ -119,7 +178,11 @@ export function EmployeeIdCard({
             type="button"
             onClick={handleSave}
             disabled={!hasPendingChange || saving}
-            className="mt-3 w-full rounded-md bg-accent px-3 py-2 text-xs font-medium text-white hover:opacity-90 disabled:cursor-default disabled:bg-foreground/10 disabled:text-foreground/40"
+            className={
+              gameCard
+                ? "mt-3 w-full border-2 border-[#28352f] bg-[#fffaf0] px-3 py-2 text-xs font-black text-[#28352f] shadow-[2px_2px_0_#28352f] hover:bg-[#eaf5df] disabled:cursor-default disabled:bg-[#ece6d8] disabled:text-[#7a807b] disabled:shadow-none"
+                : "mt-3 w-full rounded-md bg-accent px-3 py-2 text-xs font-medium text-white hover:opacity-90 disabled:cursor-default disabled:bg-foreground/10 disabled:text-foreground/40"
+            }
           >
             {saving ? "저장 중..." : justSaved ? "저장했어요 ✓" : hasPendingChange ? "이 캐릭터로 저장" : "저장됨"}
           </button>
