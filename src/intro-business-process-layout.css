@@ -36,6 +36,24 @@
     max-width: 100% !important;
     box-sizing: border-box !important;
   }
+
+  /* space-evenly의 전체 균형은 유지하되 두 덩어리만 바깥쪽으로 10px씩 벌린다.
+     → 좌우 바깥 여백은 조금 줄고, 가운데 여백은 총 20px 정도 더 넓어진다. */
+  .intro-business .intro-business-features > div:first-child > div:nth-child(odd) .intro-business-feature-card > div:first-child {
+    transform: translateX(-10px);
+  }
+
+  .intro-business .intro-business-features > div:first-child > div:nth-child(odd) .intro-business-feature-card > div:last-child {
+    transform: translateX(10px);
+  }
+
+  .intro-business .intro-business-features > div:first-child > div:nth-child(even) .intro-business-feature-card > div:first-child {
+    transform: translateX(10px);
+  }
+
+  .intro-business .intro-business-features > div:first-child > div:nth-child(even) .intro-business-feature-card > div:last-child {
+    transform: translateX(-10px);
+  }
 }
 
 @media (min-width: 768px) and (max-width: 980px) {
@@ -49,5 +67,22 @@
     flex-basis: 430px !important;
     width: min(47%, 430px) !important;
     max-width: 430px !important;
+  }
+
+  /* 중간 폭에서는 과하게 벌어지지 않도록 이동량만 살짝 줄인다. */
+  .intro-business .intro-business-features > div:first-child > div:nth-child(odd) .intro-business-feature-card > div:first-child {
+    transform: translateX(-6px);
+  }
+
+  .intro-business .intro-business-features > div:first-child > div:nth-child(odd) .intro-business-feature-card > div:last-child {
+    transform: translateX(6px);
+  }
+
+  .intro-business .intro-business-features > div:first-child > div:nth-child(even) .intro-business-feature-card > div:first-child {
+    transform: translateX(6px);
+  }
+
+  .intro-business .intro-business-features > div:first-child > div:nth-child(even) .intro-business-feature-card > div:last-child {
+    transform: translateX(-6px);
   }
 }
