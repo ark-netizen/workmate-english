@@ -1,20 +1,23 @@
 /* Intro scroll / progress polish.
-   WORK PROCESS 각 카드와 이후 trial/review/CTA를 한 화면 단위로 보여준다. */
+   WORK PROCESS 각 카드와 이후 trial/review/CTA를 한 번의 휠 이동 단위로 보여준다. */
 
-/* 게임모드 히어로 설명 박스: 제목 폭과 균형을 맞추고 설명을 한 호흡 더 보강한다. */
-.intro-game .hero .copy > p {
+/* 히어로 설명은 제목 폭과 균형을 맞추되, 문단 사이에 호흡을 둔다. */
+.intro-game .hero .copy > p,
+.intro-business .hero .copy > p {
   box-sizing: border-box !important;
   width: min(100%, 640px) !important;
   max-width: 640px !important;
   margin-top: 14px !important;
   padding: 14px 16px !important;
-  line-height: 1.6 !important;
+  line-height: 1.58 !important;
 }
 
-.intro-game .hero .copy > p::after {
-  content: "동료·상사·거래처마다 달라지는 말투까지 익히고, 잘한 표현과 교정 포인트는 퇴근 후 다시 복습할 수 있어요.";
+.intro-hero-copy-block {
   display: block;
-  margin-top: 4px;
+}
+
+.intro-hero-copy-secondary {
+  margin-top: 10px;
 }
 
 /* 기존 WORK PROCESS 전용 우측 점은 새 통합 인디케이터와 중복되므로 숨긴다. */
@@ -23,8 +26,8 @@
   display: none !important;
 }
 
-/* 데스크톱/태블릿에서는 한 번의 휠 이동에 한 콘텐츠 단위가 화면을 차지하도록
-   카드 바깥 슬롯을 viewport 높이에 맞춘다. 카드 자체 크기는 억지로 늘리지 않는다. */
+/* 카드 사이 간격은 원래보다 조금만 넓힌다.
+   휠 스크립트가 한 번에 다음 카드로 이동하므로 viewport 전체를 빈 여백으로 채울 필요가 없다. */
 @media (min-width: 768px) {
   .intro-game .intro-game-features > div:first-child,
   .intro-business .intro-business-features > div:first-child {
@@ -35,9 +38,9 @@
   .intro-business .intro-business-features > div:first-child > div {
     box-sizing: border-box;
     display: grid;
-    min-height: calc(100dvh - var(--intro-nav-offset, 72px));
+    min-height: clamp(560px, 72dvh, 700px);
     align-items: center;
-    padding-block: clamp(22px, 4vh, 42px);
+    padding-block: clamp(26px, 3.5vh, 38px);
     scroll-margin-top: var(--intro-nav-offset, 72px);
   }
 
@@ -46,22 +49,16 @@
     width: 100%;
   }
 
+  /* 1분 체험/후기는 한 화면에 내용이 안정적으로 담기되 과한 빈 공간은 줄인다. */
   .intro-trial-showcase,
-  .intro-reviews,
-  .intro-final-cta {
+  .intro-reviews {
     box-sizing: border-box;
-    min-height: calc(100dvh - var(--intro-nav-offset, 72px));
+    min-height: clamp(620px, 82dvh, 780px);
     scroll-margin-top: var(--intro-nav-offset, 72px);
   }
 
-  .intro-trial-showcase {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-
-  .intro-reviews,
-  .intro-final-cta {
+  .intro-trial-showcase,
+  .intro-reviews {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -69,6 +66,16 @@
 
   .intro-reviews > div {
     width: 100%;
+  }
+
+  /* 마지막 CTA는 풀스크린으로 늘리지 않는다. */
+  .intro-final-cta {
+    box-sizing: border-box;
+    min-height: 360px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    scroll-margin-top: var(--intro-nav-offset, 72px);
   }
 }
 
@@ -112,17 +119,17 @@
 }
 
 @media (max-width: 767px) {
-  .intro-game .hero .copy > p {
+  .intro-game .hero .copy > p,
+  .intro-business .hero .copy > p {
     width: 100% !important;
     max-width: 100% !important;
     margin-top: 11px !important;
     padding: 11px 12px !important;
-    line-height: 1.52 !important;
+    line-height: 1.5 !important;
   }
 
-  .intro-game .hero .copy > p::after {
-    content: "관계별 말투부터 퇴근 후 복습까지 한 흐름으로 익혀요.";
-    margin-top: 3px;
+  .intro-hero-copy-secondary {
+    margin-top: 8px;
   }
 
   /* 실제 터치 모바일에서는 오른쪽 점이 콘텐츠를 가리지 않게 숨긴다. */
