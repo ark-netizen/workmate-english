@@ -30,13 +30,9 @@ export function ConversationView({ conversation }: { conversation: Conversation 
   } = useWorkday();
   const contact = getContactById(conversation.contactId);
   const isVent = conversation.kind === "vent";
-  // 복습(review) 대화는 힌트 없이 스스로 다시 써보는 게 목적 — 실제 힌트도 저장돼있지 않으므로,
-  // 안 맞는 일반 힌트를 보여주는 대신 힌트 UI 자체를 숨긴다
   const isReview = conversation.kind === "review";
-  // "1분 체험하기" 게스트는 실제 화면은 그대로 두고, 답장을 미리 채워주고 보내기 버튼만 반짝이게 안내
   const trialPreset = isTrial && !isVent && contact ? TRIAL_REPLY_TEXT[contact.role] : undefined;
   const alreadyReplied = conversation.messages.some((m) => m.from === "user");
-  // "상사" 단계는 힌트 시연 시나리오가 있어서, 힌트를 보여주기 전까지는 정답을 입력창에 미리 채우면 안 됨
   const isHintGatedRole = isTrial && contact?.role === "manager";
   const hintRevealed = trialHintSignal > 0;
   const shouldPrefillTrial = !isHintGatedRole || hintRevealed;
@@ -48,46 +44,46 @@ export function ConversationView({ conversation }: { conversation: Conversation 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversation.id, conversation.unreadCount]);
 
-  // 하이라이트된 메시지가 이 대화 안에 있으면 = 방금 실제로 봤다는 뜻이니, 잠깐 보여준 뒤 끈다
   useEffect(() => {
     if (!highlightedMessageId) return;
     if (!conversation.messages.some((m) => m.id === highlightedMessageId)) return;
     const timer = setTimeout(clearHighlightedMessage, 2500);
     return () => clearTimeout(timer);
   }, [highlightedMessageId, conversation.messages, clearHighlightedMessage]);
+
   const [text, setText] = useState(() => (trialPreset && !alreadyReplied && shouldPrefillTrial ? trialPreset : ""));
   useEffect(() => {
     if (!isTrial) return;
-    // 힌트 보여주기 전이면 정답을 채우지 않되, 이전 대화(다른 상대)에서 남은 텍스트가 그대로 보이지
-    // 않도록 일단 비워둔다 — 힌트가 열리면 이 effect가 다시 돌면서 그때 채워짐
     setText(shouldPrefillTrial && trialPreset && !alreadyReplied ? trialPreset : "");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversation.id, isTrial, shouldPrefillTrial]);
+
   const [sending, setSending] = useState(false);
-  // 이 대화의 답장이 어디서 트리거됐든(본인 화면 또는 체험판 하단 안내 바) "입력 중" 표시가 뜨도록 공유 상태도 함께 반영
   const showSending = sending || sendingIds.has(conversation.id);
-  // 메시지는 원래대로 위에서부터 쌓이게 두고(순서 유지), 입력창 패널 자체를 기본값부터
-  // 넉넉하게 키워서 시작점이 화면 아래로 멀리 떨어져 보이지 않게 함
+
+  // 일반 대화/고함항아리 모두 같은 높이와 저장 키를 사용한다.
+  // 이전 120px 설정이 localStorage에 남아 새 기본값이 반영되지 않는 문제를 막기 위해 v2 키로 올렸다.
   const { size: inputHeight, onDragStart: onInputResizeStart, onResetToDefault: onInputResizeReset } = useResizable({
-    storageKey: "messenger-input-height",
-    defaultSize: 120,
-    min: 40,
-    max: 180,
+    storageKey: "messenger-input-height-v2",
+    defaultSize: 150,
+    min: 80,
+    max: 240,
     axis: "y",
     reverse: true,
   });
+
   const [fieldWorkPending, setFieldWorkPending] = useState(false);
   const [fieldWorkMessage, setFieldWorkMessage] = useState<string | null>(null);
-  // "마음 편하게 말 걸기"(vent)는 conversationId가 sendVent 호출 전엔 없어서 공유 상태에 못 실으므로 로컬로 처리
   const [ventPendingMessage, setVentPendingMessage] = useState<{ id: string; body: string; timestamp: string } | null>(
     null,
   );
   const [sendError, setSendError] = useState<string | null>(null);
-  // 이번 답변에서 단어/문장 힌트까지 열었는지 — 복습 정책의 난이도 판정에 쓰임
   const [hintLevel, setHintLevel] = useState<"word" | "sentence" | null>(null);
+
   useEffect(() => {
     setHintLevel(null);
   }, [conversation.id]);
+
   const lastContactMessage = [...conversation.messages].reverse().find((message) => message.from === "contact");
   const hints = useMemo(
     () => resolveReplyHints(lastContactMessage?.body, lastContactMessage),
@@ -101,13 +97,11 @@ export function ConversationView({ conversation }: { conversation: Conversation 
     setText("");
     try {
       if (isVent) {
-        // 내가 보낸 메시지를 서버 응답을 기다리지 않고 바로 화면에 표시(로컬 낙관적 표시)
         setVentPendingMessage({ id: `pending-${Date.now()}`, body: trimmed, timestamp: new Date().toISOString() });
         setSending(true);
         await sendVent(trimmed);
       } else {
         setSending(true);
-        // 낙관적 표시(pendingReplies)는 sendReply 내부에서 트리거 주체와 무관하게 채워진다
         await sendReply(conversation.id, trimmed, undefined, hintLevel, hintLevel === "sentence" ? hints.sentence : undefined);
       }
     } catch {
@@ -119,8 +113,6 @@ export function ConversationView({ conversation }: { conversation: Conversation 
     }
   };
 
-  // 전송 완료 후 refresh()로 진짜 메시지가 conversation.messages에 반영되는 순간과
-  // 낙관적 표시가 지워지는 순간 사이에 텀이 있어서, 그 사이엔 낙관적 표시를 걸러 중복(2개→1개) 노출을 막는다
   const pendingMessage = isVent ? ventPendingMessage : pendingReplies.get(conversation.id) ?? null;
   const hasRealPendingMessage =
     !!pendingMessage && conversation.messages.some((m) => m.from === "user" && m.body === pendingMessage.body);
@@ -145,7 +137,7 @@ export function ConversationView({ conversation }: { conversation: Conversation 
   };
 
   return (
-    <div className="flex h-full w-full flex-col">
+    <div className="flex h-full min-h-0 w-full flex-col overflow-hidden">
       <div className="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-border bg-[#36454F] px-4">
         <div className="flex items-center gap-3">
           <Link to="/messenger" className="text-sm text-white/60 md:hidden">
@@ -169,7 +161,8 @@ export function ConversationView({ conversation }: { conversation: Conversation 
         </p>
       )}
 
-      <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+      {/* 메신저 안쪽 스크롤 영역을 명확히 분리. 바깥 페이지는 MessengerLayout에서 overflow를 막는다. */}
+      <div className="min-h-0 flex-1 space-y-3 overflow-y-scroll border-r-4 border-r-background px-4 py-4 [scrollbar-gutter:stable]">
         {displayMessages.map((message) => (
           <div
             key={message.id}
@@ -177,9 +170,7 @@ export function ConversationView({ conversation }: { conversation: Conversation 
           >
             <div
               className={`max-w-[75%] rounded-2xl px-4 py-2 text-sm transition-shadow ${
-                message.from === "user"
-                  ? "bg-accent text-white"
-                  : "bg-black/[.025] text-foreground"
+                message.from === "user" ? "bg-accent text-white" : "bg-black/[.025] text-foreground"
               } ${message.id === highlightedMessageId ? "ring-2 ring-accent ring-offset-2 animate-pulse" : ""}`}
             >
               <p>{message.body}</p>
