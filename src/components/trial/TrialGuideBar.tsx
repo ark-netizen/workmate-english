@@ -307,28 +307,24 @@ export function TrialGuideBar() {
       {showFieldWorkPreview && (
         <div className="fixed bottom-20 right-4 z-50 w-80 max-w-[calc(100vw-2rem)] md:bottom-4">
           <div
-            className={`absolute -top-9 right-0 px-3 py-1.5 text-[11px] font-bold ${
-              isGameMode
-                ? "rounded border-2 border-[#28352f] bg-[#ffe28a] text-[#28352f] shadow-[2px_2px_0_#28352f]"
-                : "rounded-full bg-[#1a56ff] text-white shadow-lg"
+            className={`absolute -top-9 right-0 rounded-full px-3 py-1.5 text-[11px] font-bold text-white shadow-lg ${
+              isGameMode ? "bg-[#2f795d]" : "bg-[#1a56ff]"
             }`}
           >
             웹 알림은 여기에서 떠요
           </div>
           <div
-            className={`flex items-start gap-3 rounded-lg p-4 text-foreground ${
+            className={`flex items-start gap-3 rounded-lg border-2 bg-surface p-4 text-foreground ring-4 ${
               isGameMode
-                ? "border-[3px] border-[#28352f] bg-[#fff9e9] shadow-[5px_5px_0_#2f795d] ring-4 ring-[#ffe28a]/80"
-                : "border-2 border-[#1a56ff] bg-surface shadow-[0_16px_40px_rgba(26,86,255,0.26)] ring-4 ring-[#1a56ff]/20"
+                ? "border-[#2f795d] shadow-[0_16px_40px_rgba(47,121,93,0.26)] ring-[#2f795d]/20"
+                : "border-[#1a56ff] shadow-[0_16px_40px_rgba(26,86,255,0.26)] ring-[#1a56ff]/20"
             }`}
           >
             <div className="min-w-0 flex-1">
-              <p className={`text-sm font-medium ${isGameMode ? "text-[#28352f]" : ""}`}>Jake</p>
-              <p className={`mt-0.5 truncate text-xs ${isGameMode ? "text-[#52615a]" : "text-foreground/60"}`}>
-                {fieldWorkPreviewBody}
-              </p>
+              <p className="text-sm font-medium">Jake</p>
+              <p className="mt-0.5 truncate text-xs text-foreground/60">{fieldWorkPreviewBody}</p>
             </div>
-            <span className={`shrink-0 ${isGameMode ? "font-bold text-[#28352f]" : "text-foreground/40"}`} aria-hidden="true">
+            <span className="shrink-0 text-foreground/40" aria-hidden="true">
               ✕
             </span>
           </div>
