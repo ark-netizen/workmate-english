@@ -45,10 +45,11 @@ export function Avatar({
   }
 
   // 일부 오래된 화면(메일 본문 등)은 아직 role을 직접 넘기지 않고 Avatar만 사용한다.
-  // WorkdayContext에서 같은 이름의 연락처를 찾아 게임모드에서는 역할별 고정 수달로 자동 보정한다.
+  // WorkdayContext에서 같은 이름의 연락처를 찾아 게임모드에서만 역할별 고정 수달로 자동 보정한다.
+  // 현재 앱에서는 businessMode=true가 실제 게임모드이므로 ContactAvatar와 같은 조건을 쓴다.
   const contact = workday?.contacts.find((item) => item.name === name);
   const npcImage = contact ? NPC_IMAGE_BY_ROLE[contact.role] : undefined;
-  if (!businessMode && npcImage) {
+  if (businessMode && npcImage) {
     return (
       <img
         src={`${import.meta.env.BASE_URL}${npcImage}`}
