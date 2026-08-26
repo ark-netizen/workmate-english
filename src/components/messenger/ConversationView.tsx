@@ -36,6 +36,9 @@ export function ConversationView({ conversation }: { conversation: Conversation 
   const isHintGatedRole = isTrial && contact?.role === "manager";
   const hintRevealed = trialHintSignal > 0;
   const shouldPrefillTrial = !isHintGatedRole || hintRevealed;
+  // 체험판 예시 답장은 직접 타이핑해서 덮어쓰지 못하게 잠근다 — 지우지 않고 이어 치면
+  // 예시 문구 뒤에 그대로 붙어 보내져버리는 문제가 있었음
+  const isLockedTrialReply = isTrial && !!trialPreset && !alreadyReplied && shouldPrefillTrial;
 
   useEffect(() => {
     if (conversation.unreadCount > 0) {
@@ -216,10 +219,16 @@ export function ConversationView({ conversation }: { conversation: Conversation 
           <div className="flex items-end gap-2 rounded-2xl border border-border bg-surface px-4 py-2">
             <textarea
               style={{ height: inputHeight }}
-              className="flex-1 resize-none bg-transparent py-1 text-sm outline-none placeholder:text-foreground/40"
+              className={`flex-1 resize-none bg-transparent py-1 text-sm outline-none placeholder:text-foreground/40 ${
+                isLockedTrialReply ? "cursor-default" : ""
+              }`}
               placeholder="메시지를 입력하세요 (Shift+Enter로 줄바꿈)"
               value={text}
-              onChange={(e) => setText(e.target.value)}
+              readOnly={isLockedTrialReply}
+              onChange={(e) => {
+                if (isLockedTrialReply) return;
+                setText(e.target.value);
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
@@ -227,9 +236,11 @@ export function ConversationView({ conversation }: { conversation: Conversation 
                 }
               }}
             />
-            <VoiceInputButton
-              onTranscript={(spoken) => setText((prev) => (prev.trim() ? `${prev.trim()} ${spoken}` : spoken))}
-            />
+            {!isLockedTrialReply && (
+              <VoiceInputButton
+                onTranscript={(spoken) => setText((prev) => (prev.trim() ? `${prev.trim()} ${spoken}` : spoken))}
+              />
+            )}
             {!isVent && (
               <button
                 type="button"
@@ -241,7 +252,7 @@ export function ConversationView({ conversation }: { conversation: Conversation 
                 지금 외근 중
               </button>
             )}
-            <SpellFixButton text={text} onFixed={setText} />
+            {!isLockedTrialReply && <SpellFixButton text={text} onFixed={setText} />}
             <button
               type="button"
               onClick={handleSend}

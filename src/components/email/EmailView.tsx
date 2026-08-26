@@ -125,6 +125,9 @@ export function EmailView({ thread }: { thread: EmailThread }) {
   // "1분 체험하기" 게스트는 실제 화면은 그대로 두고, 답장을 미리 채워주고 보내기 버튼만 반짝이게 안내
   const trialPreset = isTrial && contact ? TRIAL_REPLY_TEXT[contact.role] : undefined;
   const alreadyReplied = thread.emails.some((e) => e.from === "user");
+  // 체험판 예시 답장은 직접 타이핑해서 덮어쓰지 못하게 잠근다 — 지우지 않고 이어 치면
+  // 예시 문구 뒤에 그대로 붙어 보내져버리는 문제가 있었음
+  const isLockedTrialReply = isTrial && !!trialPreset && !alreadyReplied;
   // 복습(review) 메일은 힌트 없이 스스로 다시 써보는 게 목적 — 실제 힌트도 저장돼있지 않으므로 힌트 UI를 숨긴다
   const isReview = thread.kind === "review";
 
@@ -321,21 +324,25 @@ export function EmailView({ thread }: { thread: EmailThread }) {
           <textarea
             className={`min-h-[110px] min-w-0 flex-1 resize-none border-0 bg-transparent p-0 text-sm leading-relaxed outline-none placeholder:text-foreground/40 ${
               isMaximized ? "min-h-[320px]" : ""
-            }`}
+            } ${isLockedTrialReply ? "cursor-default" : ""}`}
             rows={isMaximized ? 16 : 5}
             placeholder="회신 내용을 입력하세요"
             value={text}
+            readOnly={isLockedTrialReply}
             onChange={(e) => {
+              if (isLockedTrialReply) return;
               textIsDefaultRef.current = false;
               setText(e.target.value);
             }}
           />
-          <VoiceInputButton
-            onTranscript={(spoken) => {
-              textIsDefaultRef.current = false;
-              setText((prev) => (prev.trim() ? `${prev.trim()} ${spoken}` : spoken));
-            }}
-          />
+          {!isLockedTrialReply && (
+            <VoiceInputButton
+              onTranscript={(spoken) => {
+                textIsDefaultRef.current = false;
+                setText((prev) => (prev.trim() ? `${prev.trim()} ${spoken}` : spoken));
+              }}
+            />
+          )}
         </div>
       </div>
 
@@ -353,13 +360,15 @@ export function EmailView({ thread }: { thread: EmailThread }) {
         >
           지금 외근 중
         </button>
-        <SpellFixButton
-          text={text}
-          onFixed={(corrected) => {
-            textIsDefaultRef.current = false;
-            setText(corrected);
-          }}
-        />
+        {!isLockedTrialReply && (
+          <SpellFixButton
+            text={text}
+            onFixed={(corrected) => {
+              textIsDefaultRef.current = false;
+              setText(corrected);
+            }}
+          />
+        )}
         <button
           type="button"
           onClick={handleSend}
