@@ -1,5 +1,4 @@
 let introCopyObserver: MutationObserver | null = null;
-let introCopyQaTimer: number | null = null;
 
 const processCopy = [
   {
@@ -30,6 +29,11 @@ function renderProcessBody(body: HTMLElement, copy: string) {
   const currentText = body.innerText.replace(/\r/g, "");
   const hasExpectedBreakCount = body.querySelectorAll(":scope > br").length === Math.max(0, lines.length - 1);
 
+  // 과거 QA 패치가 남긴 inline white-space가 CSS 레이아웃을 덮어쓰지 않게 제거한다.
+  if (body.style.getPropertyValue("white-space")) {
+    body.style.removeProperty("white-space");
+  }
+
   if (currentText === expectedText && hasExpectedBreakCount) return;
 
   const nodes: Node[] = [];
@@ -39,7 +43,6 @@ function renderProcessBody(body: HTMLElement, copy: string) {
   });
 
   body.replaceChildren(...nodes);
-  body.style.setProperty("white-space", "normal", "important");
   body.dataset.processCopyQa = "applied";
 }
 
@@ -50,7 +53,6 @@ function polishProcessCopy(page: HTMLElement) {
     const copy = processCopy[index];
     if (!copy) return;
 
-    // 카드 내부에서 처음 두 p가 제목/본문이다. 복잡한 :scope 경로에 의존하지 않는다.
     const paragraphs = card.querySelectorAll<HTMLElement>("p");
     const title = paragraphs.item(0);
     const body = paragraphs.item(1);
@@ -108,7 +110,6 @@ function polishIntroAboutLink(page: HTMLElement) {
     aboutLink.className = expectedClassName;
   }
 
-  // 제작자 개인 브랜드 페이지로 이동한다는 점을 먼저 알려서 외부 이동 맥락을 명확히 한다.
   aboutLink.onclick = (event) => {
     event.preventDefault();
     const shouldLeave = window.confirm(
@@ -117,7 +118,6 @@ function polishIntroAboutLink(page: HTMLElement) {
     if (shouldLeave) window.location.assign("https://www.idealwhy.com");
   };
 
-  // About은 항상 미리보기보다 왼쪽(네비게이션 첫 항목)에 둔다.
   if (navGroup.firstElementChild !== aboutLink) {
     navGroup.insertBefore(aboutLink, navGroup.firstElementChild);
   }
@@ -164,11 +164,6 @@ function startIntroCopyPolish() {
     subtree: true,
     characterData: true,
   });
-
-  // QA fallback: React의 스크롤/active 재렌더가 문구를 덮어써도 실제 렌더 상태를 계속 교정한다.
-  if (introCopyQaTimer === null) {
-    introCopyQaTimer = window.setInterval(polishIntroCopy, 250);
-  }
 }
 
 if (document.readyState === "loading") {
