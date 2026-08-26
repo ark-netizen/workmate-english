@@ -54,7 +54,7 @@ export function Avatar({
       <img
         src={`${import.meta.env.BASE_URL}${npcImage}`}
         alt={name}
-        className={`inline-block shrink-0 rounded-[4px] border border-[#315d53] bg-[#fffaf0] object-contain p-px ${sizeClasses} ${className}`}
+        className={`inline-block shrink-0 rounded-[4px] border border-[#315d53] bg-[#fffaf0] object-contain p-[3px] ${sizeClasses} ${className}`}
       />
     );
   }
