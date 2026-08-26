@@ -1,24 +1,24 @@
 /* Game intro WORK PROCESS layout.
    게임 모드만 별도로 다룬다.
-   원래 2열 구조는 유지하고, 두 덩어리를 중앙 쪽으로 아주 조금 당겨
-   좌우 바깥 여백은 늘리고 가운데 간격은 살짝 줄인다. */
+   원래 2열 구조는 유지하고, 두 덩어리를 중앙 쪽으로 조금 더 당겨
+   좌우 바깥 여백은 조금 더 늘리고 가운데 간격은 살짝 줄인다. */
 
 @media (min-width: 768px) {
   .intro-game .intro-game-feature-window > div:last-child > div:first-child {
-    transform: translateX(8px);
+    transform: translateX(12px);
   }
 
   .intro-game .intro-game-feature-visual {
-    transform: translateX(-8px);
+    transform: translateX(-12px);
   }
 }
 
 @media (min-width: 768px) and (max-width: 980px) {
   .intro-game .intro-game-feature-window > div:last-child > div:first-child {
-    transform: translateX(5px);
+    transform: translateX(7px);
   }
 
   .intro-game .intro-game-feature-visual {
-    transform: translateX(-5px);
+    transform: translateX(-7px);
   }
 }
