@@ -5,6 +5,7 @@
 // POST { action: 'backfill' } — [개발용 QA 도구] 실제 며칠 기다리지 않고 지난 하루치를 즉석에서 채움
 // (Vercel Hobby 플랜 서버리스 함수 12개 제한 때문에 dev/backfill-day.js를 합침)
 import { requireUser } from '../../../server/auth.js'
+import { getAdminRole } from '../../../server/admin.js'
 import { getPeriodReport, getDailyReportForDate, devBackfillPastDay, devBackfillPastDays, getWorkHoursHistory, getAttendanceHistory } from '../../../server/workday.js'
 import { withErrors } from '../../../server/http.js'
 
@@ -12,6 +13,11 @@ export default withErrors(null, async (req, res) => {
   const userId = await requireUser(req)
 
   if (req.method === 'POST') {
+    const role = await getAdminRole(userId)
+    if (role !== 'full') {
+      res.status(403).json({ error: 'QA 관리자 권한이 필요합니다' })
+      return
+    }
     // { count: N } 이면 N일치 한 번에(승급 30일 게이트 QA용), 없으면 하루치
     const count = Number(req.body?.count) || 1
     const result = count > 1 ? await devBackfillPastDays(userId, count) : await devBackfillPastDay(userId)
