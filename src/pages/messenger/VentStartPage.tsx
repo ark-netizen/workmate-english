@@ -1,16 +1,16 @@
 import { useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
 import { useWorkday } from "@/context/useWorkday";
+import { ConversationView } from "@/components/messenger/ConversationView";
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { useResizable } from "@/hooks/useResizable";
 
 const TRIAL_VENT_TEXT = "Ugh, today was so busy. I just want to scream!";
 
-// "고함항아리" 첫 메시지 작성 화면 — 아직 오늘의 vent 대화가 없을 때만 보임.
-// 이미 있으면 실제 대화방으로 바로 넘어감(다른 대화처럼 메신저 안에서 열리도록).
+// 고함항아리는 항상 /messenger/vent라는 고정 경로에서 처리한다.
+// 대화가 이미 있으면 별도 conversation id로 리다이렉트하지 않고 이 자리에서 그대로 렌더링한다.
+// 이렇게 해야 refresh 시점에 vent id가 잠깐 달라지거나 사라져도 NotFound로 튀지 않는다.
 export function VentStartPage() {
   const { conversations, sendVent, isTrial } = useWorkday();
-  const navigate = useNavigate();
   // 1분 무료체험에서는 시연자가 타이핑에 시간을 쓰지 않고 바로 기능을 보여줄 수 있도록
   // 짧은 예시 문장을 미리 채운다. 일반 사용자는 기존처럼 빈 입력창에서 시작한다.
   const [text, setText] = useState(() => (isTrial ? TRIAL_VENT_TEXT : ""));
@@ -26,7 +26,7 @@ export function VentStartPage() {
 
   const ventConversation = conversations.find((c) => c.kind === "vent");
   if (ventConversation) {
-    return <Navigate to={`/messenger/${ventConversation.id}`} replace />;
+    return <ConversationView conversation={ventConversation} />;
   }
 
   const handleSend = async () => {
@@ -34,8 +34,9 @@ export function VentStartPage() {
     if (!trimmed || sending) return;
     setSending(true);
     try {
-      const { conversationId } = await sendVent(trimmed);
-      navigate(`/messenger/${conversationId}`);
+      await sendVent(trimmed);
+      // sendVent가 refresh까지 끝내므로 conversations에 vent가 들어오고,
+      // 이 컴포넌트가 그대로 ConversationView로 전환된다. URL 이동은 하지 않는다.
     } finally {
       setSending(false);
     }
