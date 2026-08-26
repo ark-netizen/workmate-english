@@ -16,6 +16,7 @@ import { SectionTourGuide, type TourStep } from "@/components/home/SectionTourGu
 import { isAnonymousSession } from "@/lib/session";
 import { navItems } from "@/components/shell/nav-items";
 import { useBusinessMode } from "@/context/useBusinessMode";
+import { useTrialTargets } from "@/lib/trialTargets";
 
 // 심사 기간 등 외부에 라이브 사이트를 공개하는 동안은, 데이터를 실제로 지우거나 조작하는
 // 위험한 QA 버튼(초기화/승급 게이트 채우기 등)은 숨긴다 — 실수로 눌러도 안전한 "연락 바로
@@ -242,6 +243,7 @@ export function HomePage() {
     workContext,
   } = useWorkday();
   const { businessMode } = useBusinessMode();
+  const { targets: trialTargets } = useTrialTargets();
   const navigate = useNavigate();
   const [deliveringNext, setDeliveringNext] = useState(false);
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
@@ -605,9 +607,9 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* 홈 화면의 단계 안내·링 강조는 1분 무료체험의 최초 홈 진입에서만 보여준다.
-          첫 연락이 도착한 뒤 다시 홈으로 돌아오는 퇴근 단계에서는 재마운트하지 않아 체험 안내끼리 겹치지 않는다. */}
-      {isTrial === true && todayItems.length === 0 && (
+      {/* 홈 단계 투어는 실제 첫 연락이 아직 배달되지 않은 최초 진입에서만 보여준다.
+          예약 todayItems 개수와 무관하게 scenario 대화/메일이 하나라도 생긴 뒤에는 다시 열지 않는다. */}
+      {isTrial === true && trialTargets.length === 0 && (
         <SectionTourGuide
           steps={tourSteps}
           persist={false}
