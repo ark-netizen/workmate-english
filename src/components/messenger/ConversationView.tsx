@@ -142,7 +142,7 @@ export function ConversationView({ conversation }: { conversation: Conversation 
         setFieldWorkMessage(
           nextCount < 2
             ? "외근 신호가 기록됐어요. 체험판에서는 오른쪽 ‘다음’ 버튼으로 반복 감지를 한 번에 시연할 수 있어요."
-            : "반복된 바쁨을 감지했어요. 동료가 먼저 말을 걸어오는 중이에요...",
+            : "반복된 바쁨을 감지했어요. 고함항아리에서 연락이 오는 중이에요...",
         );
       } else {
         setFieldWorkMessage(
@@ -255,11 +255,9 @@ export function ConversationView({ conversation }: { conversation: Conversation 
                 }
               }}
             />
-            {!isLockedTrialReply && (
-              <VoiceInputButton
-                onTranscript={(spoken) => setText((prev) => (prev.trim() ? `${prev.trim()} ${spoken}` : spoken))}
-              />
-            )}
+            <VoiceInputButton
+              onTranscript={(spoken) => setText((prev) => (prev.trim() ? `${prev.trim()} ${spoken}` : spoken))}
+            />
             {!isVent && (
               <button
                 type="button"
@@ -275,7 +273,7 @@ export function ConversationView({ conversation }: { conversation: Conversation 
                 지금 외근 중
               </button>
             )}
-            {!isLockedTrialReply && <SpellFixButton text={text} onFixed={setText} />}
+            <SpellFixButton text={text} onFixed={setText} />
             <button
               type="button"
               onClick={handleSend}
