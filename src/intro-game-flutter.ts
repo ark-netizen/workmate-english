@@ -7,9 +7,10 @@ type DecorType = "chat" | "mail" | "document" | "chart" | "leaf" | "cloud" | "sp
 type DecorSpec = readonly [DecorType, number, number, number, number, number, number];
 
 /*
- * Decorative UI lives in two explicit side rails.
- * Left anchors stay at 5~10%, right anchors at 90~95%, so they remain outside the centered card column
- * even on narrower desktop widths. Clouds stay static; every other item gets bubble-like JS motion.
+ * Decorative UI lives in two explicit side rails on each side.
+ * The numeric horizontal value is used only to decide left/right + inner/outer rail;
+ * actual X positioning uses left/right viewport insets so the right rail can never drift off-screen.
+ * Clouds stay static; every other item gets bubble-like JS motion.
  */
 const PROCESS_DECOR: readonly DecorSpec[] = [
   ["cloud", 6, 3, 1.02, 0, 0, 0],
@@ -95,12 +96,21 @@ function iconMarkup(type: DecorType) {
   return `<svg ${common}><path d="M24 6v12M24 30v12M6 24h12M30 24h12"/></svg>`;
 }
 
-function createDecor([type, left, top, scale, ampX, ampY, phase]: DecorSpec) {
+function createDecor([type, horizontalHint, top, scale, ampX, ampY, phase]: DecorSpec) {
   const el = document.createElement("span");
-  const side = left >= 50 ? "right" : "left";
+  const side = horizontalHint >= 50 ? "right" : "left";
+  const outerRail = side === "right" ? horizontalHint >= 94 : horizontalHint <= 7;
+  const railInset = outerRail ? "clamp(34px, 4.5vw, 92px)" : "clamp(92px, 10vw, 190px)";
+
   el.className = `intro-game-process-decor is-${type} is-${side}-rail`;
-  el.style.left = `${left}%`;
   el.style.top = `${top}%`;
+  if (side === "right") {
+    el.style.right = railInset;
+    el.style.left = "auto";
+  } else {
+    el.style.left = railInset;
+    el.style.right = "auto";
+  }
   el.style.setProperty("--decor-scale", String(scale));
   el.style.setProperty("--decor-pulse", "1");
   el.dataset.side = side;
@@ -146,7 +156,7 @@ function animateDecor(time: number) {
         Math.sin(t * speedA + phase) * ampX +
         Math.cos(t * speedB * 1.41 + phase * 1.8) * ampX * 0.46;
 
-      /* Edge rails mostly drift inward, so right-side items cannot disappear beyond the viewport. */
+      /* Keep edge-rail motion biased toward the page interior. */
       const edgeBias = Math.abs(rawX) * 0.72;
       const smallOrbit = Math.sin(t * 0.63 + phase * 2.2) * ampX * 0.2;
       const x = side === "right" ? -edgeBias + smallOrbit : edgeBias + smallOrbit;
