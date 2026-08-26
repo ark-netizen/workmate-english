@@ -7,7 +7,7 @@ import { TRIAL_REPLY_TEXT } from "@/lib/trialReplies";
 import { TRIAL_ROLE_LABEL, TRIAL_ROLE_ORDER, useTrialTargets } from "@/lib/trialTargets";
 import { TrialActionBar } from "./TrialActionBar";
 
-type FinalTrialStage = "fieldwork" | "comfort" | "report" | "kakao";
+type FinalTrialStage = "fieldwork" | "comfort" | "checkout" | "report" | "kakao";
 
 const KAKAO_TEXT_MAX = 190;
 const FIELD_WORK_PREVIEW_MS = 2600;
@@ -49,7 +49,7 @@ async function showTrialBrowserNotification(title: string, body: string, url: st
 }
 
 // "1분 체험하기" 게스트 전용 — 실제 화면을 그대로 쓰되 하나의 안내 카드로 진행한다.
-// 업무 3건 이후에는 "외근 중" 반복 → 사이트 알림 → 바쁨 감지 → 동료의 선제 위로 메시지 → 리포트 → 카카오 알림까지
+// 업무 3건 이후에는 외근 알림 → 바쁨 감지 → 선제 위로 → 홈의 실제 퇴근 안내 → 리포트 → 카카오 알림까지
 // 실제 서비스의 연결 구조가 보이도록 체험 단계를 이어준다.
 export function TrialGuideBar() {
   const { report, conversations, sendReply, finishWorkday, goOnFieldWork, triggerTrialHint } = useWorkday();
@@ -86,8 +86,7 @@ export function TrialGuideBar() {
   const showHintAsk = isManagerStep && managerHintStage === "ask";
 
   // 기본 업무 3건이 끝나면 바로 퇴근시키지 않는다.
-  // 체험판에서는 오른쪽 "다음" 버튼 한 번으로 사이트 알림 위치를 먼저 보여준 뒤 실제 외근 이벤트 2회를 기록해,
-  // 반복된 바쁨 감지 → 동료의 선제 위로 메시지 흐름까지 짧게 체험한다.
+  // 외근 2회 → 위로 메시지를 본 다음에는 실제 홈 화면으로 돌아가 원래 서비스의 퇴근 안내 카드를 확인한다.
   useEffect(() => {
     if (!allDone || report) return;
 
@@ -99,10 +98,24 @@ export function TrialGuideBar() {
       return;
     }
 
+    if (finalStage === "checkout") {
+      if (!onHomePage) navigate("/");
+      return;
+    }
+
     setFinalStage("comfort");
     const ventPath = `/messenger/${ventConversation.id}`;
     if (location.pathname !== ventPath) navigate(ventPath);
-  }, [allDone, report, ventConversation?.id, colleagueTarget?.path, location.pathname, navigate]);
+  }, [
+    allDone,
+    report,
+    ventConversation?.id,
+    colleagueTarget?.path,
+    location.pathname,
+    navigate,
+    finalStage,
+    onHomePage,
+  ]);
 
   // "○○에게 가기" 버튼을 눌러야만 다음 대화로 이동하는 게 번거롭다는 피드백 — 새 대상이
   // 나타나면(직전 대상과 다르면) 자동으로 그 대화로 이동한다. 한 번 자동 이동한 대상으로는
@@ -128,7 +141,6 @@ export function TrialGuideBar() {
 
     if (allDone) {
       // 체험판에서는 실제 버튼을 두 번 찾아 누르게 하지 않고, "다음" 한 번으로 외근 이벤트 2회를 기록한다.
-      // 다만 외근 신호를 바로 처리해 위로 메시지가 먼저 나타나면 알림 UI를 볼 시간이 없으므로,
       // 우하단 인앱 알림과 실제 Edge/브라우저 알림을 먼저 보여준 뒤 신호 2회를 처리한다.
       if (!report && !ventConversation) {
         const targetPath = colleagueTarget?.path ?? "/messenger";
@@ -153,21 +165,32 @@ export function TrialGuideBar() {
         return;
       }
 
-      // 반복된 외근 신호로 동료가 먼저 말을 걸어온 뒤, 그 메시지를 실제 화면에서 확인하고 나서 퇴근한다.
-      if (!report) {
-        setFinishing(true);
-        try {
-          await finishWorkday();
-          setFinalStage("report");
-          navigate("/reports");
-        } finally {
-          setFinishing(false);
+      if (!report && ventConversation) {
+        // 선제 위로 메시지를 확인한 다음에는 실제 홈 화면의 "오늘의 연락을 모두 처리했어요 / 퇴근하기"
+        // 카드를 먼저 보여준다. 여기서는 아직 퇴근 처리하지 않는다.
+        if (finalStage === "comfort") {
+          setFinalStage("checkout");
+          navigate("/");
+          window.setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 80);
+          return;
         }
-        return;
+
+        // 홈의 실제 퇴근 안내를 확인한 뒤 체험 가이드의 같은 오른쪽 버튼으로 실제 finishWorkday를 실행한다.
+        if (finalStage === "checkout") {
+          setFinishing(true);
+          try {
+            await finishWorkday();
+            setFinalStage("report");
+            navigate("/reports");
+          } finally {
+            setFinishing(false);
+          }
+          return;
+        }
       }
 
       // 리포트 확인 뒤 실제 서비스에서 받는 카카오톡 리포트 알림 형태를 보여준다.
-      if (finalStage === "report") {
+      if (report && finalStage === "report") {
         if (!onReportPage) {
           navigate("/reports");
           return;
@@ -197,14 +220,16 @@ export function TrialGuideBar() {
     }
   };
 
-  // 홈 화면은 SectionTourGuide 쪽 "새 메시지" 단계가 대신 안내하므로 여기서는 표시하지 않는다
-  if (onHomePage || targets.length === 0) return null;
+  // 평소 홈 화면은 SectionTourGuide가 대신 안내한다. 단, 퇴근 안내를 실제 홈에서 보여주는 checkout 단계만 예외다.
+  if ((onHomePage && finalStage !== "checkout") || targets.length === 0) return null;
 
-  // 답장 3개 + 스트레스 감지/선제 위로 + 리포트 + 카카오톡 알림 = 총 6단계.
-  const progressDots = TRIAL_ROLE_ORDER.length + 3;
+  // 답장 3개 + 스트레스 감지/선제 위로 + 홈 퇴근 안내 + 리포트 + 카카오톡 알림 = 총 7단계.
+  const progressDots = TRIAL_ROLE_ORDER.length + 4;
+  const checkoutReached = finalStage === "checkout" || !!report;
   const filledDots =
     doneCount +
     (ventConversation ? 1 : 0) +
+    (checkoutReached ? 1 : 0) +
     (report ? 1 : 0) +
     (finalStage === "kakao" ? 1 : 0);
 
@@ -215,10 +240,12 @@ export function TrialGuideBar() {
           ? "웹 알림 확인 중..."
           : "다음"
         : finalStage === "comfort"
-          ? finishing
-            ? "리포트 만드는 중..."
-            : "퇴근하고 리포트 보기"
-          : null
+          ? "다음"
+          : finalStage === "checkout"
+            ? finishing
+              ? "퇴근 처리 중..."
+              : "다음"
+            : null
       : finalStage === "report"
         ? onReportPage
           ? "카카오톡 알림 미리보기"
@@ -238,9 +265,11 @@ export function TrialGuideBar() {
     ? !report
       ? finalStage === "fieldwork"
         ? "실서비스에서는 ‘지금 외근 중’을 누르면 예정된 연락을 30분 뒤 다시 받을 수 있어요.\n다음을 누르면 우하단 웹 알림과 Edge/브라우저 알림을 먼저 보여드린 뒤, 외근 신호 2회를 한 번에 재현할게요."
-        : onVentPage
-          ? "외근 신호가 반복되자 동료가 먼저 말을 걸어왔어요. 이렇게 먼저 온 위로 메시지는 고함항아리에 모여요."
-          : "반복된 바쁨을 감지했어요. 동료의 메시지로 이동하는 중이에요..."
+        : finalStage === "checkout"
+          ? "오늘 할 일을 모두 처리하면 홈에 실제 퇴근 안내가 나타나요.\n강조된 ‘퇴근하기’ 카드를 확인하고 다음을 눌러 퇴근해볼게요."
+          : onVentPage
+            ? "외근 신호가 반복되자 동료가 먼저 말을 걸어왔어요. 이렇게 먼저 온 위로 메시지는 고함항아리에 모여요.\n다음을 누르면 홈에서 실제 퇴근 안내를 확인해볼게요."
+            : "반복된 바쁨을 감지했어요. 동료의 메시지로 이동하는 중이에요..."
       : finalStage === "report"
         ? onReportPage
           ? "오늘 대화를 바탕으로 잘한 표현, 교정 포인트, 꼭 기억할 표현이 업무일지에 정리돼요."
