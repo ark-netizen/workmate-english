@@ -51,14 +51,15 @@
   display: block;
   width: 54px;
   height: 54px;
-  color: rgba(70, 145, 166, 0.18);
+  color: rgba(57, 132, 147, 0.26);
   transform:
     translate(calc(-50% + var(--decor-x, 0px)), calc(-50% + var(--decor-y, 0px)))
     rotate(var(--decor-rotate, 0deg))
-    scale(var(--decor-scale, 1));
+    scale(var(--decor-scale, 1))
+    scale(var(--decor-pulse, 1));
   transform-origin: center;
   will-change: transform;
-  filter: saturate(0.76);
+  filter: saturate(0.86);
 }
 
 .intro-game-process-decor svg {
@@ -66,7 +67,7 @@
   height: 100%;
   fill: none;
   stroke: currentColor;
-  stroke-width: 2.5;
+  stroke-width: 2.6;
   stroke-linecap: square;
   stroke-linejoin: miter;
   shape-rendering: crispEdges;
@@ -76,24 +77,24 @@
 .intro-game-process-decor.is-mail,
 .intro-game-process-decor.is-document,
 .intro-game-process-decor.is-chart {
-  width: 68px;
-  height: 68px;
+  width: 72px;
+  height: 72px;
 }
 
 .intro-game-process-decor.is-chat {
-  color: rgba(59, 139, 158, 0.21);
+  color: rgba(49, 128, 148, 0.32);
 }
 
 .intro-game-process-decor.is-mail,
 .intro-game-process-decor.is-document,
 .intro-game-process-decor.is-chart {
-  color: rgba(64, 146, 164, 0.18);
+  color: rgba(52, 136, 153, 0.28);
 }
 
 .intro-game-process-decor.is-leaf {
-  width: 42px;
-  height: 42px;
-  color: rgba(55, 137, 104, 0.2);
+  width: 46px;
+  height: 46px;
+  color: rgba(43, 128, 91, 0.3);
 }
 
 /* Clouds are the only intentionally static elements. */
@@ -110,15 +111,15 @@
 }
 
 .intro-game-process-decor.is-spark {
-  width: 26px;
-  height: 26px;
-  color: rgba(73, 158, 166, 0.23);
+  width: 30px;
+  height: 30px;
+  color: rgba(61, 145, 153, 0.32);
 }
 
 .intro-game-process-decor.is-grid {
-  width: 48px;
-  height: 48px;
-  color: rgba(70, 146, 157, 0.1);
+  width: 50px;
+  height: 50px;
+  color: rgba(57, 132, 143, 0.18);
 }
 
 .intro-game-process-decor.is-grid svg,
@@ -128,9 +129,9 @@
 }
 
 .intro-game-process-decor.is-pixel {
-  width: 24px;
-  height: 24px;
-  color: rgba(72, 155, 161, 0.2);
+  width: 28px;
+  height: 28px;
+  color: rgba(58, 145, 151, 0.29);
 }
 
 @media (min-width: 1180px) {
@@ -138,27 +139,27 @@
   .intro-game-process-decor.is-mail,
   .intro-game-process-decor.is-document,
   .intro-game-process-decor.is-chart {
-    width: 74px;
-    height: 74px;
+    width: 78px;
+    height: 78px;
   }
 
   .intro-game-process-decor.is-pixel {
-    width: 27px;
-    height: 27px;
+    width: 30px;
+    height: 30px;
   }
 }
 
 @media (max-width: 900px) {
   .intro-game-process-decor {
-    opacity: 0.76;
+    opacity: 0.84;
   }
 
   .intro-game-process-decor.is-chat,
   .intro-game-process-decor.is-mail,
   .intro-game-process-decor.is-document,
   .intro-game-process-decor.is-chart {
-    width: 54px;
-    height: 54px;
+    width: 58px;
+    height: 58px;
   }
 
   .intro-game-process-decor.is-cloud {
@@ -178,17 +179,17 @@
   }
 
   .intro-game-process-decor {
-    width: 36px;
-    height: 36px;
-    opacity: 0.56;
+    width: 38px;
+    height: 38px;
+    opacity: 0.66;
   }
 
   .intro-game-process-decor.is-chat,
   .intro-game-process-decor.is-mail,
   .intro-game-process-decor.is-document,
   .intro-game-process-decor.is-chart {
-    width: 42px;
-    height: 42px;
+    width: 46px;
+    height: 46px;
   }
 
   .intro-game-process-decor.is-cloud {
@@ -197,8 +198,8 @@
   }
 
   .intro-game-process-decor.is-pixel {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
   }
 
   .intro-game-process-decor.is-grid:nth-of-type(even),
