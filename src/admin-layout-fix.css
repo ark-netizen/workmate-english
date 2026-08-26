@@ -1,0 +1,47 @@
+/* Admin dashboard header actions: reserve real layout space so the fixed-looking controls never overlap content. */
+
+/* AdminPage is the only screen with this exact top-right 3-button action group. */
+div.font-pretendard:has(> div.fixed.right-3.top-3.z-40) {
+  position: relative;
+  padding-top: 5rem !important;
+}
+
+div.font-pretendard:has(> div.fixed.right-3.top-3.z-40) > div.fixed.right-3.top-3.z-40 {
+  position: absolute !important;
+  top: 1.25rem !important;
+  right: 1rem !important;
+  left: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  gap: 0.5rem !important;
+  max-width: calc(100% - 2rem);
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 1px 0 3px;
+  scrollbar-width: none;
+}
+
+div.font-pretendard:has(> div.fixed.right-3.top-3.z-40) > div.fixed.right-3.top-3.z-40::-webkit-scrollbar {
+  display: none;
+}
+
+div.font-pretendard:has(> div.fixed.right-3.top-3.z-40) > div.fixed.right-3.top-3.z-40 > button {
+  flex: 0 0 auto !important;
+  min-height: 34px;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+/* On a narrow admin viewport, keep all three actions usable without covering the dashboard. */
+@media (max-width: 720px) {
+  div.font-pretendard:has(> div.fixed.right-3.top-3.z-40) {
+    padding-top: 5.25rem !important;
+  }
+
+  div.font-pretendard:has(> div.fixed.right-3.top-3.z-40) > div.fixed.right-3.top-3.z-40 {
+    left: 1rem !important;
+    right: 1rem !important;
+    justify-content: flex-start;
+  }
+}
