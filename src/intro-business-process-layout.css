@@ -53,6 +53,34 @@
   }
 }
 
+/* 본문 <br> 줄바꿈이 한 번 더 접히지 않으려면 텍스트 칸에 최대 440px이 필요한데
+   기존 360px 캡 때문에 계속 접혔다. 텍스트 칸만 넓히고 그만큼 가운데 여백을 줄인다.
+   오른쪽 그래픽은 기존에 실제로 그려지던 480px에 고정해서 폭이 변하지 않게 한다.
+   470+480에 좌우 여백까지 들어가려면 카드 안쪽 폭이 약 1040px 필요해서 1160px부터 적용한다
+   (그보다 좁으면 두 칸이 맞붙어 버리므로 아래 기존 규칙을 그대로 쓴다). */
+@media (min-width: 1160px) {
+  .intro-business .intro-business-feature-card > div:first-child {
+    flex: 0 1 470px !important;
+    width: 470px !important;
+    max-width: 470px !important;
+  }
+
+  .intro-business .intro-business-feature-card > div:last-child {
+    flex: 0 0 480px !important;
+    width: 480px !important;
+    max-width: 480px !important;
+  }
+
+  /* 좌우로 벌리던 보정은 넓어진 텍스트 칸에서는 가운데 여백만 다시 키우므로 해제한다.
+     위 블록과 같은 선택자 구조를 그대로 써야 우선순위에서 밀리지 않는다. */
+  .intro-business .intro-business-features > div:first-child > div:nth-child(odd) .intro-business-feature-card > div:first-child,
+  .intro-business .intro-business-features > div:first-child > div:nth-child(odd) .intro-business-feature-card > div:last-child,
+  .intro-business .intro-business-features > div:first-child > div:nth-child(even) .intro-business-feature-card > div:first-child,
+  .intro-business .intro-business-features > div:first-child > div:nth-child(even) .intro-business-feature-card > div:last-child {
+    transform: none;
+  }
+}
+
 @media (min-width: 768px) and (max-width: 980px) {
   .intro-business .intro-business-feature-card > div:first-child {
     flex-basis: 310px !important;

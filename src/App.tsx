@@ -107,9 +107,12 @@ function IntroTextRhythmStyles() {
         max-width: 17ch;
       }
 
+      /* WORK PROCESS 카드 본문은 intro-copy-polish.ts가 <br>로 줄바꿈 위치를 직접 지정한다.
+         여기에 30ch 같은 폭 제한을 걸면 그 <br> 사이 문장이 한 번 더 접혀서
+         "2줄로 보이게" 의도한 문구가 3~4줄로 흘러버렸다 — 폭 제한은 칸 너비에만 맡긴다. */
       .intro-page .intro-business-feature-card p[class*="text-[17px]"],
       .intro-page .intro-game-feature-window p[class*="text-[17px]"] {
-        max-width: 30ch;
+        max-width: none;
       }
 
       @media (max-width: 767px) {
