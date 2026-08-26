@@ -84,6 +84,67 @@
   }
 }
 
+/* 펼친 폴드/작은 태블릿에서는 인트로도 좁은 데스크톱 레이아웃에 억지로 끼우지 않는다. */
+@media (min-width: 768px) and (max-width: 1024px) and (pointer: coarse),
+       (min-width: 768px) and (max-width: 1024px) and (hover: none) {
+  .intro-page {
+    max-width: 100vw;
+    overflow-x: clip;
+  }
+
+  .intro-page .intro-hero,
+  .intro-page .hero,
+  .intro-page .intro-features-section,
+  .intro-page .intro-trial-showcase,
+  .intro-page .intro-reviews {
+    max-width: 100vw;
+    overflow-x: clip;
+  }
+
+  .intro-page .intro-hero-grid,
+  .intro-page .hero .wrap {
+    width: min(100%, 760px) !important;
+    max-width: 760px !important;
+    grid-template-columns: 1fr !important;
+    margin-inline: auto !important;
+  }
+
+  .intro-game .hero > .hero-system,
+  .intro-business .hero > .hero-system {
+    width: calc(100% - 32px) !important;
+    max-width: 760px !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    margin-inline: auto !important;
+  }
+
+  .intro-page .intro-features-section > div,
+  .intro-page .intro-game-features,
+  .intro-page .intro-business-features,
+  .intro-page .intro-game-feature-window,
+  .intro-page .intro-business-feature-card,
+  .intro-page .intro-game-feature-visual,
+  .intro-page .intro-game-feature-visual > * {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .intro-page .intro-trial-frame {
+    width: calc(100% - 32px) !important;
+    max-width: 760px !important;
+    margin-inline: auto !important;
+  }
+
+  .intro-page .intro-trial-flow {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 14px !important;
+  }
+
+  .intro-page .intro-trial-flow > div:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
 /* 폴드/일반 폰 모두 짧은 가로모드에서 상하 공간을 과도하게 차지하지 않게 한다. */
 @media (orientation: landscape) and (max-height: 559px) {
   .mobile-trial-preview.is-short-landscape .mtp-header {
