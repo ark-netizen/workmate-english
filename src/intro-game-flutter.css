@@ -1,10 +1,11 @@
-/* Game mode Work Process background: hero palette + business English UI motifs. */
+/* Game mode Work Process background only.
+   The existing site title/cards stay untouched; this layer reproduces only the pale sky + pixel UI motifs. */
 .intro-game .intro-game-features {
   position: relative;
   isolation: isolate;
   overflow: hidden;
   background:
-    linear-gradient(180deg, rgba(151, 211, 238, 0.78) 0%, rgba(190, 229, 244, 0.72) 52%, rgba(226, 242, 247, 0.82) 100%);
+    linear-gradient(180deg, #d8eef9 0%, #e4f3fa 46%, #edf8fb 100%);
 }
 
 .intro-game .intro-game-features::before,
@@ -13,18 +14,18 @@
   position: absolute;
   inset-inline: 0;
   z-index: 0;
-  height: 90px;
+  height: 120px;
   pointer-events: none;
 }
 
 .intro-game .intro-game-features::before {
   top: 0;
-  background: linear-gradient(180deg, rgba(255,255,255,0.34), rgba(255,255,255,0));
+  background: linear-gradient(180deg, rgba(255,255,255,0.2), rgba(255,255,255,0));
 }
 
 .intro-game .intro-game-features::after {
   bottom: 0;
-  background: linear-gradient(0deg, rgba(255,255,255,0.34), rgba(255,255,255,0));
+  background: linear-gradient(0deg, rgba(255,255,255,0.28), rgba(255,255,255,0));
 }
 
 .intro-game .intro-game-features > div:not(.intro-game-process-bg-layer) {
@@ -46,9 +47,13 @@
   display: block;
   width: 54px;
   height: 54px;
-  color: rgba(55, 148, 214, 0.24);
-  transform: translate(-50%, -50%) scale(var(--decor-scale, 1));
-  filter: saturate(0.88);
+  color: rgba(72, 160, 218, 0.19);
+  transform:
+    translate(calc(-50% + var(--decor-x, 0px)), calc(-50% + var(--decor-y, 0px)))
+    scale(var(--decor-scale, 1));
+  transform-origin: center;
+  will-change: transform;
+  filter: saturate(0.78);
 }
 
 .intro-game-process-decor svg {
@@ -56,7 +61,7 @@
   height: 100%;
   fill: none;
   stroke: currentColor;
-  stroke-width: 2.6;
+  stroke-width: 2.5;
   stroke-linecap: square;
   stroke-linejoin: miter;
   shape-rendering: crispEdges;
@@ -70,144 +75,102 @@
   height: 66px;
 }
 
+.intro-game-process-decor.is-chat {
+  color: rgba(63, 154, 216, 0.2);
+}
+
+.intro-game-process-decor.is-mail,
+.intro-game-process-decor.is-document,
+.intro-game-process-decor.is-chart {
+  color: rgba(65, 157, 218, 0.17);
+}
+
+.intro-game-process-decor.is-leaf {
+  width: 42px;
+  height: 42px;
+  color: rgba(69, 150, 151, 0.18);
+}
+
 .intro-game-process-decor.is-cloud {
-  width: 92px;
-  height: 64px;
-  color: rgba(255, 255, 255, 0.46);
+  width: 100px;
+  height: 66px;
+  color: rgba(255, 255, 255, 0.58);
 }
 
 .intro-game-process-decor.is-cloud svg {
-  fill: rgba(255,255,255,0.18);
-  stroke-width: 2;
+  fill: rgba(255, 255, 255, 0.28);
+  stroke: rgba(255, 255, 255, 0.42);
+  stroke-width: 1.5;
 }
 
 .intro-game-process-decor.is-spark {
-  width: 28px;
-  height: 28px;
-  color: rgba(62, 165, 225, 0.32);
+  width: 26px;
+  height: 26px;
+  color: rgba(67, 165, 225, 0.24);
 }
 
-.intro-game-process-message {
-  position: absolute;
-  width: clamp(170px, 16vw, 230px);
-  padding: 12px 14px 13px;
-  border: 2px solid rgba(43, 110, 93, 0.24);
-  border-radius: 8px;
-  background: rgba(251, 243, 230, 0.78);
-  box-shadow: 5px 5px 0 rgba(43, 43, 43, 0.055);
-  color: rgba(28, 58, 55, 0.66);
-  transform-origin: center;
-  will-change: transform;
-  backdrop-filter: blur(1px);
-  -webkit-backdrop-filter: blur(1px);
+.intro-game-process-decor.is-grid {
+  width: 48px;
+  height: 48px;
+  color: rgba(73, 164, 219, 0.105);
 }
 
-.intro-game-process-message::before {
-  content: "";
-  position: absolute;
-  left: 14px;
-  bottom: -9px;
-  width: 13px;
-  height: 13px;
-  border-left: 2px solid rgba(43, 110, 93, 0.24);
-  border-bottom: 2px solid rgba(43, 110, 93, 0.24);
-  background: rgba(251, 243, 230, 0.78);
-  transform: skewY(-36deg) rotate(-8deg);
-}
-
-.intro-game-process-message b,
-.intro-game-process-message span {
-  position: relative;
-  z-index: 1;
-  display: block;
-}
-
-.intro-game-process-message b {
-  margin-bottom: 5px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.01em;
-  color: rgba(47, 127, 98, 0.72);
-}
-
-.intro-game-process-message span {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-  font-size: 11px;
-  line-height: 1.5;
-  font-weight: 700;
-}
-
-/* Keep the message bubbles in the side margins around the vertical cards. */
-@media (min-width: 1180px) {
-  .intro-game-process-message:nth-of-type(15),
-  .intro-game-process-message:nth-of-type(17) {
-    margin-left: 18px;
-  }
-
-  .intro-game-process-message:nth-of-type(16),
-  .intro-game-process-message:nth-of-type(18) {
-    margin-left: -18px;
-  }
-}
-
-@media (max-width: 1179px) {
-  .intro-game-process-message {
-    width: 160px;
-    opacity: 0.68;
-  }
+.intro-game-process-decor.is-grid svg {
+  fill: currentColor;
+  stroke: none;
 }
 
 @media (max-width: 900px) {
   .intro-game-process-decor {
-    opacity: 0.64;
-  }
-
-  .intro-game-process-message {
-    width: 132px;
-    padding: 9px 10px;
-    opacity: 0.48;
-  }
-
-  .intro-game-process-message b {
-    font-size: 9px;
-  }
-
-  .intro-game-process-message span {
-    font-size: 9px;
-  }
-}
-
-@media (max-width: 767px) {
-  .intro-game .intro-game-features {
-    background: linear-gradient(180deg, rgba(167, 218, 240, 0.7), rgba(225, 243, 248, 0.82));
-  }
-
-  .intro-game-process-decor {
-    width: 40px;
-    height: 40px;
-    opacity: 0.5;
+    opacity: 0.78;
   }
 
   .intro-game-process-decor.is-chat,
   .intro-game-process-decor.is-mail,
   .intro-game-process-decor.is-document,
   .intro-game-process-decor.is-chart {
-    width: 46px;
+    width: 54px;
+    height: 54px;
+  }
+
+  .intro-game-process-decor.is-cloud {
+    width: 82px;
+    height: 54px;
+  }
+}
+
+@media (max-width: 767px) {
+  .intro-game .intro-game-features {
+    background: linear-gradient(180deg, #dceff8 0%, #e8f5fa 52%, #f0f9fb 100%);
+  }
+
+  .intro-game-process-decor {
+    width: 36px;
+    height: 36px;
+    opacity: 0.58;
+  }
+
+  .intro-game-process-decor.is-chat,
+  .intro-game-process-decor.is-mail,
+  .intro-game-process-decor.is-document,
+  .intro-game-process-decor.is-chart {
+    width: 42px;
+    height: 42px;
+  }
+
+  .intro-game-process-decor.is-cloud {
+    width: 70px;
     height: 46px;
   }
 
-  .intro-game-process-message {
-    width: 118px;
-    opacity: 0.3;
-  }
-
-  .intro-game-process-message.is-mobile-optional {
+  .intro-game-process-decor.is-grid:nth-of-type(even),
+  .intro-game-process-decor.is-spark:nth-of-type(3n) {
     display: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .intro-game-process-message {
-    transform: none !important;
+  .intro-game-process-decor {
+    transform: translate(-50%, -50%) scale(var(--decor-scale, 1)) !important;
   }
 }
