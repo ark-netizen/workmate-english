@@ -100,10 +100,39 @@ async function generate(build, schema, args) {
   }
 }
 
+// 후속 회신은 모델이 자연스러움을 만들다가 새 프로젝트/새 부탁을 즉흥적으로 꺼내는 게 가장 위험하다.
+// 기존 prompt가 character.register를 system 영역에 넣으므로, 그 자리에 당일 사건/역할 범위를 함께 고정해
+// 동료·상사·거래처가 각자 자기 대화와 같은 사건 밖으로 튀지 않게 한다.
+function withRoleContinuityGuard(args) {
+  const scenario = args?.scenario || {}
+  const character = args?.character || {}
+  const continuity = [
+    'STRICT CONTINUITY GUARD:',
+    `Stay on TODAY'S SAME work event only${scenario.title ? `: "${scenario.title}"` : ''}.`,
+    scenario.summary ? `Event facts: ${scenario.summary}` : '',
+    character.goal ? `Your role-specific goal: ${character.goal}` : '',
+    character.known_info ? `Facts you already know: ${character.known_info}` : '',
+    character.unknown_info ? `Facts you do not yet know: ${character.unknown_info}` : '',
+    'Do NOT introduce a different project, deliverable, deadline, client, meeting, or unrelated task unless the USER explicitly changes the subject.',
+    'Do NOT contradict project names, dates, quantities, deadlines, or commitments already present in the event or this conversation history.',
+    'Do NOT claim knowledge of another role\'s private conversation. React only as this character to the shared event facts and this thread.',
+    'If the user answered the ask, acknowledge it and close naturally; do not invent a new ask just to continue talking.',
+  ].filter(Boolean).join('\n')
+
+  return {
+    ...args,
+    character: {
+      ...character,
+      register: [character.register, continuity].filter(Boolean).join('\n'),
+    },
+  }
+}
+
 // ── 고수준 생성 함수 (기획서 17장 기능 단위) ─────────
 export const generateScenario = (args) => generate(buildScenarioPrompt, ScenarioSchema, args)
 export const generateRoleMessage = (args) => generate(buildRoleMessagePrompt, MessageSchema, args)
-export const generateRoleResponse = (args) => generate(buildRoleResponsePrompt, ResponseSchema, args)
+export const generateRoleResponse = (args) =>
+  generate(buildRoleResponsePrompt, ResponseSchema, withRoleContinuityGuard(args))
 export const generateDailyReport = (args) => generate(buildDailyReportPrompt, DailyReportSchema, args)
 export const generatePeriodReport = (args) => generate(buildPeriodReportPrompt, PeriodReportSchema, args)
 export const createWorkdayMemory = (args) => generate(buildWorkdayMemoryPrompt, WorkdayMemorySchema, args)
