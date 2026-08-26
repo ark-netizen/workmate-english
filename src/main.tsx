@@ -29,7 +29,6 @@ import "./intro-scroll-enhance";
 import "./intro-game-flutter";
 import "./intro-copy-polish";
 import "./foldable-login-guard";
-import "./production-qa-guard";
 import "./enable-mobile-intro-trial";
 
 createRoot(document.getElementById("root")!).render(
