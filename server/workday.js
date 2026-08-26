@@ -30,6 +30,7 @@ function buildKakaoReportText(report) {
 import { getProfile } from './profile.js'
 import { getActiveSurveyForUser } from './support.js'
 import { TRIAL_SCENARIO, TRIAL_CHARACTERS, TRIAL_REPLY, TRIAL_DAILY_REPORT } from './trialContent.js'
+import { DEMO_SCENARIO, DEMO_CHARACTERS, isDemoAccount } from './demoContent.js'
 import { recordDailyAttendance, consumeLeaveForUse, getLeaveBalance, getLatestPersonaFeedback } from './promotion.js'
 import { scheduleSameDayReview, scheduleNextDayReview, submitReviewAnswer, getPendingReviewBanner } from './reviewItems.js'
 import {
@@ -138,11 +139,115 @@ const decodeWorkContext = (scenario) => {
 const routeFor = (channel, conversationId) =>
   channel === 'email' ? `/email/${conversationId}` : `/messenger/${conversationId}`
 
+// 고정 콘텐츠(체험판/시연 계정)로 하루치 시나리오·캐릭터·대화·첫 메시지를 한 번에 만들어 둔다.
+// LLM을 전혀 호출하지 않으므로 출근이 즉시 끝나고, 첫 메시지가 미리 저장돼 있어서 배달 시점에도
+// 재생성 없이 그대로 노출된다(deliverConversation의 고정 콘텐츠 분기 참고).
+async function createFixedScenarioDay(sb, { workday, scenarioContent, characters: chars, titleEn, summaryEn, goalEn, stageKo, stageEn, staggerMs }) {
+  const scenario = unwrap(
+    await sb.from('scenarios').insert({
+      workday_id: workday.id,
+      title: scenarioContent.title,
+      summary: scenarioContent.summary,
+      project: encodeWorkContext({
+        titleKo: scenarioContent.title,
+        titleEn,
+        summaryKo: scenarioContent.summary,
+        summaryEn,
+        goalKo: scenarioContent.goal,
+        goalEn,
+        stageKo,
+        stageEn,
+        topicStatus: 'active',
+        roles: chars.map((c) => ({ role: c.role, name: c.name, purposeKo: c.purposeKo, purposeEn: c.purposeEn })),
+      }),
+      goal: scenarioContent.goal,
+      practice_areas: scenarioContent.practice_areas,
+    }).select().single(),
+  )
+
+  const characters = unwrap(
+    await sb.from('characters').insert(
+      chars.map((c) => ({
+        scenario_id: scenario.id,
+        role: c.role,
+        channel: c.channel,
+        name: c.name,
+        title: c.title,
+        register: c.register,
+        color: c.color,
+      })),
+    ).select(),
+  )
+  const characterByRole = new Map(characters.map((ch) => [ch.role, ch]))
+
+  const now = Date.now()
+  const scheduledAtByRole = Object.fromEntries(
+    chars.map((c) => [c.role, new Date(now + (staggerMs?.[c.role] ?? 0)).toISOString()]),
+  )
+
+  const conversations = unwrap(
+    await sb.from('conversations').insert(
+      chars.map((c) => ({
+        workday_id: workday.id,
+        character_id: characterByRole.get(c.role).id,
+        channel: c.channel,
+        subject: c.subject || null,
+        status: 'scheduled',
+        scheduled_at: scheduledAtByRole[c.role],
+      })),
+    ).select(),
+  )
+  const convoByCharacterId = new Map(conversations.map((cv) => [cv.character_id, cv]))
+
+  unwrap(
+    await sb.from('messages').insert(
+      chars.map((c) => ({
+        conversation_id: convoByCharacterId.get(characterByRole.get(c.role).id).id,
+        sender: 'character',
+        body: c.firstMessage,
+        subject: c.subject || null,
+        seq: 1,
+      })),
+    ),
+  )
+
+  unwrap(
+    await sb.from('notification_schedules').insert(
+      chars.map((c) => {
+        const convo = convoByCharacterId.get(characterByRole.get(c.role).id)
+        return {
+          workday_id: workday.id,
+          conversation_id: convo.id,
+          scheduled_at: scheduledAtByRole[c.role],
+          status: 'scheduled',
+          title: `${c.name} · ${roleLabel(c.role)}`,
+          preview: preview(c.firstMessage),
+          route: routeFor(c.channel, convo.id),
+          sent_at: null,
+        }
+      }),
+    ),
+  )
+
+  const created = chars.map((c) => {
+    const convo = convoByCharacterId.get(characterByRole.get(c.role).id)
+    return { id: convo.id, role: c.role, name: c.name, channel: c.channel, scheduled_at: scheduledAtByRole[c.role] }
+  })
+
+  return { workday, scenario, conversations: created }
+}
+
 async function loadProfile(userId) {
   const sb = admin()
-  const row = unwrap(await sb.from('user_profiles').select('*, app_users(display_name, is_trial)').eq('user_id', userId).single())
+  // email은 시연용 고정 계정(demoContent.js) 판별에만 쓴다
+  const row = unwrap(await sb.from('user_profiles').select('*, app_users(display_name, is_trial, email)').eq('user_id', userId).single())
   const { app_users, ...profile } = row
-  return { ...profile, display_name: app_users?.display_name || null, is_trial: !!app_users?.is_trial }
+  return {
+    ...profile,
+    display_name: app_users?.display_name || null,
+    is_trial: !!app_users?.is_trial,
+    email: app_users?.email || null,
+  }
 }
 
 // ── 출근: Workday + 시나리오 + 인물 + 대화 + 알림 예약 ──
@@ -179,6 +284,22 @@ export async function startWorkday(userId) {
   // 이미 시나리오가 있으면 그대로
   const existing = unwrap(await sb.from('scenarios').select('id').eq('workday_id', workday.id).maybeSingle())
   if (existing) return { workday, reused: true }
+
+  // 시연용 고정 계정 — 발표 중 1일차 연락 3건이 항상 같은 문장으로 오도록 LLM을 건너뛴다.
+  // 체험판과 달리 실계정이라 답장 첨삭·리포트·복습·승급은 아래/이후 로직에서 그대로 동작한다.
+  if (isDemoAccount(profile)) {
+    return await createFixedScenarioDay(sb, {
+      workday,
+      scenarioContent: DEMO_SCENARIO,
+      characters: DEMO_CHARACTERS,
+      titleEn: 'Confirming the Final Main Promotion Image',
+      summaryEn: 'The team needs to confirm whether the main promotion image for the new single is final, asked by a colleague, a manager, and a client in different registers.',
+      goalEn: 'Share the image status casually with a colleague, politely with the manager, and formally with the client.',
+      stageKo: '이미지 확정 확인',
+      stageEn: 'Confirming the final image',
+      staggerMs: { colleague: 0, manager: 90_000, client: 180_000 },
+    })
+  }
 
   // "1분 체험하기" 게스트는 LLM 호출 없이 항상 같은 고정 시나리오를 즉시 보여준다
   // — 캐릭터 3명분을 하나씩 순차로 insert하면 왕복이 12번 넘게 쌓여 "다음" 버튼이 눈에 띄게 느려지므로,
@@ -598,7 +719,7 @@ export async function deliverConversation(conversationId) {
 
   // '복습'/'후속 체크인' 대화, 그리고 체험판 대화는 생성 시점에 이미 메시지를 넣어뒀으므로,
   // LLM 재생성 없이 상태만 넘긴다 — 체험판은 특히 LLM 비용을 쓰지 않는 고정 콘텐츠라야 함
-  if (convo.kind === 'review' || convo.kind === 'checkin' || profile.is_trial) {
+  if (convo.kind === 'review' || convo.kind === 'checkin' || profile.is_trial || isDemoAccount(profile)) {
     const existing = unwrap(await sb.from('messages').select('*').eq('conversation_id', convo.id).order('seq')) || []
     const firstMsg = existing[0]
     const label = convo.kind === 'review' ? '복습' : roleLabel(character.role)

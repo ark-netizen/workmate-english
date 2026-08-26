@@ -2,6 +2,7 @@
 // 정책: 한국어 힌트까지만=정상(복습 대상 아님), 단어까지=Tier1("영작해보기" 2회), 문장까지=Tier2("빈칸채우기"→"영작해보기")
 import { admin, unwrap } from './db.js'
 import { todayAt } from './time.js'
+import { isDemoAccount } from './demoContent.js'
 
 const preview = (t) => (t || '').replace(/\n+/g, ' ').trim().slice(0, 60)
 const routeFor = (channel, conversationId) =>
@@ -81,6 +82,13 @@ export async function scheduleSameDayReview({ userId, workday, profile, characte
     let scheduledAt = null
     if (earliestAllowed < deadline) scheduledAt = earliestAllowed
     // now >= deadline이면 당일 생략(scheduledAt은 null, 익일 복습만 진행)
+
+    // 시연 계정은 발표가 몇 분 만에 끝나므로 "2시간 뒤 + 퇴근 30분 전" 제약을 그대로 두면
+    // 당일 복습이 아예 안 잡힌다 — 마지막 연락 직후로 당겨서, 자동 진행 토글이 켜져 있으면
+    // 답장을 다 마친 순간 복습까지 자연스럽게 이어지게 한다.
+    if (isDemoAccount(profile)) {
+      scheduledAt = (latestRealScheduledAt || now) + 60000
+    }
 
     if (scheduledAt) {
       // 저장 과정에서 실제 줄바꿈이 리터럴 "\n" 2글자로 남아있는 경우가 있어(더블 이스케이프),

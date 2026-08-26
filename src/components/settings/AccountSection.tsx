@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import * as api from "@/lib/api";
 import { finalizePendingConsent, signIn, signInWithKakao, signUp, signUpWithKakao } from "@/lib/auth";
+import { subscribePush } from "@/lib/push";
 import { supabase } from "@/lib/supabaseClient.js";
 import type { ProfileResponse } from "@/types/api";
 
@@ -138,6 +139,13 @@ export function AccountSection({
       } else {
         if (!canSubmitSignin) return;
         await signIn({ email: resolvedEmail, password });
+        // 지금까지는 온보딩 "시작하기"에서만 알림 권한을 물어봐서, 온보딩을 이미 끝낸 계정으로
+        // 다른 기기(예: 발표용 노트북)에 로그인하면 알림을 켤 방법이 설정 화면밖에 없었다.
+        // 로그인 클릭은 사용자 제스처라 이 자리에서 요청해야 브라우저가 권한창을 띄워준다.
+        // 이미 허용/차단을 고른 브라우저에서는 다시 묻지 않는다(default일 때만).
+        if (typeof Notification !== "undefined" && Notification.permission === "default") {
+          subscribePush().catch(() => {});
+        }
       }
       // onAccountChanged가 다음 화면(오늘의 업무 불러오기 등)까지 끝내는 비동기 작업이라,
       // 이걸 기다리지 않고 submitting을 먼저 꺼버리면 버튼은 "로그인"으로 돌아왔는데 화면은
