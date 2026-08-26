@@ -1,54 +1,58 @@
 /* Final mobile intro navbar composition.
-   Keep the same semantic order as desktop, but do not let the section links
-   visually stick to the logo on narrow screens. */
+   Same semantic order as desktop, with an adaptive spacer between the logo
+   and section links so the labels do not visually stick to the brand. */
 @media (max-width: 767px) {
   .intro-page .intro-nav-inner {
     justify-content: flex-start !important;
   }
 
-  /* Separate the navigation/control cluster from the logo. */
   .intro-page .intro-nav-inner > div:last-child {
     flex-direction: row !important;
     margin-left: clamp(8px, 2.8vw, 14px) !important;
   }
 
-  /* The links should occupy the flexible middle space and sit toward the
-     trial button, leaving deliberate breathing room beside the logo. */
   .intro-page .intro-nav-inner > div:last-child > div:first-child {
     order: 1 !important;
-    justify-content: flex-end !important;
+    justify-content: flex-start !important;
     padding-left: 0 !important;
+  }
+
+  /* This flexible blank item consumes spare width on normal phones, creating
+     the same visual separation seen on desktop. It shrinks to zero before the
+     real links/actions are compressed on very narrow phones. */
+  .intro-page .intro-nav-inner > div:last-child > div:first-child::before {
+    content: "" !important;
+    display: block !important;
+    min-width: 0 !important;
+    flex: 1 1 18px !important;
   }
 
   .intro-page .intro-trial-btn {
     order: 2 !important;
+    margin-left: 3px !important;
   }
 
   .intro-page .intro-mode-toggle {
     order: 3 !important;
+    margin-left: 2px !important;
   }
 
   .intro-page .intro-login-btn,
   .intro-page .intro-nav-inner > div:last-child > span {
     order: 4 !important;
   }
-
-  /* Keep a visible rhythm between the navigation labels and the two actions. */
-  .intro-page .intro-trial-btn {
-    margin-left: 3px !important;
-  }
-
-  .intro-page .intro-mode-toggle {
-    margin-left: 2px !important;
-  }
 }
 
-/* On the narrowest phones preserve the separation without sacrificing the
-   action buttons. The section-link strip remains horizontally scrollable. */
+/* 320~350px: retain a small brand gap, but prioritize keeping every action
+   reachable and on the same line. */
 @media (max-width: 350px) {
   .intro-page .intro-nav-inner > div:last-child {
     margin-left: 6px !important;
     gap: 2px !important;
+  }
+
+  .intro-page .intro-nav-inner > div:last-child > div:first-child::before {
+    flex-basis: 4px !important;
   }
 
   .intro-page .intro-nav-link {
