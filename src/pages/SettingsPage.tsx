@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ChangeEvent, ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
 import * as api from "@/lib/api";
@@ -167,10 +167,12 @@ export function SettingsPage() {
   const [profile, setProfile] = useState<ProfileResponse>({});
   const [originalProfile, setOriginalProfile] = useState<ProfileResponse>({});
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   // 저장 버튼이 섹션별로 나뉘어 있어(기본 정보 / 동료·상사·거래처), 한 섹션을 저장해도
   // 다른 섹션은 영향받지 않도록 진행 상태를 따로 관리한다
   const [basicSaving, setBasicSaving] = useState(false);
   const [basicSaved, setBasicSaved] = useState(false);
+  const [basicError, setBasicError] = useState<string | null>(null);
   const [personasSaving, setPersonasSaving] = useState(false);
   const [personasSaved, setPersonasSaved] = useState(false);
   const [personasError, setPersonasError] = useState<string | null>(null);
@@ -197,11 +199,13 @@ export function SettingsPage() {
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  useEffect(() => {
-    api.getProfile().then((p) => {
+  const loadProfile = useCallback(async () => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const p = await api.getProfile();
       setProfile(p);
       setOriginalProfile(p);
-      setLoading(false);
       if (!didInitIndustry.current) {
         didInitIndustry.current = true;
         if (p.industry && industries.includes(p.industry)) {
@@ -211,18 +215,29 @@ export function SettingsPage() {
           setCustomIndustry(p.industry);
         }
       }
-    });
+    } catch {
+      setLoadError("설정 정보를 불러오지 못했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadProfile();
     supabase?.auth
       .getUser()
       .then(({ data }) => {
         setKakaoLinked((data.user?.identities || []).some((i) => i.provider === "kakao"));
       })
       .catch(() => {
-        supabase?.auth.getSession().then(({ data }) => {
-          setKakaoLinked((data.session?.user?.identities || []).some((i) => i.provider === "kakao"));
-        });
+        supabase?.auth
+          .getSession()
+          .then(({ data }) => {
+            setKakaoLinked((data.session?.user?.identities || []).some((i) => i.provider === "kakao"));
+          })
+          .catch(() => {});
       });
-  }, []);
+  }, [loadProfile]);
 
   const handleToggleKakaoNotify = async (next: boolean) => {
     setKakaoError(null);
@@ -259,6 +274,7 @@ export function SettingsPage() {
   // 저장 안 한 편집 중인 값을 덮어쓰지 않기 위해 profile 전체가 아니라 이 필드들만 갱신)
   const finishSaveBasic = async () => {
     setBasicSaving(true);
+    setBasicError(null);
     try {
       const savedProfile = await api.postProfile({
         display_name: profile.display_name,
@@ -278,6 +294,8 @@ export function SettingsPage() {
       // 출퇴근시간을 바꾸면 서버가 오늘 남은 연락 시각도 같이 재계산하는데, 홈/오늘의 연락은
       // 다음 폴링(45초)이 와야 반영돼서 "저장했는데 안 바뀐다"로 보였음 — 저장 직후 바로 당겨온다
       refreshWorkday().catch(() => {});
+    } catch (err) {
+      setBasicError(err instanceof Error ? err.message : "저장 중 문제가 발생했습니다. 다시 시도해주세요.");
     } finally {
       setBasicSaving(false);
     }
@@ -401,9 +419,25 @@ export function SettingsPage() {
     );
   }
 
+  if (loadError) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-10 text-center md:px-8">
+        <p className="text-sm text-red-600">{loadError}</p>
+        <button
+          type="button"
+          onClick={() => void loadProfile()}
+          className="mt-3 rounded-md border border-border px-3 py-1.5 text-sm text-foreground/70 hover:bg-black/[.03]"
+        >
+          다시 시도
+        </button>
+      </div>
+    );
+  }
+
   const basicSaveButton = (
     <>
-      {basicSaved && <span className="text-xs text-foreground/50">저장됨</span>}
+      {basicError && <span className="mr-auto text-xs text-red-600">{basicError}</span>}
+      {!basicError && basicSaved && <span className="text-xs text-foreground/50">저장됨</span>}
       <button
         type="button"
         onClick={finishSaveBasic}
