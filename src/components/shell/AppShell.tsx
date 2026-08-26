@@ -6,7 +6,8 @@ import { MobileTabBar } from "./MobileTabBar";
 import { InAppBanner } from "./InAppBanner";
 import { SupportChatWidget } from "@/components/support/SupportChatWidget";
 import { SurveyBanner } from "@/components/support/SurveyBanner";
-import { TrialGuideBar } from "@/components/trial/TrialGuideBar";
+import { TrialGuideBarV2 } from "@/components/trial/TrialGuideBarV2";
+import { TrialTourExitInjector } from "@/components/trial/TrialTourExitInjector";
 import { useWorkday } from "@/context/useWorkday";
 import { useBusinessMode } from "@/context/useBusinessMode";
 
@@ -59,7 +60,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         )}
         {/* 모바일에서는 TrialActionBar가 일반 흐름에 참여해서 메시지 입력창을 덮지 않는다.
             데스크톱에서는 TrialActionBar 자체가 fixed라 기존 우측 오버레이 동작을 그대로 유지한다. */}
-        {isTrial && <TrialGuideBar />}
+        {isTrial && <TrialGuideBarV2 />}
+        {isTrial && <TrialTourExitInjector />}
         <main className="min-h-0 min-w-0 flex-1 bg-background pb-16 md:pb-0">{children}</main>
       </div>
       <MobileTabBar />
