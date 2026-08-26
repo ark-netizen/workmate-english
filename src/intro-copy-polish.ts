@@ -3,15 +3,15 @@ let introCopyObserver: MutationObserver | null = null;
 const processCopy = [
   {
     title: "동료·상사·거래처, 다른 표현",
-    body: "같은 상황도 상대에 따라 캐주얼·격식·보수적 톤으로 구분해 배워요.<br/>대화가 쌓일수록 더 고도화돼요.",
+    body: "같은 상황도 상대에 따라 캐주얼·격식·보수적 톤으로 구분해 배워요.\n대화가 쌓일수록 더 고도화돼요.",
   },
   {
     title: "내 업종·직무 맞춤 시나리오",
-    body: "업종·직무만 입력하면 나만의 동료·상사·거래처가<br/>매일 자동으로 생겨서 대화할 수 있어요.",
+    body: "업종·직무만 입력하면 나만의 동료·상사·거래처가\n매일 자동으로 생겨서 대화할 수 있어요.",
   },
   {
     title: "웹·카카오톡으로 놓치지 않는 알림",
-    body: "새 업무 연락과 리마인더를 웹과 카카오톡으로 받을 수 있어요.<br/>바쁠 때는 '외근 중'으로 미루면 30분 뒤 다시 알려드려요.",
+    body: "새 업무 연락과 리마인더를 웹과 카카오톡으로 받을 수 있어요.\n바쁠 때는 '외근 중'으로 미루면 30분 뒤 다시 알려드려요.",
   },
   {
     title: "하루·주간·월간 리포트",
@@ -19,9 +19,32 @@ const processCopy = [
   },
   {
     title: "스트레스 받을 때는, 고함항아리에 소리질러봐요!",
-    body: "영어를 배우는 걸 넘어서, 영어로 솔직하게 털어놓을 수 있는 스트레스 공유 동료가 생겨요.<br/>바쁜 하루가 감지되면 먼저 위로와 표현을 건네고, 내가 먼저 말을 걸 수도 있어요.",
+    body: "영어를 배우는 걸 넘어서, 영어로 솔직하게 털어놓을 수 있는 스트레스 공유 동료가 생겨요.\n바쁜 하루가 감지되면 먼저 위로와 표현을 건네고, 내가 먼저 말을 걸 수도 있어요.",
   },
 ] as const;
+
+function renderProcessBody(body: HTMLElement, copy: string) {
+  const lines = copy.split("\n");
+  const expectedText = lines.join("\n");
+  const currentText = body.innerText.replace(/\r/g, "");
+  const hasExpectedBreakCount = body.querySelectorAll(":scope > br").length === Math.max(0, lines.length - 1);
+
+  // 과거 QA 패치가 남긴 inline white-space가 CSS 레이아웃을 덮어쓰지 않게 제거한다.
+  if (body.style.getPropertyValue("white-space")) {
+    body.style.removeProperty("white-space");
+  }
+
+  if (currentText === expectedText && hasExpectedBreakCount) return;
+
+  const nodes: Node[] = [];
+  lines.forEach((line, index) => {
+    if (index > 0) nodes.push(document.createElement("br"));
+    nodes.push(document.createTextNode(line));
+  });
+
+  body.replaceChildren(...nodes);
+  body.dataset.processCopyQa = "applied";
+}
 
 function polishProcessCopy(page: HTMLElement) {
   const cards = page.querySelectorAll<HTMLElement>(".intro-game-feature-window, .intro-business-feature-card");
@@ -30,20 +53,13 @@ function polishProcessCopy(page: HTMLElement) {
     const copy = processCopy[index];
     if (!copy) return;
 
-    const isGameCard = card.classList.contains("intro-game-feature-window");
-    const title = isGameCard
-      ? card.querySelector<HTMLElement>(":scope > div:last-child > div:first-child > p:first-of-type")
-      : card.querySelector<HTMLElement>(":scope > div:first-child > p:first-of-type");
-    const body = isGameCard
-      ? card.querySelector<HTMLElement>(":scope > div:last-child > div:first-child > p:nth-of-type(2)")
-      : card.querySelector<HTMLElement>(":scope > div:first-child > p:nth-of-type(2)");
-
+    const paragraphs = card.querySelectorAll<HTMLElement>("p");
+    const title = paragraphs.item(0);
+    const body = paragraphs.item(1);
     if (!title || !body) return;
 
     if (title.textContent !== copy.title) title.textContent = copy.title;
-
-    const expectedBody = copy.body.replaceAll("<br/>", "<br>");
-    if (body.innerHTML !== expectedBody) body.innerHTML = copy.body;
+    renderProcessBody(body, copy.body);
   });
 }
 
@@ -94,7 +110,6 @@ function polishIntroAboutLink(page: HTMLElement) {
     aboutLink.className = expectedClassName;
   }
 
-  // 제작자 개인 브랜드 페이지로 이동한다는 점을 먼저 알려서 외부 이동 맥락을 명확히 한다.
   aboutLink.onclick = (event) => {
     event.preventDefault();
     const shouldLeave = window.confirm(
@@ -103,7 +118,6 @@ function polishIntroAboutLink(page: HTMLElement) {
     if (shouldLeave) window.location.assign("https://www.idealwhy.com");
   };
 
-  // About은 항상 미리보기보다 왼쪽(네비게이션 첫 항목)에 둔다.
   if (navGroup.firstElementChild !== aboutLink) {
     navGroup.insertBefore(aboutLink, navGroup.firstElementChild);
   }
@@ -143,8 +157,13 @@ function polishIntroCopy() {
 function startIntroCopyPolish() {
   polishIntroCopy();
   if (!document.body || introCopyObserver) return;
+
   introCopyObserver = new MutationObserver(polishIntroCopy);
-  introCopyObserver.observe(document.body, { childList: true, subtree: true });
+  introCopyObserver.observe(document.body, {
+    childList: true,
+    subtree: true,
+    characterData: true,
+  });
 }
 
 if (document.readyState === "loading") {

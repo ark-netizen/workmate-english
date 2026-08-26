@@ -231,7 +231,7 @@ export function ConversationView({ conversation }: { conversation: Conversation 
             <ReplyHints
               key={conversation.id}
               hints={hints}
-              externalOpenSignal={isTrial ? trialHintSignal : undefined}
+              externalOpenSignal={isHintGatedRole ? trialHintSignal : undefined}
               onLevelChange={setHintLevel}
             />
           )}

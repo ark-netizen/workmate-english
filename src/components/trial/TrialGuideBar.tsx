@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useBusinessMode } from "@/context/useBusinessMode";
 import { useWorkday } from "@/context/useWorkday";
 import { endGuestTrial } from "@/lib/session";
 import { TRIAL_REPLY_TEXT } from "@/lib/trialReplies";
@@ -9,19 +10,29 @@ import { TrialActionBar } from "./TrialActionBar";
 type FinalTrialStage = "fieldwork" | "comfort" | "report" | "kakao";
 
 const KAKAO_TEXT_MAX = 190;
+const FIELD_WORK_PREVIEW_MS = 2600;
+const FIELD_WORK_CLICK_GAP_MS = 320;
+
 function truncateKakaoText(value: string | undefined, max: number) {
   if (!value) return value;
   return value.length > max ? `${value.slice(0, max - 1)}…` : value;
 }
 
+function wait(ms: number) {
+  return new Promise<void>((resolve) => window.setTimeout(resolve, ms));
+}
+
 // "1분 체험하기" 게스트 전용 — 실제 화면을 그대로 쓰되 하나의 안내 카드로 진행한다.
-// 업무 3건 이후에는 "외근 중" 반복 → 바쁨 감지 → 동료의 선제 위로 메시지 → 리포트 → 카카오 알림까지
+// 업무 3건 이후에는 "외근 중" 반복 → 사이트 알림 → 바쁨 감지 → 동료의 선제 위로 메시지 → 리포트 → 카카오 알림까지
 // 실제 서비스의 연결 구조가 보이도록 체험 단계를 이어준다.
 export function TrialGuideBar() {
   const { report, conversations, sendReply, finishWorkday, goOnFieldWork, triggerTrialHint } = useWorkday();
+  const { businessMode } = useBusinessMode();
   const { targets, doneCount, allDone, activeTarget } = useTrialTargets();
   const navigate = useNavigate();
   const location = useLocation();
+  // 현재 저장값은 businessMode=true가 비즈니스모드, false가 게임모드다.
+  const isGameMode = !businessMode;
   const [finishing, setFinishing] = useState(false);
   const [sending, setSending] = useState(false);
   const [fieldWorkSimulating, setFieldWorkSimulating] = useState(false);
@@ -38,8 +49,9 @@ export function TrialGuideBar() {
   const colleagueConversation = colleagueTarget
     ? conversations.find((conversation) => conversation.id === colleagueTarget.id)
     : undefined;
+  // 30분 뒤 다시 뜨는 알림은 사용자가 이미 답한 최신 메시지가 아니라 처음 받았던 업무 요청을 재현한다.
   const fieldWorkPreviewBody =
-    [...(colleagueConversation?.messages ?? [])].reverse().find((message) => message.from === "contact")?.body ??
+    (colleagueConversation?.messages ?? []).find((message) => message.from === "contact")?.body ??
     "Hey, can you take a look by 3? 🙏";
   const ventConversation = conversations.find((conversation) => conversation.kind === "vent");
   const onVentPage = !!ventConversation && location.pathname === `/messenger/${ventConversation.id}`;
@@ -48,7 +60,7 @@ export function TrialGuideBar() {
   const showHintAsk = isManagerStep && managerHintStage === "ask";
 
   // 기본 업무 3건이 끝나면 바로 퇴근시키지 않는다.
-  // 체험판에서는 오른쪽 "다음" 버튼 한 번으로 실제 외근 이벤트 2회를 연속 기록해,
+  // 체험판에서는 오른쪽 "다음" 버튼 한 번으로 사이트 알림 위치를 먼저 보여준 뒤 실제 외근 이벤트 2회를 기록해,
   // 반복된 바쁨 감지 → 동료의 선제 위로 메시지 흐름까지 짧게 체험한다.
   useEffect(() => {
     if (!allDone || report) return;
@@ -90,8 +102,8 @@ export function TrialGuideBar() {
 
     if (allDone) {
       // 체험판에서는 실제 버튼을 두 번 찾아 누르게 하지 않고, "다음" 한 번으로 외근 이벤트 2회를 기록한다.
-      // goOnFieldWork()가 매번 refresh()까지 수행하므로 두 번째 호출 뒤 getTodaySnapshot의 기존
-      // comfort trigger가 그대로 작동해 고함항아리/선제 위로 대화가 생성된다.
+      // 다만 외근 신호를 바로 처리해 위로 메시지가 먼저 나타나면 알림 UI를 볼 시간이 없으므로,
+      // 실제 사이트의 InAppBanner와 같은 우하단 위치/크기의 알림을 먼저 충분히 보여준 뒤 신호 2회를 처리한다.
       if (!report && !ventConversation) {
         if (colleagueTarget && location.pathname !== colleagueTarget.path) {
           navigate(colleagueTarget.path);
@@ -99,11 +111,14 @@ export function TrialGuideBar() {
         setFieldWorkSimulating(true);
         setShowFieldWorkPreview(true);
         try {
+          await wait(FIELD_WORK_PREVIEW_MS);
+          setShowFieldWorkPreview(false);
           await goOnFieldWork();
+          await wait(FIELD_WORK_CLICK_GAP_MS);
           await goOnFieldWork();
         } finally {
+          setShowFieldWorkPreview(false);
           setFieldWorkSimulating(false);
-          window.setTimeout(() => setShowFieldWorkPreview(false), 3200);
         }
         return;
       }
@@ -167,7 +182,7 @@ export function TrialGuideBar() {
     ? !report
       ? !ventConversation
         ? fieldWorkSimulating
-          ? "외근 신호 처리 중..."
+          ? "웹 알림 확인 중..."
           : "다음"
         : finalStage === "comfort"
           ? finishing
@@ -192,7 +207,7 @@ export function TrialGuideBar() {
   const message = allDone
     ? !report
       ? finalStage === "fieldwork"
-        ? "실서비스에서는 ‘지금 외근 중’을 누르면 예정된 연락을 30분 뒤 다시 받을 수 있어요.\n체험판에서는 다음을 누르면 외근 신호 2회를 한 번에 재현해, 반복된 바쁨 감지까지 보여드릴게요."
+        ? "실서비스에서는 ‘지금 외근 중’을 누르면 예정된 연락을 30분 뒤 다시 받을 수 있어요.\n다음을 누르면 우하단에 뜨는 웹 알림을 먼저 보여드린 뒤, 외근 신호 2회를 한 번에 재현할게요."
         : onVentPage
           ? "외근 신호가 반복되자 동료가 먼저 말을 걸어왔어요. 이렇게 먼저 온 위로 메시지는 고함항아리에 모여요."
           : "반복된 바쁨을 감지했어요. 동료의 메시지로 이동하는 중이에요..."
@@ -231,16 +246,29 @@ export function TrialGuideBar() {
   return (
     <>
       {showFieldWorkPreview && (
-        <div className="fixed left-1/2 top-16 z-40 w-[min(340px,calc(100vw-24px))] -translate-x-1/2 rounded-xl border border-[#c9d2dc] bg-white p-3 text-[#22303a] shadow-[0_14px_36px_rgba(31,45,61,0.22)] md:left-auto md:right-[23rem] md:top-20 md:translate-x-0">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-[11px] font-semibold text-[#5e6d79]">웹 알림 예시</p>
-            <span className="rounded-full bg-[#eef4ff] px-2 py-0.5 text-[10px] font-semibold text-[#1a56ff]">30분 후</span>
+        <div className="fixed bottom-20 right-4 z-50 w-80 max-w-[calc(100vw-2rem)] md:bottom-4">
+          <div
+            className={`absolute -top-9 right-0 rounded-full px-3 py-1.5 text-[11px] font-bold text-white shadow-lg ${
+              isGameMode ? "bg-[#2f795d]" : "bg-[#1a56ff]"
+            }`}
+          >
+            웹 알림은 여기에서 떠요
           </div>
-          <p className="mt-2 text-sm font-bold">Jake</p>
-          <p className="mt-1 text-xs leading-relaxed text-[#4a5965]">{fieldWorkPreviewBody}</p>
-          <p className="mt-2 border-t border-[#edf0f3] pt-2 text-[10px] leading-relaxed text-[#74818a]">
-            외근 중으로 미룬 연락은 같은 내용으로 다시 알려드려요.
-          </p>
+          <div
+            className={`flex items-start gap-3 rounded-lg border-2 bg-surface p-4 text-foreground ${
+              isGameMode
+                ? "border-[#2f795d] shadow-[0_16px_40px_rgba(47,121,93,0.24)] ring-4 ring-[#2f795d]/20"
+                : "border-[#1a56ff] shadow-[0_16px_40px_rgba(26,86,255,0.26)] ring-4 ring-[#1a56ff]/20"
+            }`}
+          >
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium">Jake</p>
+              <p className="mt-0.5 truncate text-xs text-foreground/60">{fieldWorkPreviewBody}</p>
+            </div>
+            <span className="shrink-0 text-foreground/40" aria-hidden="true">
+              ✕
+            </span>
+          </div>
         </div>
       )}
 
