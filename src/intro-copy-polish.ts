@@ -1,4 +1,5 @@
 let introCopyObserver: MutationObserver | null = null;
+let introCopyQaTimer: number | null = null;
 
 const processCopy = [
   {
@@ -23,6 +24,25 @@ const processCopy = [
   },
 ] as const;
 
+function renderProcessBody(body: HTMLElement, copy: string) {
+  const lines = copy.split("\n");
+  const expectedText = lines.join("\n");
+  const currentText = body.innerText.replace(/\r/g, "");
+  const hasExpectedBreakCount = body.querySelectorAll(":scope > br").length === Math.max(0, lines.length - 1);
+
+  if (currentText === expectedText && hasExpectedBreakCount) return;
+
+  const nodes: Node[] = [];
+  lines.forEach((line, index) => {
+    if (index > 0) nodes.push(document.createElement("br"));
+    nodes.push(document.createTextNode(line));
+  });
+
+  body.replaceChildren(...nodes);
+  body.style.setProperty("white-space", "normal", "important");
+  body.dataset.processCopyQa = "applied";
+}
+
 function polishProcessCopy(page: HTMLElement) {
   const cards = page.querySelectorAll<HTMLElement>(".intro-game-feature-window, .intro-business-feature-card");
 
@@ -30,22 +50,14 @@ function polishProcessCopy(page: HTMLElement) {
     const copy = processCopy[index];
     if (!copy) return;
 
-    const isGameCard = card.classList.contains("intro-game-feature-window");
-    const title = isGameCard
-      ? card.querySelector<HTMLElement>(":scope > div:last-child > div:first-child > p:first-of-type")
-      : card.querySelector<HTMLElement>(":scope > div:first-child > p:first-of-type");
-    const body = isGameCard
-      ? card.querySelector<HTMLElement>(":scope > div:last-child > div:first-child > p:nth-of-type(2)")
-      : card.querySelector<HTMLElement>(":scope > div:first-child > p:nth-of-type(2)");
-
+    // 카드 내부에서 처음 두 p가 제목/본문이다. 복잡한 :scope 경로에 의존하지 않는다.
+    const paragraphs = card.querySelectorAll<HTMLElement>("p");
+    const title = paragraphs.item(0);
+    const body = paragraphs.item(1);
     if (!title || !body) return;
 
     if (title.textContent !== copy.title) title.textContent = copy.title;
-
-    // React가 카드 active 상태를 갱신해도 DOM 구조를 깨지 않도록
-    // <br> 노드를 삽입하지 않고 단일 text node + pre-line으로 줄바꿈을 유지한다.
-    if (body.style.whiteSpace !== "pre-line") body.style.whiteSpace = "pre-line";
-    if (body.textContent !== copy.body) body.textContent = copy.body;
+    renderProcessBody(body, copy.body);
   });
 }
 
@@ -145,12 +157,18 @@ function polishIntroCopy() {
 function startIntroCopyPolish() {
   polishIntroCopy();
   if (!document.body || introCopyObserver) return;
+
   introCopyObserver = new MutationObserver(polishIntroCopy);
   introCopyObserver.observe(document.body, {
     childList: true,
     subtree: true,
     characterData: true,
   });
+
+  // QA fallback: React의 스크롤/active 재렌더가 문구를 덮어써도 실제 렌더 상태를 계속 교정한다.
+  if (introCopyQaTimer === null) {
+    introCopyQaTimer = window.setInterval(polishIntroCopy, 250);
+  }
 }
 
 if (document.readyState === "loading") {
