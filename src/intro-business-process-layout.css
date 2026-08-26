@@ -59,9 +59,12 @@
    470+480에 좌우 여백까지 들어가려면 카드 안쪽 폭이 약 1040px 필요해서 1160px부터 적용한다
    (그보다 좁으면 두 칸이 맞붙어 버리므로 아래 기존 규칙을 그대로 쓴다). */
 @media (min-width: 1160px) {
+  /* 칸 폭을 470px로 못박으면 문구가 짧은 카드는 남는 자리가 전부 한쪽에 몰린다.
+     그래픽이 왼쪽인 카드에서 그 빈자리가 카드 오른쪽 끝에 150px씩 쌓여 좌우가 어긋나 보였다.
+     칸이 글 폭만큼만 차지하게 두면 space-evenly가 남는 자리를 좌·중앙·우로 고르게 나눈다. */
   .intro-business .intro-business-feature-card > div:first-child {
-    flex: 0 1 470px !important;
-    width: 470px !important;
+    flex: 0 1 auto !important;
+    width: max-content !important;
     max-width: 470px !important;
   }
 
