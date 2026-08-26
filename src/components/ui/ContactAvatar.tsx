@@ -37,7 +37,7 @@ export function ContactAvatar({
       <img
         src={`${baseUrl}${npcImage}`}
         alt={name}
-        className={`inline-block shrink-0 rounded-[4px] border border-[#315d53] bg-[#fffaf0] object-contain p-px ${SIZE_CLASSES[size]} ${className}`}
+        className={`inline-block shrink-0 rounded-[4px] border border-[#315d53] bg-[#fffaf0] object-contain p-[3px] ${SIZE_CLASSES[size]} ${className}`}
       />
     );
   }
