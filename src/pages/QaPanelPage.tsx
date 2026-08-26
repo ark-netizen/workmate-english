@@ -3,13 +3,11 @@
 // HomePage.tsx의 QaControlPanel과 같은 기능이지만, WorkdayContext 없이 api를 직접 호출하고
 // notifyQaAction()으로 메인 창에 "새로고침해" 신호만 보낸다(폴링 45초를 안 기다리게).
 import { useState } from "react";
+import { Navigate } from "react-router-dom";
 import * as api from "@/lib/api";
 import { notifyQaAction, isAutoAdvanceEnabled, setAutoAdvance } from "@/lib/qaAutoAdvance";
 import { RANKS } from "@/components/promotion/rankArt";
 
-// 심사 기간 등 외부에 라이브 사이트를 공개하는 동안은, 데이터를 실제로 지우거나 조작하는
-// 위험한 QA 버튼(초기화/승급 게이트 채우기 등)은 숨긴다 — 실수로 눌러도 안전한 "연락 바로
-// 받기" 계열만 남겨서 기능 시연은 여전히 가능하게 함. 기간이 끝나면 true로 되돌리면 됨.
 const SHOW_DESTRUCTIVE_QA_TOOLS = true;
 
 const RANK_DAYS_PER_STEP = 30;
@@ -30,6 +28,13 @@ const DELIVER_BUTTONS: { key: DeliverFilterKey; label: string; filter?: { role?:
 ];
 
 export function QaPanelPage() {
+  // QA 전용 페이지는 개발 빌드에서만 사용할 수 있게 한다. 운영 URL에서 /qa를 직접 입력해도
+  // 내부 도구가 렌더되지 않고 서비스 홈으로 돌아간다.
+  if (import.meta.env.PROD) return <Navigate to="/" replace />;
+  return <QaPanelDev />;
+}
+
+function QaPanelDev() {
   const [autoAdvance, setAutoAdvanceState] = useState(() => isAutoAdvanceEnabled());
   const [deliveringKey, setDeliveringKey] = useState<DeliverFilterKey | null>(null);
   const [triggeringVent, setTriggeringVent] = useState(false);
