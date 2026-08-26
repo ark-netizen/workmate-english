@@ -74,6 +74,13 @@
     max-width: 480px !important;
   }
 
+  /* space-evenly는 바깥 여백과 가운데 여백을 똑같이 나눠서, 카드 양끝이 과하게 비어
+     내용이 가운데로 몰려 보였다. 바깥은 좁히고 남는 자리는 가운데로 보내되
+     좌·우 바깥 여백은 여전히 같은 값이라 반전 카드에서도 대칭이 유지된다. */
+  .intro-business .intro-business-feature-card {
+    justify-content: space-around !important;
+  }
+
   /* 좌우로 벌리던 보정은 넓어진 텍스트 칸에서는 가운데 여백만 다시 키우므로 해제한다.
      위 블록과 같은 선택자 구조를 그대로 써야 우선순위에서 밀리지 않는다. */
   .intro-business .intro-business-features > div:first-child > div:nth-child(odd) .intro-business-feature-card > div:first-child,
