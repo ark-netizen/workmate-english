@@ -7,59 +7,60 @@ type DecorSpec = readonly [DecorType, number, number, number, number, number, nu
 
 /*
  * One continuous decorative field from Work Process through the 1-minute trial.
- * There are no separate left/right rails and no separate section-specific patterns.
- * X/Y anchors deliberately wander across the whole canvas so the background feels scattered,
- * while clouds remain static and every other motif gets bubble-like JS motion.
+ * Large motifs are visually balanced in every vertical band instead of accumulating on one side.
+ * Smaller pixels/sparks/grids fill the gaps so the field still feels scattered rather than like rails.
+ * Clouds remain static; every other motif gets bubble-like JS motion.
  */
 const FIELD_DECOR: readonly DecorSpec[] = [
   ["cloud", 5, 2, 1.0, 0, 0, 0],
-  ["document", 86, 4, 0.82, 32, 24, 1.2],
-  ["spark", 18, 6, 0.62, 27, 22, 0.4],
-  ["chat", 94, 9, 0.9, 40, 31, 2.0],
+  ["document", 87, 4, 0.8, 32, 24, 1.2],
+  ["spark", 24, 6, 0.6, 27, 22, 0.4],
+  ["chat", 94, 9, 0.86, 40, 31, 2.0],
 
-  ["mail", 10, 13, 0.8, 34, 27, 1.5],
-  ["pixel", 79, 14, 0.76, 30, 24, 3.1],
-  ["leaf", 24, 18, 0.72, 33, 27, 2.4],
-  ["chart", 91, 20, 0.86, 38, 30, 4.0],
+  ["mail", 9, 13, 0.8, 34, 27, 1.5],
+  ["pixel", 74, 15, 0.74, 30, 24, 3.1],
+  ["leaf", 28, 18, 0.7, 33, 27, 2.4],
+  ["chart", 90, 20, 0.84, 38, 30, 4.0],
 
-  ["chat", 7, 24, 0.92, 41, 32, 0.8],
-  ["grid", 84, 26, 0.74, 29, 24, 3.8],
-  ["document", 20, 29, 0.78, 35, 28, 5.2],
-  ["spark", 95, 31, 0.62, 28, 22, 1.1],
+  ["chat", 7, 24, 0.9, 41, 32, 0.8],
+  ["grid", 82, 26, 0.72, 29, 24, 3.8],
+  ["document", 18, 29, 0.78, 35, 28, 5.2],
+  ["spark", 94, 31, 0.6, 28, 22, 1.1],
 
-  ["pixel", 12, 35, 0.74, 31, 24, 2.7],
-  ["mail", 88, 36, 0.8, 34, 27, 4.6],
-  ["leaf", 28, 39, 0.7, 33, 27, 5.5],
-  ["chat", 78, 41, 0.88, 40, 32, 1.9],
+  ["pixel", 12, 35, 0.72, 31, 24, 2.7],
+  ["mail", 89, 36, 0.78, 34, 27, 4.6],
+  ["leaf", 27, 39, 0.68, 33, 27, 5.5],
+  ["chat", 79, 41, 0.84, 40, 32, 1.9],
 
-  ["chart", 6, 45, 0.84, 38, 30, 4.4],
-  ["spark", 83, 47, 0.6, 28, 22, 0.3],
-  ["document", 17, 50, 0.78, 35, 28, 3.4],
-  ["pixel", 93, 52, 0.72, 31, 24, 2.1],
+  ["chart", 7, 45, 0.84, 38, 30, 4.4],
+  ["spark", 82, 47, 0.58, 28, 22, 0.3],
+  ["document", 18, 50, 0.78, 35, 28, 3.4],
+  ["mail", 92, 52, 0.78, 34, 27, 2.1],
 
-  ["mail", 9, 56, 0.8, 34, 27, 0.9],
-  ["leaf", 81, 58, 0.72, 33, 27, 5.0],
-  ["grid", 25, 61, 0.7, 29, 24, 2.8],
-  ["chat", 91, 63, 0.9, 40, 32, 3.6],
+  ["chat", 9, 56, 0.86, 40, 32, 0.9],
+  ["leaf", 79, 58, 0.7, 33, 27, 5.0],
+  ["grid", 27, 61, 0.68, 29, 24, 2.8],
+  ["document", 91, 63, 0.78, 35, 28, 3.6],
 
-  ["pixel", 5, 67, 0.72, 31, 24, 4.8],
-  ["chart", 85, 69, 0.84, 38, 30, 1.4],
-  ["spark", 21, 72, 0.6, 28, 22, 5.6],
-  ["document", 96, 74, 0.78, 35, 28, 2.5],
+  ["chart", 8, 67, 0.82, 38, 30, 4.8],
+  ["pixel", 76, 69, 0.7, 31, 24, 1.4],
+  ["spark", 25, 72, 0.58, 28, 22, 5.6],
+  ["chat", 92, 74, 0.84, 40, 32, 2.5],
 
-  ["cloud", 8, 77, 0.88, 0, 0, 0],
-  ["mail", 77, 79, 0.78, 34, 27, 4.2],
-  ["leaf", 18, 82, 0.7, 33, 27, 1.7],
-  ["chat", 92, 84, 0.88, 40, 32, 0.6],
+  ["cloud", 7, 77, 0.88, 0, 0, 0],
+  ["mail", 18, 79, 0.78, 34, 27, 4.2],
+  ["leaf", 76, 81, 0.68, 33, 27, 1.7],
+  ["document", 91, 83, 0.76, 35, 28, 0.6],
 
-  ["grid", 6, 87, 0.7, 29, 24, 3.0],
-  ["document", 84, 89, 0.76, 35, 28, 5.4],
-  ["pixel", 26, 92, 0.7, 31, 24, 1.0],
-  ["chart", 95, 94, 0.82, 38, 30, 4.7],
+  ["chat", 8, 86, 0.84, 40, 32, 3.0],
+  ["grid", 27, 88, 0.68, 29, 24, 5.4],
+  ["pixel", 77, 90, 0.68, 31, 24, 1.0],
+  ["chart", 92, 92, 0.8, 38, 30, 4.7],
 
-  ["spark", 12, 96, 0.58, 28, 22, 2.2],
-  ["mail", 80, 97, 0.74, 34, 27, 0.2],
-  ["cloud", 94, 99, 0.88, 0, 0, 0],
+  ["mail", 11, 95, 0.76, 34, 27, 2.2],
+  ["spark", 30, 97, 0.56, 28, 22, 0.2],
+  ["chat", 82, 96, 0.78, 40, 32, 3.3],
+  ["cloud", 95, 99, 0.88, 0, 0, 0],
 ];
 
 let page: HTMLElement | null = null;
