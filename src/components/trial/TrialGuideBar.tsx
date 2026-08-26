@@ -6,11 +6,11 @@ import { TRIAL_REPLY_TEXT } from "@/lib/trialReplies";
 import { TRIAL_ROLE_LABEL, TRIAL_ROLE_ORDER, useTrialTargets } from "@/lib/trialTargets";
 import { TrialActionBar } from "./TrialActionBar";
 
-type PostReportStage = "report" | "kakao" | "vent";
+type FinalTrialStage = "vent" | "report" | "kakao";
 
-// "1분 체험하기" 게스트 전용 — 실제 화면(메신저/이메일/리포트)은 그대로 두고, 화면 우측 중앙에
-// 하나의 안내 카드로 진행한다. 업무 3건을 마치면 리포트뿐 아니라 실제 서비스의 카카오톡 리포트 알림과
-// 고함항아리까지 로그인 없이 차례로 확인할 수 있게 체험 흐름을 이어준다.
+// "1분 체험하기" 게스트 전용 — 실제 화면(메신저/이메일/리포트)은 그대로 두고 하나의 안내 카드로 진행한다.
+// 업무 3건을 마친 뒤에는 근무 중에만 가능한 고함항아리를 먼저 체험하고, 그 다음 퇴근 리포트와
+// 카카오톡 리포트 알림 미리보기까지 이어서 로그인 없이 핵심 기능을 한 번에 보여준다.
 export function TrialGuideBar() {
   const { report, conversations, sendReply, finishWorkday, triggerTrialHint } = useWorkday();
   const { targets, doneCount, allDone, activeTarget } = useTrialTargets();
@@ -18,7 +18,7 @@ export function TrialGuideBar() {
   const location = useLocation();
   const [finishing, setFinishing] = useState(false);
   const [sending, setSending] = useState(false);
-  const [postReportStage, setPostReportStage] = useState<PostReportStage>("report");
+  const [finalStage, setFinalStage] = useState<FinalTrialStage>("vent");
   const [showKakaoPreview, setShowKakaoPreview] = useState(false);
   // 상사(매니저) 단계 한정 — "답변 모르겠으면 한국어 힌트부터" 시나리오의 진행 상태
   const [managerHintStage, setManagerHintStage] = useState<"ask" | "shown">("ask");
@@ -34,17 +34,26 @@ export function TrialGuideBar() {
   const isManagerStep = activeTarget?.role === "manager" && onActivePage;
   const showHintAsk = isManagerStep && managerHintStage === "ask";
 
-  // 3명 다 답장하면 자동으로 퇴근 처리하고 리포트 페이지로 이동
-  // finishWorkday()가 내부적으로 이미 refresh()를 호출하므로 여기서 또 부르지 않는다(중복 왕복 지연 제거)
+  // 기본 업무 3건을 다 끝냈으면 퇴근 전에 고함항아리를 먼저 보여준다.
+  // 고함항아리에 실제로 한 번 메시지를 보내서 vent 대화가 생성된 뒤에만 퇴근 처리한다.
   useEffect(() => {
-    if (allDone && !report && !finishing) {
-      setFinishing(true);
-      finishWorkday()
-        .then(() => navigate("/reports"))
-        .catch(() => setFinishing(false));
+    if (!allDone || report || finishing) return;
+
+    if (!ventConversation) {
+      setFinalStage("vent");
+      if (location.pathname !== "/messenger/vent") navigate("/messenger/vent");
+      return;
     }
+
+    setFinishing(true);
+    finishWorkday()
+      .then(() => {
+        setFinalStage("report");
+        navigate("/reports");
+      })
+      .catch(() => setFinishing(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allDone, report, finishing]);
+  }, [allDone, report, finishing, ventConversation?.id]);
 
   // "○○에게 가기" 버튼을 눌러야만 다음 대화로 이동하는 게 번거롭다는 피드백 — 새 대상이
   // 나타나면(직전 대상과 다르면) 자동으로 그 대화로 이동한다. 한 번 자동 이동한 대상으로는
@@ -68,26 +77,22 @@ export function TrialGuideBar() {
   const handlePrimaryAction = async () => {
     if (sending) return;
 
-    // 업무 3건 이후는 리포트 → 카카오톡 리포트 알림 → 고함항아리 순으로 시연한다.
-    if (allDone && report) {
-      if (postReportStage === "report") {
+    if (allDone) {
+      // 고함항아리를 아직 안 보냈다면 해당 화면으로 이동만 한다. 실제 전송은 화면의 "말 걸기" 버튼으로 체험한다.
+      if (!report) {
+        if (!onVentPage) navigate("/messenger/vent");
+        return;
+      }
+
+      // 리포트 확인 뒤 실제 서비스에서 받는 카카오톡 리포트 알림 형태를 보여준다.
+      if (finalStage === "report") {
         if (!onReportPage) {
           navigate("/reports");
           return;
         }
-        setPostReportStage("kakao");
+        setFinalStage("kakao");
         setShowKakaoPreview(true);
-        return;
       }
-
-      if (postReportStage === "kakao") {
-        setShowKakaoPreview(false);
-        setPostReportStage("vent");
-        navigate("/messenger/vent");
-        return;
-      }
-
-      if (!onVentPage) navigate("/messenger/vent");
       return;
     }
 
@@ -113,24 +118,26 @@ export function TrialGuideBar() {
   // 홈 화면은 SectionTourGuide 쪽 "새 메시지" 단계가 대신 안내하므로 여기서는 표시하지 않는다
   if (onHomePage || targets.length === 0) return null;
 
-  // 답장 3개 + 리포트 + 카카오톡 알림 + 고함항아리까지 6단계로 고정한다.
+  // 답장 3개 + 고함항아리 + 리포트 + 카카오톡 알림 = 총 6단계.
   const progressDots = TRIAL_ROLE_ORDER.length + 3;
-  const postReportFilled =
-    postReportStage === "report" ? 0 : postReportStage === "kakao" ? 1 : 2;
-  const filledDots = doneCount + (report ? 1 : 0) + postReportFilled;
+  const filledDots =
+    doneCount +
+    (ventConversation ? 1 : 0) +
+    (report ? 1 : 0) +
+    (finalStage === "kakao" ? 1 : 0);
 
   const primaryLabel = allDone
     ? !report
-      ? null
-      : postReportStage === "report"
+      ? ventConversation
+        ? null
+        : onVentPage
+          ? null
+          : "고함항아리로 가기"
+      : finalStage === "report"
         ? onReportPage
           ? "카카오톡 리포트 알림 보기"
           : "리포트 보러가기"
-        : postReportStage === "kakao"
-          ? "고함항아리 체험하기"
-          : onVentPage
-            ? null
-            : "고함항아리로 가기"
+        : null
     : !activeTarget
       ? null
       : sending
@@ -143,16 +150,16 @@ export function TrialGuideBar() {
 
   const message = allDone
     ? !report
-      ? "리포트를 만드는 중이에요..."
-      : postReportStage === "report"
+      ? ventConversation
+        ? "고함항아리까지 확인했어요. 이제 퇴근 리포트를 만드는 중이에요..."
+        : onVentPage
+          ? "업무 스트레스도 영어로 털어놓을 수 있어요. 미리 입력된 문장을 그대로 보내보세요."
+          : "마지막 업무를 마쳤어요. 퇴근 전에 고함항아리도 체험해볼게요."
+      : finalStage === "report"
         ? onReportPage
           ? "오늘의 업무 리포트를 확인해보세요. 실제 서비스에서는 퇴근 후 카카오톡으로도 리포트를 받을 수 있어요."
           : "리포트로 이동하는 중이에요..."
-        : postReportStage === "kakao"
-          ? "이런 식으로 오늘의 업무일지가 카카오톡으로 도착해요."
-          : onVentPage
-            ? "마지막으로 고함항아리에서 업무 스트레스도 영어로 편하게 털어놓아 보세요."
-            : "고함항아리로 이동해 스트레스를 영어로 털어놓아 볼게요."
+        : "이런 식으로 오늘의 업무일지가 카카오톡으로 도착해요."
     : activeTarget
       ? showHintAsk
         ? "이건 답변을 모르겠다구요? 한국어 힌트를 눌러볼게요!"
@@ -162,11 +169,11 @@ export function TrialGuideBar() {
       // 다음 대상이 아직 도착 전(시차 발송 중) — 곧 오니 잠깐 기다려달라는 안내
       : "곧 다음 연락이 도착해요...";
 
-  const goodCount = report?.good_expressions?.length ?? 0;
-  const correctionCount = report?.corrections?.length ?? 0;
-  const memorizeCount = report?.recommended_expressions?.length ?? 0;
-  const firstGood = report?.good_expressions?.[0]?.text;
-  const firstMemorize = report?.recommended_expressions?.[0];
+  const goodCount = report?.goodExpressions?.length ?? 0;
+  const correctionCount = report?.improvementPoints?.length ?? 0;
+  const memorizeCount = report?.keyPhrases?.length ?? 0;
+  const firstGood = report?.goodExpressions?.[0]?.text;
+  const firstMemorize = report?.keyPhrases?.[0];
 
   return (
     <>
@@ -209,7 +216,7 @@ export function TrialGuideBar() {
         onPrimary={primaryLabel ? handlePrimaryAction : undefined}
         primaryDisabled={sending}
         onEnd={handleEnd}
-        endPrimary={postReportStage === "vent" && onVentPage}
+        endPrimary={finalStage === "kakao"}
       />
     </>
   );
