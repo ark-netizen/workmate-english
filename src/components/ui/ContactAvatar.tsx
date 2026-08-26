@@ -34,11 +34,19 @@ export function ContactAvatar({
   if (businessMode && npcImage) {
     const baseUrl = import.meta.env.BASE_URL ?? "/";
     return (
-      <img
-        src={`${baseUrl}${npcImage}`}
-        alt={name}
-        className={`inline-block shrink-0 rounded-[4px] border border-[#315d53] bg-[#fffaf0] object-contain p-[3px] ${SIZE_CLASSES[size]} ${className}`}
-      />
+      <span
+        className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-[4px] border border-[#315d53] bg-[#fffaf0] p-px ${SIZE_CLASSES[size]} ${className}`}
+        role="img"
+        aria-label={name}
+      >
+        <img
+          src={`${baseUrl}${npcImage}`}
+          alt=""
+          aria-hidden="true"
+          className="h-full w-full scale-[0.78] select-none object-contain"
+          draggable={false}
+        />
+      </span>
     );
   }
 
