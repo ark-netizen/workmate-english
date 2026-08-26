@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronLeft } from "lucide-react";
 import { useBusinessMode } from "@/context/useBusinessMode";
 
 const NUDGE_DURATION_MS = 2600;
@@ -11,6 +11,8 @@ export function TrialActionBar({
   primaryLabel,
   onPrimary,
   primaryDisabled,
+  onPrevious,
+  previousDisabled,
   onEnd,
   endPrimary,
   showEnd = true,
@@ -21,6 +23,8 @@ export function TrialActionBar({
   primaryLabel?: string | null;
   onPrimary?: () => void;
   primaryDisabled?: boolean;
+  onPrevious?: () => void;
+  previousDisabled?: boolean;
   onEnd: () => void;
   endPrimary?: boolean;
   showEnd?: boolean;
@@ -58,7 +62,11 @@ export function TrialActionBar({
   // 사용자가 진행 버튼을 연속으로 누르다가 실수로 체험 종료를 누르는 위치 변경을 막는다.
   const shouldShowEnd = endPrimary ? showEnd : true;
   const showWaitingPrimarySlot = !endPrimary && !hasPrimaryAction;
-  const hasActions = shouldShowEnd || hasPrimaryAction || showWaitingPrimarySlot;
+  const hasActions = shouldShowEnd || hasPrimaryAction || showWaitingPrimarySlot || !!onPrevious;
+
+  const previousClass = isBusinessMode
+    ? "border border-[#9bb7ff] bg-white/70 text-[#36527a] hover:bg-white"
+    : "border border-[#78a48c] bg-[#f5faf7] text-[#2f795d] hover:bg-white";
 
   return (
     <div
@@ -132,6 +140,18 @@ export function TrialActionBar({
               }`}
             >
               체험 종료
+            </button>
+          )}
+
+          {onPrevious && (
+            <button
+              type="button"
+              onClick={onPrevious}
+              disabled={previousDisabled}
+              className={`flex shrink-0 items-center gap-0.5 rounded-full px-3 py-1.5 text-xs font-medium disabled:cursor-default disabled:opacity-35 ${previousClass}`}
+            >
+              <ChevronLeft className="size-3.5" />
+              이전
             </button>
           )}
 
