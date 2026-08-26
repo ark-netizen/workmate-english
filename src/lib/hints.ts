@@ -18,7 +18,7 @@ const DEMO_HINTS_BY_MESSAGE: Record<string, ReplyHintsData> = {
       "I'll let you know (알려줄게)",
     ],
     korean: "메인 이미지가 아직 최종 확정 전이라면, 현재 상태와 확정되는 즉시 알려주겠다는 내용을 짧고 캐주얼하게 답해보세요.",
-    sentence: "Not yet — we're waiting for final approval. I'll let you know as soon as it's confirmed.",
+    sentence: "Not yet. I'll let you know when it's ready.",
   },
   "Could you please confirm if the main image is final?": {
     words: [
@@ -28,7 +28,7 @@ const DEMO_HINTS_BY_MESSAGE: Record<string, ReplyHintsData> = {
       "as soon as (즉시)",
     ],
     korean: "아직 최종 확정 전이라면 현재 상태를 정중하게 보고하고, 확정되는 즉시 다시 알려드리겠다고 답해보세요.",
-    sentence: "It is not final yet. We are waiting for final approval, and I will update you as soon as it is confirmed.",
+    sentence: "It is not final yet. I will update you soon.",
   },
   "We would kindly ask you to confirm the final main image.": {
     words: [
@@ -39,7 +39,7 @@ const DEMO_HINTS_BY_MESSAGE: Record<string, ReplyHintsData> = {
     ],
     korean: "메인 이미지가 아직 최종 확정 전임을 격식 있게 안내하고, 확정본이 준비되는 즉시 전달하겠다고 답해보세요.",
     sentence:
-      "Dear Mr. Kim,\n\nThe main image has not been finalized yet. We are awaiting final approval and will share the confirmed version as soon as it is available.\n\nBest regards,",
+      "Dear Mr. Kim,\n\nThe main image is not final yet. I will send it when it is ready.\n\nBest regards,",
   },
 };
 
