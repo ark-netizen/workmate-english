@@ -13,6 +13,7 @@ export function TrialActionBar({
   primaryDisabled,
   onEnd,
   endPrimary,
+  showEnd = true,
 }: {
   message: string;
   dotsTotal?: number;
@@ -22,6 +23,7 @@ export function TrialActionBar({
   primaryDisabled?: boolean;
   onEnd: () => void;
   endPrimary?: boolean;
+  showEnd?: boolean;
 }) {
   const barRef = useRef<HTMLDivElement>(null);
   const [showNudge, setShowNudge] = useState(false);
@@ -49,6 +51,8 @@ export function TrialActionBar({
       if (hideTimer) clearTimeout(hideTimer);
     };
   }, [primaryLabel, onPrimary]);
+
+  const hasActions = showEnd || !!(primaryLabel && onPrimary);
 
   return (
     <div
@@ -102,47 +106,51 @@ export function TrialActionBar({
       </div>
 
       <p
-        className={`mt-2 text-[13px] leading-relaxed sm:mt-2.5 sm:text-sm ${
+        className={`mt-2 whitespace-pre-line text-[13px] leading-relaxed sm:mt-2.5 sm:text-sm ${
           isBusinessMode ? "font-medium text-[#17345f]" : "font-medium text-[#38443f]"
         }`}
       >
         {message}
       </p>
 
-      <div className="mt-3 flex flex-wrap items-center justify-end gap-1.5">
-        <button
-          type="button"
-          onClick={onEnd}
-          className={
-            endPrimary
-              ? `shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 ${
-                  isBusinessMode ? "bg-[#1a56ff]" : "border-2 border-[#28352f] bg-[#2f795d] shadow-[2px_2px_0_#28352f]"
-                }`
-              : `shrink-0 rounded-full px-3 py-1.5 text-xs hover:bg-black/[.03] ${
-                  isBusinessMode
-                    ? "border border-[#9bb7ff] text-[#36527a]"
-                    : "border border-[#b9cbbb] bg-[#fbfcf7] text-[#52615a]"
-                }`
-          }
-        >
-          체험 종료
-        </button>
-        {primaryLabel && onPrimary && (
-          <button
-            type="button"
-            onClick={onPrimary}
-            disabled={primaryDisabled}
-            className={`flex min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-60 sm:flex-none ${
-              isBusinessMode
-                ? "bg-[#1a56ff]"
-                : "border-2 border-[#28352f] bg-[#2f795d] shadow-[2px_2px_0_#28352f]"
-            }`}
-          >
-            <span className="min-w-0 truncate">{primaryLabel}</span>
-            <ArrowRight className="size-3.5 shrink-0" strokeWidth={2.5} />
-          </button>
-        )}
-      </div>
+      {hasActions && (
+        <div className="mt-3 flex flex-wrap items-center justify-end gap-1.5">
+          {showEnd && (
+            <button
+              type="button"
+              onClick={onEnd}
+              className={
+                endPrimary
+                  ? `shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 ${
+                      isBusinessMode ? "bg-[#1a56ff]" : "border-2 border-[#28352f] bg-[#2f795d] shadow-[2px_2px_0_#28352f]"
+                    }`
+                  : `shrink-0 rounded-full px-3 py-1.5 text-xs hover:bg-black/[.03] ${
+                      isBusinessMode
+                        ? "border border-[#9bb7ff] text-[#36527a]"
+                        : "border border-[#b9cbbb] bg-[#fbfcf7] text-[#52615a]"
+                    }`
+              }
+            >
+              체험 종료
+            </button>
+          )}
+          {primaryLabel && onPrimary && (
+            <button
+              type="button"
+              onClick={onPrimary}
+              disabled={primaryDisabled}
+              className={`flex min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-60 sm:flex-none ${
+                isBusinessMode
+                  ? "bg-[#1a56ff]"
+                  : "border-2 border-[#28352f] bg-[#2f795d] shadow-[2px_2px_0_#28352f]"
+              }`}
+            >
+              <span className="min-w-0 truncate">{primaryLabel}</span>
+              <ArrowRight className="size-3.5 shrink-0" strokeWidth={2.5} />
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
