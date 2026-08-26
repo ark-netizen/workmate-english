@@ -43,7 +43,7 @@ export function ContactAvatar({
           src={`${baseUrl}${npcImage}`}
           alt=""
           aria-hidden="true"
-          className="h-full w-full scale-[0.78] select-none object-contain"
+          className="h-full w-full select-none object-contain"
           draggable={false}
         />
       </span>

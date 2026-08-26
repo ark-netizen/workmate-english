@@ -12,7 +12,6 @@ const HINT_LABELS: Record<HintKey, string> = {
 // 힌트는 순서대로 열어야 함: 답변이 한국어로도 안 떠오를 수 있으니 한국어 힌트부터, 그 다음 단어,
 // 그래도 안 되면 마지막으로 영어 문장 힌트가 풀림 — 단어/문장 힌트까지 연 건 "그 문항이 어려웠다"는 신호
 const HINT_ORDER: HintKey[] = ["korean", "word", "sentence"];
-const TRIAL_HIGHLIGHT_MS = 2800;
 
 export function ReplyHints({
   hints,
@@ -20,31 +19,32 @@ export function ReplyHints({
   onLevelChange,
 }: {
   hints: ReplyHintsData;
-  /** 체험판 안내 바가 "한국어 힌트를 대신 눌러줌"을 연출할 때 쓰는 신호 — 0/undefined면 무시, 값이 바뀌면 한국어 힌트를 강제로 연다 */
+  /** 체험판 안내 바가 "한국어 힌트를 대신 눌러줌"을 연출할 때 쓰는 신호 — 0/undefined면 무시, 값이 새로 증가할 때만 한국어 힌트를 강제로 연다 */
   externalOpenSignal?: number;
   /** 단어/문장 힌트까지 열었는지 — "이 답변이 어려웠는지" 판정 및 복습 정책에 쓰인다. 한국어 힌트만 열었으면 null */
   onLevelChange?: (level: "word" | "sentence" | null) => void;
 }) {
   const [openHints, setOpenHints] = useState<Set<HintKey>>(new Set());
   const [everOpened, setEverOpened] = useState<Set<HintKey>>(new Set());
-  const [trialHighlight, setTrialHighlight] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  // 체험 신호는 전역 값이라 상사 단계 이후 다른 대화(특히 고함항아리)가 새로 마운트돼도 같은 값이 남아 있다.
+  // 마운트 시점의 값을 기준값으로 잡고 "그 이후 새로 증가한 신호"에만 반응해서, 외근/위로 단계에서
+  // 한국어 힌트가 갑자기 다시 열리거나 강조되는 현상을 막는다.
+  const lastExternalSignalRef = useRef(externalOpenSignal ?? 0);
 
   useEffect(() => {
-    if (!externalOpenSignal) return;
+    const signal = externalOpenSignal ?? 0;
+    if (!signal || signal <= lastExternalSignalRef.current) return;
+    lastExternalSignalRef.current = signal;
+
     setEverOpened((prev) => new Set(prev).add("korean"));
     setOpenHints((prev) => new Set(prev).add("korean"));
-    setTrialHighlight(true);
 
     const scrollTimer = window.setTimeout(() => {
       containerRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }, 60);
-    const highlightTimer = window.setTimeout(() => setTrialHighlight(false), TRIAL_HIGHLIGHT_MS);
 
-    return () => {
-      window.clearTimeout(scrollTimer);
-      window.clearTimeout(highlightTimer);
-    };
+    return () => window.clearTimeout(scrollTimer);
   }, [externalOpenSignal]);
 
   useEffect(() => {
@@ -73,20 +73,7 @@ export function ReplyHints({
   };
 
   return (
-    <div
-      ref={containerRef}
-      className={`relative space-y-2 rounded-xl p-1 transition-[background-color,box-shadow] duration-300 ${
-        trialHighlight
-          ? "bg-[#eef4ff] shadow-[0_0_0_2px_#1a56ff,0_8px_24px_rgba(26,86,255,0.18)]"
-          : ""
-      }`}
-    >
-      {trialHighlight && (
-        <span className="absolute -top-3 left-2 z-10 rounded-full bg-[#1a56ff] px-2.5 py-1 text-[10px] font-bold text-white shadow-md">
-          힌트는 여기에서 확인해요
-        </span>
-      )}
-
+    <div ref={containerRef} className="space-y-2">
       <div className="flex flex-wrap gap-1.5">
         {HINT_ORDER.map((key) => {
           const active = openHints.has(key);
@@ -113,11 +100,7 @@ export function ReplyHints({
       </div>
 
       {openHints.has("korean") && (
-        <div
-          className={`rounded-lg border p-3 transition-colors duration-300 ${
-            trialHighlight ? "border-[#6f99ff] bg-[#f5f8ff]" : "border-border bg-black/[.02]"
-          }`}
-        >
+        <div className="rounded-lg border border-border bg-black/[.02] p-3">
           <p className="whitespace-pre-wrap text-xs leading-relaxed text-foreground/70">{hints.korean}</p>
         </div>
       )}
