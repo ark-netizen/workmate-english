@@ -128,11 +128,56 @@ function withRoleContinuityGuard(args) {
   }
 }
 
+// 사용자 메시지는 LLM 호출보다 먼저 DB에 저장된다. 그래서 Solar가 순간적으로 실패했을 때 예외를 그대로
+// 던지면 "내 답장은 저장됐는데 상대는 답을 안 하고 대화 상태만 replied"로 굳을 수 있다.
+// 후속 회신에 한해서는 역할별 짧은 안전 응답으로 닫아 대화/리포트 데이터가 끊기지 않게 한다.
+function fallbackRoleResponse(args) {
+  const character = args?.character || {}
+  const role = character.role
+  const name = character.name || (role === 'client' ? 'Business Partner' : 'Teammate')
+
+  if (role === 'client' || character.channel === 'email') {
+    const userName = args?.profile?.display_name
+    const greeting = userName ? `Dear ${userName},` : 'Hello,'
+    return ResponseSchema.parse({
+      reaction_type: 'close',
+      subject: args?.scenario?.title ? `Re: ${args.scenario.title}` : 'Re: Update',
+      body: `${greeting}\n\nThank you for the update. We appreciate your confirmation and will proceed based on the information provided.\n\nBest regards,\n${name}`,
+      needs_followup: false,
+      korean_summary: '',
+      korean_reply_points: [],
+      reply_hints: [],
+      word_hints: [],
+    })
+  }
+
+  const body =
+    role === 'manager'
+      ? "Thanks for confirming. I'll proceed based on that. We can follow up tomorrow if anything else comes up."
+      : "Got it, thanks! I'll keep an eye on it. We can pick it up tomorrow if anything else comes up."
+
+  return ResponseSchema.parse({
+    reaction_type: 'close',
+    body,
+    needs_followup: false,
+    korean_summary: '',
+    korean_reply_points: [],
+    reply_hints: [],
+    word_hints: [],
+  })
+}
+
 // ── 고수준 생성 함수 (기획서 17장 기능 단위) ─────────
 export const generateScenario = (args) => generate(buildScenarioPrompt, ScenarioSchema, args)
 export const generateRoleMessage = (args) => generate(buildRoleMessagePrompt, MessageSchema, args)
-export const generateRoleResponse = (args) =>
-  generate(buildRoleResponsePrompt, ResponseSchema, withRoleContinuityGuard(args))
+export const generateRoleResponse = async (args) => {
+  try {
+    return await generate(buildRoleResponsePrompt, ResponseSchema, withRoleContinuityGuard(args))
+  } catch (err) {
+    console.error('[llm] role response fallback:', err?.message || err)
+    return fallbackRoleResponse(args)
+  }
+}
 export const generateDailyReport = (args) => generate(buildDailyReportPrompt, DailyReportSchema, args)
 export const generatePeriodReport = (args) => generate(buildPeriodReportPrompt, PeriodReportSchema, args)
 export const createWorkdayMemory = (args) => generate(buildWorkdayMemoryPrompt, WorkdayMemorySchema, args)
