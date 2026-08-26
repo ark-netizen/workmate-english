@@ -1,12 +1,23 @@
-/* Keep the mobile intro navbar in the same semantic order as desktop.
-   About/section links first, then 1-minute trial, then mode switch. */
+/* Final mobile intro navbar composition.
+   Keep the same semantic order as desktop, but do not let the section links
+   visually stick to the logo on narrow screens. */
 @media (max-width: 767px) {
-  .intro-page .intro-nav-inner > div:last-child {
-    flex-direction: row !important;
+  .intro-page .intro-nav-inner {
+    justify-content: flex-start !important;
   }
 
+  /* Separate the navigation/control cluster from the logo. */
+  .intro-page .intro-nav-inner > div:last-child {
+    flex-direction: row !important;
+    margin-left: clamp(8px, 2.8vw, 14px) !important;
+  }
+
+  /* The links should occupy the flexible middle space and sit toward the
+     trial button, leaving deliberate breathing room beside the logo. */
   .intro-page .intro-nav-inner > div:last-child > div:first-child {
     order: 1 !important;
+    justify-content: flex-end !important;
+    padding-left: 0 !important;
   }
 
   .intro-page .intro-trial-btn {
@@ -20,5 +31,38 @@
   .intro-page .intro-login-btn,
   .intro-page .intro-nav-inner > div:last-child > span {
     order: 4 !important;
+  }
+
+  /* Keep a visible rhythm between the navigation labels and the two actions. */
+  .intro-page .intro-trial-btn {
+    margin-left: 3px !important;
+  }
+
+  .intro-page .intro-mode-toggle {
+    margin-left: 2px !important;
+  }
+}
+
+/* On the narrowest phones preserve the separation without sacrificing the
+   action buttons. The section-link strip remains horizontally scrollable. */
+@media (max-width: 350px) {
+  .intro-page .intro-nav-inner > div:last-child {
+    margin-left: 6px !important;
+    gap: 2px !important;
+  }
+
+  .intro-page .intro-nav-link {
+    padding-inline: 3px !important;
+    font-size: 9.25px !important;
+  }
+
+  .intro-page .intro-trial-btn {
+    margin-left: 2px !important;
+    padding-inline: 6px !important;
+    font-size: 9px !important;
+  }
+
+  .intro-page .intro-mode-toggle {
+    margin-left: 1px !important;
   }
 }
