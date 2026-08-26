@@ -25,7 +25,9 @@ export function useTrialTargets() {
     return TRIAL_ROLE_ORDER.map((role): TrialTarget | null => {
       const contact = contacts.find((c) => c.role === role);
       if (!contact) return null;
-      const convo = conversations.find((c) => c.contactId === contact.id);
+      // 고함항아리(vent)도 동료 contactId를 그대로 쓰기 때문에 최근순 배열에서 vent가 먼저 잡히면
+      // 이미 끝낸 동료 업무를 "미답변"으로 오인한다. 체험의 3개 기본 업무는 scenario만 대상으로 고정한다.
+      const convo = conversations.find((c) => c.contactId === contact.id && c.kind === "scenario");
       if (convo) {
         return {
           role,
@@ -36,7 +38,7 @@ export function useTrialTargets() {
           messageId: convo.messages[convo.messages.length - 1]?.id,
         };
       }
-      const thread = emailThreads.find((t) => t.contactId === contact.id);
+      const thread = emailThreads.find((t) => t.contactId === contact.id && t.kind === "scenario");
       if (thread) {
         return {
           role,
