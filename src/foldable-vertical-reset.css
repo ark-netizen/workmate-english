@@ -1,0 +1,33 @@
+/* Foldable/small-tablet touch reset: desktop scroll-snap staging must not create viewport-sized blank space. */
+@media (min-width: 768px) and (max-width: 1024px) and (pointer: coarse),
+       (min-width: 768px) and (max-width: 1024px) and (hover: none) {
+  .intro-game .intro-game-features > div:not(.intro-game-flutter-layer):not(.fixed) > .snap-center,
+  .intro-business .intro-business-features > div:not(.fixed) > .snap-center,
+  .intro-game .intro-game-features > div:first-child > div,
+  .intro-business .intro-business-features > div:first-child > div {
+    min-height: 0 !important;
+    height: auto !important;
+    align-items: start !important;
+    padding-block: 16px !important;
+  }
+
+  .intro-page .intro-trial-showcase,
+  .intro-page .intro-reviews {
+    min-height: 0 !important;
+    height: auto !important;
+    justify-content: flex-start !important;
+    padding-top: 46px !important;
+    padding-bottom: 46px !important;
+  }
+
+  .intro-page .intro-final-cta {
+    min-height: 0 !important;
+    height: auto !important;
+    padding-top: 48px !important;
+    padding-bottom: 48px !important;
+  }
+
+  .intro-page .intro-global-progress {
+    display: none !important;
+  }
+}
