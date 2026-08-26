@@ -84,10 +84,6 @@ export function TrialActionBar({
       "반복된 바쁨을 감지했어요. 고함항아리에서 연락이 오는 중이에요...",
     );
 
-  const displayPrimaryLabel = primaryLabel
-    ?.replace("위로 메시지 기다리는 중...", "고함항아리 연락 기다리는 중...")
-    .replace("위로 메시지 보기", "고함항아리 연락 보기");
-
   return (
     <div
       ref={barRef}
@@ -180,13 +176,13 @@ export function TrialActionBar({
               type="button"
               onClick={onPrimary}
               disabled={primaryDisabled}
-              className={`flex min-w-[116px] items-center justify-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-60 ${
+              className={`flex min-w-[92px] items-center justify-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-60 ${
                 isBusinessMode
                   ? "bg-[#1a56ff]"
                   : "border-2 border-[#28352f] bg-[#2f795d] shadow-[2px_2px_0_#28352f]"
               }`}
             >
-              <span className="min-w-0 truncate">{displayPrimaryLabel}</span>
+              <span>다음</span>
               <ArrowRight className="size-3.5 shrink-0" strokeWidth={2.5} />
             </button>
           )}
@@ -196,13 +192,13 @@ export function TrialActionBar({
               type="button"
               disabled
               aria-disabled="true"
-              className={`flex min-w-[116px] cursor-default items-center justify-center rounded-full px-3 py-1.5 text-xs font-semibold opacity-55 ${
+              className={`flex min-w-[92px] cursor-default items-center justify-center rounded-full px-3 py-1.5 text-xs font-semibold opacity-55 ${
                 isBusinessMode
                   ? "bg-[#1a56ff] text-white"
                   : "border-2 border-[#28352f] bg-[#2f795d] text-white shadow-[2px_2px_0_#28352f]"
               }`}
             >
-              진행 대기 중
+              다음
             </button>
           )}
 
