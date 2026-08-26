@@ -1,39 +1,38 @@
-/* Game mode Work Process: replace the section's original mint fill itself.
-   No inset background panel is drawn; the pale sky fills #features edge to edge. */
+/* Game mode Work Process: full-bleed sky background.
+   Keep the top edge clean; fade to the next mint section only at the bottom. */
 .intro-game .intro-features-section {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background: linear-gradient(180deg, #d8eef9 0%, #e4f3fa 46%, #edf8fb 100%) !important;
+  background: #dceff8 !important;
 }
 
-.intro-game .intro-features-section::before,
+/* Bottom-only transition into the following game-mode section (#eaf5dc). */
 .intro-game .intro-features-section::after {
   content: "";
   position: absolute;
-  inset-inline: 0;
-  z-index: 0;
-  height: 130px;
-  pointer-events: none;
-}
-
-.intro-game .intro-features-section::before {
-  top: 0;
-  background: linear-gradient(180deg, rgba(255,255,255,0.2), rgba(255,255,255,0));
-}
-
-.intro-game .intro-features-section::after {
+  z-index: 1;
+  right: 0;
   bottom: 0;
-  background: linear-gradient(0deg, rgba(255,255,255,0.26), rgba(255,255,255,0));
+  left: 0;
+  height: 210px;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(220, 239, 248, 0) 0%,
+    rgba(226, 242, 239, 0.42) 42%,
+    rgba(234, 245, 220, 0.86) 78%,
+    #eaf5dc 100%
+  );
 }
 
-/* Keep all real heading/card content above the decorative layer. */
+/* Keep all real heading/card content above the decorative layer and fade. */
 .intro-game .intro-features-section > .mx-auto {
   position: relative;
-  z-index: 2;
+  z-index: 3;
 }
 
-/* The old inner Work Process container must stay transparent, otherwise it reads as a rectangle. */
+/* Never draw an inset background rectangle around the vertical card list. */
 .intro-game .intro-game-features {
   background: transparent !important;
   isolation: auto;
@@ -43,7 +42,7 @@
 .intro-game-process-bg-layer {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: 2;
   overflow: hidden;
   pointer-events: none;
   user-select: none;
@@ -84,13 +83,13 @@
 }
 
 .intro-game-process-decor.is-chat {
-  color: rgba(63, 154, 216, 0.21);
+  color: rgba(63, 154, 216, 0.22);
 }
 
 .intro-game-process-decor.is-mail,
 .intro-game-process-decor.is-document,
 .intro-game-process-decor.is-chart {
-  color: rgba(65, 157, 218, 0.17);
+  color: rgba(65, 157, 218, 0.18);
 }
 
 .intro-game-process-decor.is-leaf {
@@ -132,7 +131,23 @@
 .intro-game-process-decor.is-pixel {
   width: 24px;
   height: 24px;
-  color: rgba(75, 175, 218, 0.2);
+  color: rgba(75, 175, 218, 0.21);
+}
+
+/* A little more presence in the wide side gutters; still behind the cards. */
+@media (min-width: 1180px) {
+  .intro-game-process-decor.is-chat,
+  .intro-game-process-decor.is-mail,
+  .intro-game-process-decor.is-document,
+  .intro-game-process-decor.is-chart {
+    width: 74px;
+    height: 74px;
+  }
+
+  .intro-game-process-decor.is-pixel {
+    width: 27px;
+    height: 27px;
+  }
 }
 
 @media (max-width: 900px) {
@@ -156,7 +171,12 @@
 
 @media (max-width: 767px) {
   .intro-game .intro-features-section {
-    background: linear-gradient(180deg, #dceff8 0%, #e8f5fa 52%, #f0f9fb 100%) !important;
+    background: #e2f2f9 !important;
+  }
+
+  .intro-game .intro-features-section::after {
+    height: 150px;
+    background: linear-gradient(180deg, rgba(226,242,249,0), #eaf5dc 100%);
   }
 
   .intro-game-process-decor {
