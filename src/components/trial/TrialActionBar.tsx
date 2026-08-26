@@ -68,6 +68,26 @@ export function TrialActionBar({
     ? "border border-[#9bb7ff] bg-white/70 text-[#36527a] hover:bg-white"
     : "border border-[#78a48c] bg-[#f5faf7] text-[#2f795d] hover:bg-white";
 
+  // 체험 패널에는 확실히 재현되는 웹 알림만 설명한다. 브라우저 시스템 패널 알림 실행 로직은
+  // 바깥 시퀀스에서 그대로 유지하되, 권한/OS 상태에 따라 보임 여부가 달라지는 구현 세부사항은 안내에서 숨긴다.
+  const displayMessage = message
+    .replace(
+      "우하단 웹 알림과 Edge/브라우저 알림을 먼저 보여드린 뒤",
+      "우하단 웹 알림을 먼저 보여드린 뒤",
+    )
+    .replace(
+      "외근 신호가 반복되자 동료가 먼저 말을 걸어왔어요. 이렇게 먼저 온 위로 메시지는 고함항아리에 모여요.",
+      "외근 신호가 반복되자 고함항아리에서 연락이 왔어요.",
+    )
+    .replace(
+      "반복된 바쁨을 감지했어요. 동료가 먼저 말을 걸어오는 중이에요...",
+      "반복된 바쁨을 감지했어요. 고함항아리에서 연락이 오는 중이에요...",
+    );
+
+  const displayPrimaryLabel = primaryLabel
+    ?.replace("위로 메시지 기다리는 중...", "고함항아리 연락 기다리는 중...")
+    .replace("위로 메시지 보기", "고함항아리 연락 보기");
+
   return (
     <div
       ref={barRef}
@@ -124,7 +144,7 @@ export function TrialActionBar({
           isBusinessMode ? "font-medium text-[#17345f]" : "font-medium text-[#38443f]"
         }`}
       >
-        {message}
+        {displayMessage}
       </p>
 
       {hasActions && (
@@ -166,7 +186,7 @@ export function TrialActionBar({
                   : "border-2 border-[#28352f] bg-[#2f795d] shadow-[2px_2px_0_#28352f]"
               }`}
             >
-              <span className="min-w-0 truncate">{primaryLabel}</span>
+              <span className="min-w-0 truncate">{displayPrimaryLabel}</span>
               <ArrowRight className="size-3.5 shrink-0" strokeWidth={2.5} />
             </button>
           )}
