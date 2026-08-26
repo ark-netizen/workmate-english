@@ -1,7 +1,8 @@
 /* Game intro WORK PROCESS layout.
    게임 모드만 별도로 다룬다.
    문구가 의도한 줄바꿈보다 먼저 자동 개행되던 원인은
-   max-w-3xl + 1:1 grid + break-keep 조합으로 본문 폭이 지나치게 좁았기 때문이다. */
+   App.tsx의 IntroTextRhythmStyles가 본문에 max-width: 30ch를 강제하고,
+   기존 max-w-3xl + 1:1 grid가 실제 본문 폭까지 좁히고 있었기 때문이다. */
 
 @media (min-width: 768px) {
   .intro-game .intro-game-feature-window > div:last-child > div:first-child {
@@ -35,6 +36,7 @@
   }
 
   .intro-game .intro-game-feature-window > div:last-child > div:first-child > p:nth-of-type(2) {
+    max-width: none !important;
     white-space: nowrap !important;
     word-break: normal !important;
     overflow-wrap: normal !important;
