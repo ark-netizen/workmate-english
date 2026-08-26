@@ -2,7 +2,7 @@
 // (Vercel Hobby 플랜 서버리스 함수 12개 제한 때문에 push/subscribe.js + push/action.js를 합침)
 import { requireUser } from '../server/auth.js'
 import { saveSubscription, deleteSubscription, getUserIdByEndpoint } from '../server/push.js'
-import { goOnFieldWork } from '../server/workday.js'
+import { goOnFieldWorkV2 } from '../server/fieldWork.js'
 import { withErrors } from '../server/http.js'
 
 const FIELD_WORK_PUSH_DELAY_MIN = 30
@@ -12,7 +12,7 @@ export default withErrors('POST', async (req, res) => {
 
   // 알림 액션 버튼 호출 — 앱이 안 열려있어 로그인 토큰이 없으므로 구독 endpoint로 사용자 식별
   if (body.action) {
-    const { endpoint, action } = body
+    const { endpoint, action, conversationId } = body
     if (!endpoint) {
       res.status(400).json({ error: 'endpoint 필요' })
       return
@@ -23,7 +23,8 @@ export default withErrors('POST', async (req, res) => {
       return
     }
     if (action === 'field-work') {
-      const result = await goOnFieldWork(userId, FIELD_WORK_PUSH_DELAY_MIN, 'push')
+      // 푸시에서 누른 "그 연락"을 정확히 30분 뒤 다시 알려준다.
+      const result = await goOnFieldWorkV2(userId, FIELD_WORK_PUSH_DELAY_MIN, 'push', conversationId || null)
       res.status(200).json(result)
       return
     }
