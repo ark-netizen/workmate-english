@@ -20,7 +20,7 @@ export default withErrors('POST', async (req, res) => {
   const { workdayId, reset, advanceDay, resetAccount, testKakaoInactive } = req.body || {}
 
   // 운영 서비스에 QA용 파괴적 액션이 그대로 열려 있으면 일반 로그인 사용자도 자기 계정 데이터를
-  // 초기화/임의 진행할 수 있다. 프론트 /qa 차단과 별개로 서버에서도 full 관리자 권한을 검증한다.
+  // 초기화/임의 진행할 수 있다. 프론트 /qa 차단과 별개로 서버에서도 full 관리자 권한을 한 번 더 검증한다.
   if (testKakaoInactive || reset || resetAccount || advanceDay) {
     const role = await getAdminRole(userId)
     if (role !== 'full') {
