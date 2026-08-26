@@ -1,42 +1,47 @@
-const TARGET_SELECTOR = ".intro-game .intro-game-features";
+const TARGET_SELECTOR = ".intro-game .intro-features-section";
 
-type DecorType = "chat" | "mail" | "document" | "chart" | "leaf" | "cloud" | "spark" | "grid";
+type DecorType = "chat" | "mail" | "document" | "chart" | "leaf" | "cloud" | "spark" | "grid" | "pixel";
 
 type DecorSpec = readonly [DecorType, number, number, number, number, number, number];
 
 // Background-only motifs from the approved reference image.
-// No title, badge, cards, people, furniture, skyline, or text bubbles are created here.
+// The layer is attached to the full Work Process section, not the inner card container.
 const DECOR: readonly DecorSpec[] = [
-  ["cloud", 5, 4, 1.12, 0, 0, 0],
-  ["spark", 17, 5, 0.72, 4, 3, 0.4],
-  ["document", 87, 5, 0.76, 5, 4, 1.2],
-  ["cloud", 96, 7, 0.92, 0, 0, 0],
+  ["cloud", 4, 4, 1.12, 0, 0, 0],
+  ["pixel", 16, 5, 0.8, 8, 6, 0.4],
+  ["document", 87, 5, 0.76, 7, 5, 1.2],
+  ["cloud", 97, 8, 0.94, 0, 0, 0],
 
-  ["chat", 5, 12, 0.86, 9, 6, 0.2],
-  ["mail", 17, 17, 0.72, 7, 5, 1.7],
-  ["grid", 12, 22, 0.82, 0, 0, 0],
-  ["spark", 2, 28, 0.58, 4, 3, 2.4],
+  ["chat", 4, 12, 0.9, 12, 8, 0.2],
+  ["mail", 16, 18, 0.72, 10, 7, 1.7],
+  ["grid", 10, 23, 0.82, 7, 5, 2.1],
+  ["spark", 1.5, 29, 0.58, 6, 5, 2.4],
+  ["pixel", 22, 31, 0.62, 9, 7, 3.4],
 
-  ["chart", 84, 19, 0.82, 6, 5, 0.8],
-  ["leaf", 92, 21, 0.72, 8, 6, 2.0],
-  ["chat", 96, 29, 0.72, 10, 7, 3.2],
-  ["spark", 75, 11, 0.54, 4, 4, 1.0],
+  ["chart", 85, 20, 0.84, 9, 7, 0.8],
+  ["leaf", 93, 22, 0.72, 11, 8, 2.0],
+  ["chat", 97, 30, 0.74, 13, 9, 3.2],
+  ["spark", 75, 12, 0.54, 6, 5, 1.0],
+  ["pixel", 80, 34, 0.74, 8, 6, 4.0],
 
-  ["cloud", 4, 39, 0.9, 0, 0, 0],
-  ["spark", 8, 48, 0.5, 4, 3, 4.3],
-  ["grid", 95, 47, 0.72, 0, 0, 0],
-  ["mail", 91, 56, 0.62, 7, 5, 2.8],
+  ["cloud", 3, 41, 0.92, 0, 0, 0],
+  ["spark", 8, 49, 0.5, 6, 5, 4.3],
+  ["grid", 96, 47, 0.72, 8, 6, 0.6],
+  ["mail", 92, 56, 0.64, 10, 7, 2.8],
+  ["pixel", 5, 57, 0.58, 8, 7, 1.9],
 
-  ["document", 7, 66, 0.62, 5, 4, 3.7],
-  ["spark", 2, 73, 0.5, 4, 4, 5.1],
-  ["chart", 92, 73, 0.68, 6, 5, 4.0],
-  ["leaf", 84, 64, 0.6, 8, 6, 5.4],
+  ["document", 6, 67, 0.64, 8, 6, 3.7],
+  ["spark", 2, 74, 0.5, 6, 5, 5.1],
+  ["chart", 93, 74, 0.7, 9, 7, 4.0],
+  ["leaf", 85, 65, 0.62, 11, 8, 5.4],
+  ["pixel", 96, 68, 0.72, 9, 6, 2.5],
 
-  ["grid", 10, 86, 0.66, 0, 0, 0],
-  ["cloud", 6, 95, 0.95, 0, 0, 0],
-  ["spark", 79, 90, 0.52, 4, 4, 0.5],
-  ["chat", 94, 91, 0.68, 9, 6, 1.5],
-  ["cloud", 96, 97, 1.05, 0, 0, 0],
+  ["grid", 9, 86, 0.66, 7, 6, 2.7],
+  ["cloud", 5, 96, 0.96, 0, 0, 0],
+  ["spark", 79, 90, 0.52, 6, 5, 0.5],
+  ["chat", 95, 91, 0.7, 12, 8, 1.5],
+  ["cloud", 97, 97, 1.05, 0, 0, 0],
+  ["pixel", 27, 93, 0.66, 8, 6, 4.6],
 ];
 
 let currentTarget: HTMLElement | null = null;
@@ -68,7 +73,10 @@ function iconMarkup(type: DecorType) {
     return `<svg ${common}><path d="M5 34h38v-6h-6v-7h-7v-6H18v6h-6v7H5z"/></svg>`;
   }
   if (type === "grid") {
-    return `<svg ${common}><path d="M8 8h4v4H8zm10 0h4v4h-4zm10 0h4v4h-4zM8 18h4v4H8zm10 0h4v4h-4zm10 0h4v4h-4zM8 28h4v4H8zm10 0h4v4h-4zm10 0h4v4h-4z"/></svg>`;
+    return `<svg ${common}><path d="M8 8h4v4H8zm10 0h4v4h-4zm10 0h4v4h-4zM8 18h4v4H8zm10 0h4v4h-4zm10 0h4v4H8zm0 10h4v4H8zm10 0h4v4h-4zm10 0h4v4h-4z"/></svg>`;
+  }
+  if (type === "pixel") {
+    return `<svg ${common}><path d="M16 16h16v16H16z"/></svg>`;
   }
 
   return `<svg ${common}><path d="M24 6v12M24 30v12M6 24h12M30 24h12"/></svg>`;
@@ -107,10 +115,12 @@ function animateDecor(time: number) {
     if (ampX === 0 && ampY === 0) return;
 
     const phase = Number(el.dataset.phase ?? 0);
-    const x = Math.sin(t * (0.16 + (index % 4) * 0.018) + phase) * ampX;
-    const y = Math.cos(t * (0.13 + (index % 3) * 0.017) + phase) * ampY;
+    const x = Math.sin(t * (0.15 + (index % 4) * 0.016) + phase) * ampX;
+    const y = Math.cos(t * (0.12 + (index % 3) * 0.015) + phase) * ampY;
+    const rotate = Math.sin(t * 0.08 + phase) * 1.2;
     el.style.setProperty("--decor-x", `${x.toFixed(2)}px`);
     el.style.setProperty("--decor-y", `${y.toFixed(2)}px`);
+    el.style.setProperty("--decor-rotate", `${rotate.toFixed(2)}deg`);
   });
 
   motionFrame = window.requestAnimationFrame(animateDecor);
