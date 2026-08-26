@@ -1,164 +1,213 @@
-/* Game mode only: leaves and paper scraps drifting behind the Work Process cards. */
+/* Game mode Work Process background: hero palette + business English UI motifs. */
 .intro-game .intro-game-features {
-  isolation: isolate;
-}
-
-.intro-game .intro-game-features > div:not(.intro-game-flutter-layer) {
   position: relative;
-  z-index: 1;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(151, 211, 238, 0.78) 0%, rgba(190, 229, 244, 0.72) 52%, rgba(226, 242, 247, 0.82) 100%);
 }
 
-.intro-game-flutter-layer {
+.intro-game .intro-game-features::before,
+.intro-game .intro-game-features::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  z-index: 0;
+  height: 90px;
+  pointer-events: none;
+}
+
+.intro-game .intro-game-features::before {
+  top: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.34), rgba(255,255,255,0));
+}
+
+.intro-game .intro-game-features::after {
+  bottom: 0;
+  background: linear-gradient(0deg, rgba(255,255,255,0.34), rgba(255,255,255,0));
+}
+
+.intro-game .intro-game-features > div:not(.intro-game-process-bg-layer) {
+  position: relative;
+  z-index: 2;
+}
+
+.intro-game-process-bg-layer {
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: 1;
   overflow: hidden;
   pointer-events: none;
   user-select: none;
 }
 
-.intro-game-flutter-particle {
+.intro-game-process-decor {
   position: absolute;
-  left: var(--flutter-left);
-  top: var(--flutter-top);
-  width: 34px;
-  height: 34px;
-  opacity: 0.58;
-  animation: intro-game-flutter-drift var(--flutter-duration) ease-in-out var(--flutter-delay) infinite alternate;
-  will-change: transform;
-  perspective: 500px;
-}
-
-.intro-game-flutter-particle > i {
-  position: absolute;
-  inset: 0;
   display: block;
+  width: 54px;
+  height: 54px;
+  color: rgba(55, 148, 214, 0.24);
+  transform: translate(-50%, -50%) scale(var(--decor-scale, 1));
+  filter: saturate(0.88);
+}
+
+.intro-game-process-decor svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+  shape-rendering: crispEdges;
+}
+
+.intro-game-process-decor.is-chat,
+.intro-game-process-decor.is-mail,
+.intro-game-process-decor.is-document,
+.intro-game-process-decor.is-chart {
+  width: 66px;
+  height: 66px;
+}
+
+.intro-game-process-decor.is-cloud {
+  width: 92px;
+  height: 64px;
+  color: rgba(255, 255, 255, 0.46);
+}
+
+.intro-game-process-decor.is-cloud svg {
+  fill: rgba(255,255,255,0.18);
+  stroke-width: 2;
+}
+
+.intro-game-process-decor.is-spark {
+  width: 28px;
+  height: 28px;
+  color: rgba(62, 165, 225, 0.32);
+}
+
+.intro-game-process-message {
+  position: absolute;
+  width: clamp(170px, 16vw, 230px);
+  padding: 12px 14px 13px;
+  border: 2px solid rgba(43, 110, 93, 0.24);
+  border-radius: 8px;
+  background: rgba(251, 243, 230, 0.78);
+  box-shadow: 5px 5px 0 rgba(43, 43, 43, 0.055);
+  color: rgba(28, 58, 55, 0.66);
   transform-origin: center;
-  animation: intro-game-flutter-flap var(--flutter-flap-duration) ease-in-out var(--flutter-delay) infinite alternate;
   will-change: transform;
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
 }
 
-.intro-game-flutter-particle.is-leaf {
-  width: 30px;
-  height: 24px;
-}
-
-.intro-game-flutter-particle.is-leaf > i {
-  width: 24px;
-  height: 15px;
-  left: 3px;
-  top: 4px;
-  border-radius: 85% 12% 80% 18%;
-  background: linear-gradient(145deg, rgba(88, 137, 85, 0.78), rgba(127, 165, 101, 0.48));
-  box-shadow: 0 3px 5px rgba(48, 69, 45, 0.08);
-}
-
-.intro-game-flutter-particle.is-leaf > i::before {
+.intro-game-process-message::before {
   content: "";
   position: absolute;
-  left: 3px;
-  top: 8px;
-  width: 19px;
-  height: 1px;
-  background: rgba(73, 103, 66, 0.34);
-  transform: rotate(-24deg);
-  transform-origin: left center;
+  left: 14px;
+  bottom: -9px;
+  width: 13px;
+  height: 13px;
+  border-left: 2px solid rgba(43, 110, 93, 0.24);
+  border-bottom: 2px solid rgba(43, 110, 93, 0.24);
+  background: rgba(251, 243, 230, 0.78);
+  transform: skewY(-36deg) rotate(-8deg);
 }
 
-.intro-game-flutter-particle.is-leaf > i::after {
-  content: "";
-  position: absolute;
-  right: -5px;
-  bottom: 2px;
-  width: 8px;
-  height: 1px;
-  background: rgba(73, 103, 66, 0.34);
-  transform: rotate(30deg);
-  transform-origin: left center;
+.intro-game-process-message b,
+.intro-game-process-message span {
+  position: relative;
+  z-index: 1;
+  display: block;
 }
 
-.intro-game-flutter-particle.is-paper {
-  width: 27px;
-  height: 31px;
+.intro-game-process-message b {
+  margin-bottom: 5px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: rgba(47, 127, 98, 0.72);
 }
 
-.intro-game-flutter-particle.is-paper > i {
-  width: 22px;
-  height: 27px;
-  left: 2px;
-  top: 2px;
-  border: 1px solid rgba(87, 76, 62, 0.16);
-  border-radius: 2px 4px 3px 2px;
-  background:
-    linear-gradient(168deg, transparent 0 68%, rgba(134, 115, 91, 0.05) 69% 71%, transparent 72%),
-    rgba(255, 249, 228, 0.82);
-  box-shadow: 0 3px 7px rgba(87, 76, 62, 0.07);
+.intro-game-process-message span {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  font-weight: 700;
 }
 
-.intro-game-flutter-particle.is-paper > i::before {
-  content: "";
-  position: absolute;
-  right: -1px;
-  top: -1px;
-  width: 7px;
-  height: 7px;
-  background: linear-gradient(225deg, rgba(234, 222, 193, 0.9) 49%, transparent 51%);
-}
-
-.intro-game-flutter-particle.is-paper > i::after {
-  content: "";
-  position: absolute;
-  left: 4px;
-  right: 4px;
-  top: 10px;
-  height: 1px;
-  background: rgba(117, 99, 76, 0.13);
-  box-shadow: 0 5px 0 rgba(117, 99, 76, 0.09), 0 10px 0 rgba(117, 99, 76, 0.07);
-}
-
-@keyframes intro-game-flutter-drift {
-  0% {
-    transform: translate3d(-26px, -16px, 0) scale(var(--flutter-scale)) rotate(-7deg);
+/* Keep the message bubbles in the side margins around the vertical cards. */
+@media (min-width: 1180px) {
+  .intro-game-process-message:nth-of-type(15),
+  .intro-game-process-message:nth-of-type(17) {
+    margin-left: 18px;
   }
-  28% {
-    transform: translate3d(var(--flutter-x1), 13px, 0) scale(var(--flutter-scale)) rotate(5deg);
-  }
-  58% {
-    transform: translate3d(var(--flutter-x2), 31px, 0) scale(var(--flutter-scale)) rotate(-4deg);
-  }
-  100% {
-    transform: translate3d(var(--flutter-x3), 54px, 0) scale(var(--flutter-scale)) rotate(8deg);
+
+  .intro-game-process-message:nth-of-type(16),
+  .intro-game-process-message:nth-of-type(18) {
+    margin-left: -18px;
   }
 }
 
-@keyframes intro-game-flutter-flap {
-  0% {
-    transform: rotateX(62deg) rotateY(-24deg) rotateZ(-12deg) skewX(-3deg);
+@media (max-width: 1179px) {
+  .intro-game-process-message {
+    width: 160px;
+    opacity: 0.68;
   }
-  35% {
-    transform: rotateX(-18deg) rotateY(32deg) rotateZ(7deg) skewX(2deg);
+}
+
+@media (max-width: 900px) {
+  .intro-game-process-decor {
+    opacity: 0.64;
   }
-  70% {
-    transform: rotateX(38deg) rotateY(-38deg) rotateZ(-5deg) skewX(-2deg);
+
+  .intro-game-process-message {
+    width: 132px;
+    padding: 9px 10px;
+    opacity: 0.48;
   }
-  100% {
-    transform: rotateX(-44deg) rotateY(20deg) rotateZ(11deg) skewX(3deg);
+
+  .intro-game-process-message b {
+    font-size: 9px;
+  }
+
+  .intro-game-process-message span {
+    font-size: 9px;
   }
 }
 
 @media (max-width: 767px) {
-  .intro-game-flutter-particle {
-    opacity: 0.42;
+  .intro-game .intro-game-features {
+    background: linear-gradient(180deg, rgba(167, 218, 240, 0.7), rgba(225, 243, 248, 0.82));
   }
 
-  .intro-game-flutter-particle:nth-child(3n) {
+  .intro-game-process-decor {
+    width: 40px;
+    height: 40px;
+    opacity: 0.5;
+  }
+
+  .intro-game-process-decor.is-chat,
+  .intro-game-process-decor.is-mail,
+  .intro-game-process-decor.is-document,
+  .intro-game-process-decor.is-chart {
+    width: 46px;
+    height: 46px;
+  }
+
+  .intro-game-process-message {
+    width: 118px;
+    opacity: 0.3;
+  }
+
+  .intro-game-process-message.is-mobile-optional {
     display: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .intro-game-flutter-particle,
-  .intro-game-flutter-particle > i {
-    animation: none !important;
+  .intro-game-process-message {
+    transform: none !important;
   }
 }
