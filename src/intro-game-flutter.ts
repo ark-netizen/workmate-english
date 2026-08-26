@@ -7,80 +7,79 @@ type DecorType = "chat" | "mail" | "document" | "chart" | "leaf" | "cloud" | "sp
 type DecorSpec = readonly [DecorType, number, number, number, number, number, number];
 
 /*
- * Work Process background motifs.
- * Positions are intentionally balanced across left/right gutters instead of clustering on one side.
- * Clouds have zero motion amplitude and remain static; all other motifs drift gently in JS.
+ * Keep the moving UI motifs clearly visible in both side gutters.
+ * Left anchors stay around 10~25%, right anchors around 75~90% so they do not get clipped off-screen.
+ * Clouds intentionally have zero amplitude and remain static.
  */
 const PROCESS_DECOR: readonly DecorSpec[] = [
-  ["cloud", 5, 4, 1.05, 0, 0, 0],
-  ["pixel", 18, 6, 0.72, 9, 6, 0.3],
-  ["document", 82, 6, 0.72, 9, 6, 1.2],
-  ["cloud", 95, 4, 0.95, 0, 0, 0],
+  ["cloud", 7, 4, 1.05, 0, 0, 0],
+  ["pixel", 22, 6, 0.76, 22, 18, 0.3],
+  ["document", 78, 7, 0.76, 24, 20, 1.2],
+  ["cloud", 92, 5, 0.96, 0, 0, 0],
 
-  ["chat", 7, 13, 0.84, 13, 9, 0.2],
-  ["mail", 28, 17, 0.66, 10, 7, 1.5],
-  ["chart", 72, 16, 0.72, 10, 7, 0.8],
-  ["spark", 93, 13, 0.54, 7, 5, 2.0],
+  ["chat", 11, 14, 0.9, 32, 24, 0.2],
+  ["mail", 25, 18, 0.7, 25, 21, 1.5],
+  ["chart", 76, 17, 0.78, 27, 22, 0.8],
+  ["spark", 89, 14, 0.58, 22, 18, 2.0],
 
-  ["pixel", 17, 24, 0.66, 10, 8, 2.5],
-  ["leaf", 29, 28, 0.62, 11, 8, 2.2],
-  ["chat", 71, 25, 0.72, 13, 9, 3.2],
-  ["grid", 84, 28, 0.66, 8, 6, 3.0],
+  ["pixel", 12, 25, 0.7, 24, 20, 2.5],
+  ["leaf", 24, 29, 0.66, 28, 23, 2.2],
+  ["chat", 77, 25, 0.8, 34, 26, 3.2],
+  ["grid", 89, 29, 0.7, 23, 19, 3.0],
 
-  ["mail", 6, 35, 0.64, 11, 8, 4.1],
-  ["spark", 28, 38, 0.48, 7, 5, 4.7],
-  ["document", 72, 37, 0.66, 9, 7, 3.6],
-  ["pixel", 94, 35, 0.6, 10, 7, 1.8],
+  ["mail", 10, 36, 0.7, 27, 22, 4.1],
+  ["spark", 24, 39, 0.54, 22, 18, 4.7],
+  ["document", 77, 38, 0.72, 26, 22, 3.6],
+  ["pixel", 89, 36, 0.66, 24, 20, 1.8],
 
-  ["chat", 17, 46, 0.72, 14, 10, 5.0],
-  ["leaf", 29, 49, 0.6, 11, 8, 5.6],
-  ["chart", 71, 48, 0.7, 10, 7, 4.0],
-  ["grid", 83, 46, 0.64, 8, 6, 0.7],
+  ["chat", 12, 47, 0.8, 34, 27, 5.0],
+  ["leaf", 25, 50, 0.66, 29, 23, 5.6],
+  ["chart", 76, 49, 0.76, 28, 22, 4.0],
+  ["grid", 88, 47, 0.7, 24, 19, 0.7],
 
-  ["pixel", 6, 57, 0.6, 10, 8, 2.0],
-  ["document", 28, 60, 0.62, 9, 7, 3.2],
-  ["chat", 72, 58, 0.7, 14, 10, 1.4],
-  ["spark", 94, 60, 0.5, 7, 5, 5.2],
+  ["pixel", 10, 58, 0.66, 24, 20, 2.0],
+  ["document", 24, 61, 0.7, 27, 22, 3.2],
+  ["chat", 77, 59, 0.78, 34, 27, 1.4],
+  ["spark", 90, 61, 0.54, 22, 18, 5.2],
 
-  ["mail", 17, 68, 0.66, 11, 8, 0.9],
-  ["grid", 29, 71, 0.64, 8, 6, 2.7],
-  ["leaf", 71, 70, 0.62, 11, 8, 5.3],
-  ["pixel", 83, 68, 0.66, 10, 7, 4.5],
+  ["mail", 12, 69, 0.72, 28, 22, 0.9],
+  ["grid", 25, 72, 0.68, 24, 19, 2.7],
+  ["leaf", 76, 71, 0.68, 29, 23, 5.3],
+  ["pixel", 88, 69, 0.7, 24, 20, 4.5],
 
-  ["chat", 6, 79, 0.72, 14, 10, 3.7],
-  ["spark", 28, 82, 0.48, 7, 5, 1.2],
-  ["chart", 72, 81, 0.7, 10, 7, 4.3],
-  ["document", 94, 79, 0.64, 9, 7, 2.4],
+  ["chat", 10, 80, 0.8, 34, 27, 3.7],
+  ["spark", 24, 83, 0.54, 22, 18, 1.2],
+  ["chart", 77, 82, 0.76, 28, 22, 4.3],
+  ["document", 90, 80, 0.7, 27, 22, 2.4],
 
-  ["leaf", 18, 90, 0.62, 11, 8, 1.7],
-  ["pixel", 29, 93, 0.62, 10, 7, 4.9],
-  ["chat", 71, 91, 0.7, 14, 10, 0.5],
-  ["spark", 82, 93, 0.5, 7, 5, 2.9],
-  ["cloud", 5, 97, 0.9, 0, 0, 0],
-  ["cloud", 95, 97, 0.95, 0, 0, 0],
+  ["leaf", 12, 90, 0.68, 29, 23, 1.7],
+  ["pixel", 25, 93, 0.68, 24, 20, 4.9],
+  ["chat", 76, 91, 0.78, 34, 27, 0.5],
+  ["spark", 88, 93, 0.54, 22, 18, 2.9],
+  ["cloud", 7, 97, 0.9, 0, 0, 0],
+  ["cloud", 92, 97, 0.95, 0, 0, 0],
 ];
 
-/* Same visual language continues through the 1-minute trial, with fewer elements because the section is shorter. */
 const TRIAL_DECOR: readonly DecorSpec[] = [
-  ["cloud", 5, 8, 0.92, 0, 0, 0],
-  ["chat", 18, 14, 0.68, 12, 8, 0.4],
-  ["document", 82, 13, 0.62, 9, 7, 1.4],
-  ["cloud", 95, 9, 0.9, 0, 0, 0],
+  ["cloud", 7, 8, 0.92, 0, 0, 0],
+  ["chat", 20, 15, 0.76, 30, 24, 0.4],
+  ["document", 79, 14, 0.7, 26, 21, 1.4],
+  ["cloud", 92, 9, 0.9, 0, 0, 0],
 
-  ["mail", 7, 34, 0.62, 10, 7, 2.2],
-  ["pixel", 28, 40, 0.6, 9, 7, 3.1],
-  ["chart", 72, 37, 0.66, 10, 7, 4.0],
-  ["leaf", 93, 34, 0.58, 10, 8, 5.0],
+  ["mail", 11, 34, 0.7, 28, 22, 2.2],
+  ["pixel", 24, 41, 0.66, 24, 20, 3.1],
+  ["chart", 76, 38, 0.72, 28, 22, 4.0],
+  ["leaf", 89, 35, 0.64, 29, 23, 5.0],
 
-  ["spark", 17, 63, 0.48, 7, 5, 1.1],
-  ["grid", 29, 69, 0.6, 8, 6, 2.8],
-  ["chat", 71, 65, 0.66, 12, 8, 3.8],
-  ["pixel", 83, 69, 0.58, 9, 7, 4.7],
+  ["spark", 12, 63, 0.54, 22, 18, 1.1],
+  ["grid", 25, 69, 0.66, 24, 19, 2.8],
+  ["chat", 76, 65, 0.74, 31, 24, 3.8],
+  ["pixel", 88, 69, 0.64, 24, 20, 4.7],
 
-  ["cloud", 5, 92, 0.86, 0, 0, 0],
-  ["document", 18, 86, 0.58, 9, 6, 5.5],
-  ["mail", 82, 86, 0.58, 10, 7, 0.8],
-  ["cloud", 95, 92, 0.9, 0, 0, 0],
+  ["cloud", 7, 92, 0.86, 0, 0, 0],
+  ["document", 21, 86, 0.66, 26, 21, 5.5],
+  ["mail", 79, 86, 0.66, 28, 22, 0.8],
+  ["cloud", 92, 92, 0.9, 0, 0, 0],
 ];
 
 const layers = new Map<HTMLElement, HTMLDivElement>();
@@ -109,6 +108,7 @@ function createDecor([type, left, top, scale, ampX, ampY, phase]: DecorSpec) {
   el.style.left = `${left}%`;
   el.style.top = `${top}%`;
   el.style.setProperty("--decor-scale", String(scale));
+  el.style.setProperty("--decor-pulse", "1");
   el.dataset.ampX = String(ampX);
   el.dataset.ampY = String(ampY);
   el.dataset.phase = String(phase);
@@ -138,17 +138,32 @@ function animateDecor(time: number) {
     if (!visibleTargets.has(target)) return;
 
     layer.querySelectorAll<HTMLElement>(".intro-game-process-decor").forEach((el, index) => {
+      /* Clouds alone stay fixed. */
+      if (el.classList.contains("is-cloud")) return;
+
       const ampX = Number(el.dataset.ampX ?? 0);
       const ampY = Number(el.dataset.ampY ?? 0);
-      if (ampX === 0 && ampY === 0) return;
-
       const phase = Number(el.dataset.phase ?? 0);
-      const x = Math.sin(t * (0.14 + (index % 5) * 0.013) + phase) * ampX;
-      const y = Math.cos(t * (0.115 + (index % 4) * 0.012) + phase) * ampY;
-      const rotate = Math.sin(t * 0.075 + phase) * 1.35;
+
+      /*
+       * Layer two frequencies instead of a straight sine wave.
+       * The result is a loose oval / bubble drift that never reads as a rigid left-right line.
+       */
+      const speedA = 0.34 + (index % 5) * 0.025;
+      const speedB = 0.21 + (index % 4) * 0.019;
+      const x =
+        Math.sin(t * speedA + phase) * ampX +
+        Math.cos(t * speedB * 1.37 + phase * 1.8) * ampX * 0.42;
+      const y =
+        Math.cos(t * speedB + phase) * ampY +
+        Math.sin(t * speedA * 0.71 + phase * 0.7) * ampY * 0.58;
+      const rotate = Math.sin(t * 0.24 + phase) * 4.5 + Math.cos(t * 0.13 + index) * 1.8;
+      const pulse = 1 + Math.sin(t * 0.46 + phase * 1.4) * 0.045;
+
       el.style.setProperty("--decor-x", `${x.toFixed(2)}px`);
       el.style.setProperty("--decor-y", `${y.toFixed(2)}px`);
       el.style.setProperty("--decor-rotate", `${rotate.toFixed(2)}deg`);
+      el.style.setProperty("--decor-pulse", pulse.toFixed(4));
     });
   });
 
