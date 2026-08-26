@@ -31,8 +31,8 @@ export function TrialGuideBar() {
   const { targets, doneCount, allDone, activeTarget } = useTrialTargets();
   const navigate = useNavigate();
   const location = useLocation();
-  // 현재 앱에서는 businessMode=true가 실제 게임모드다.
-  const isGameMode = businessMode;
+  // 현재 저장값은 businessMode=true가 비즈니스모드, false가 게임모드다.
+  const isGameMode = !businessMode;
   const [finishing, setFinishing] = useState(false);
   const [sending, setSending] = useState(false);
   const [fieldWorkSimulating, setFieldWorkSimulating] = useState(false);
