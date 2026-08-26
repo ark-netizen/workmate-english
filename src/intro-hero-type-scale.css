@@ -1,4 +1,7 @@
-/* 히어로 "오늘의 업무 연락" 카드 글자 확대.
+/* 인트로 타이포 보정 — 나머지 모바일 CSS보다 뒤에 로드해서 최종값을 잡는다.
+   (1) 히어로 연락 카드 글자 확대  (2) 모바일 상단바 글자 확대
+
+   히어로 "오늘의 업무 연락" 카드 글자 확대.
    동료 이름과 영어 문장이 너무 작아서 넓은 화면에서 읽기 어려웠다.
 
    폭이 좁아지면 영어 문장이 두 줄로 접히면서 카드가 흔들리므로, 한 줄이 유지되는
@@ -30,5 +33,43 @@
 
   .intro-page.intro-game .hero .tone {
     font-size: 13px !important;
+  }
+}
+
+/* 모바일 상단바: 섹션 링크 9.5px, '1분 체험하기' 9px까지 줄어 있어서 읽기 힘들었다.
+   로고를 컴팩트 마크로 되돌리며 45px이 확보돼 그만큼 글자를 키운다.
+   폭 345px에서 링크 4개가 딱 들어가는 것까지 실측 확인했다. */
+@media (max-width: 767px) {
+  .intro-page .intro-nav-link {
+    padding-inline: 5px !important;
+    font-size: 11.5px !important;
+  }
+
+  .intro-page .intro-trial-btn {
+    padding-inline: 8px !important;
+    font-size: 11px !important;
+  }
+
+  .intro-page .intro-mode-option {
+    padding-inline: 6px !important;
+    font-size: 11px !important;
+  }
+}
+
+/* 344px 이하(구형 소형 폰)는 위 크기로는 링크가 넘쳐 가로 스크롤이 생겨서 한 단계 낮춘다. */
+@media (max-width: 344px) {
+  .intro-page .intro-nav-link {
+    padding-inline: 4px !important;
+    font-size: 10.5px !important;
+  }
+
+  .intro-page .intro-trial-btn {
+    padding-inline: 6px !important;
+    font-size: 10px !important;
+  }
+
+  .intro-page .intro-mode-option {
+    padding-inline: 5px !important;
+    font-size: 10px !important;
   }
 }
