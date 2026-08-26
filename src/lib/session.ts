@@ -2,6 +2,7 @@
 // 세션이 바뀔 때마다 authToken 저장소를 계속 따라가도록 동기화한다.
 import { supabase, supabaseReady } from "./supabaseClient.js";
 import { getAccessToken, setAccessToken, clearAccessToken } from "./authToken";
+import { resetTrialSequence } from "./trialSequence";
 
 let authSyncStarted = false;
 
@@ -53,6 +54,7 @@ export async function ensureSession(): Promise<void> {
  * 나간 경우 등) 그 이어보기가 아니라 완전히 새 세션으로 리셋한다.
  */
 export async function startFreshGuestTrial(): Promise<void> {
+  resetTrialSequence();
   if (!supabaseReady || !supabase) return;
 
   const { data } = await supabase.auth.getSession();
@@ -70,6 +72,7 @@ export async function endGuestTrial(): Promise<void> {
     await supabase.auth.signOut();
   }
   clearAccessToken();
+  resetTrialSequence();
 }
 
 // 현재 세션이 "1분 체험하기"로 만든 익명 세션인지 — 온보딩 화면에서 직접 입력 없이 기본값으로
