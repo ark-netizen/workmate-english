@@ -73,7 +73,7 @@ function iconMarkup(type: DecorType) {
     return `<svg ${common}><path d="M5 34h38v-6h-6v-7h-7v-6H18v6h-6v7H5z"/></svg>`;
   }
   if (type === "grid") {
-    return `<svg ${common}><path d="M8 8h4v4H8zm10 0h4v4h-4zm10 0h4v4h-4zM8 18h4v4H8zm10 0h4v4h-4zm10 0h4v4H8zm0 10h4v4H8zm10 0h4v4h-4zm10 0h4v4h-4z"/></svg>`;
+    return `<svg ${common}><path d="M8 8h4v4H8zm10 0h4v4h-4zm10 0h4v4h-4zM8 18h4v4H8zm10 0h4v4h-4zm10 0h4v4h-4zM8 28h4v4H8zm10 0h4v4h-4zm10 0h4v4h-4z"/></svg>`;
   }
   if (type === "pixel") {
     return `<svg ${common}><path d="M16 16h16v16H16z"/></svg>`;
