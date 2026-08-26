@@ -31,8 +31,8 @@ export function ReplyHints({
   const [trialHighlight, setTrialHighlight] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const { businessMode } = useBusinessMode();
-  // 현재 저장값은 businessMode=true가 비즈니스모드, false가 게임모드다.
-  const isGameMode = !businessMode;
+  // 이 프로젝트 관례상 businessMode=true가 실제 게임모드다.
+  const isGameMode = businessMode;
 
   // 체험 신호는 ConversationView가 상사 대화에만 넘긴다.
   // 아직 힌트를 열기 전(signal=0)에는 "한국어 힌트를 확인" 안내가 뜨는 시점에 맞춰
