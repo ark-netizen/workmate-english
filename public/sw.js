@@ -41,7 +41,9 @@ self.addEventListener("push", (event) => {
     !title.includes("회신했습니다") &&
     !title.includes("업무일지");
 
-  const actions = [{ action: "reply", title: "메시지 작성하기" }];
+  // 대화/이메일이 아닌 리포트·일반 시스템 알림에 "메시지 작성하기"가 붙으면
+  // 버튼 문구와 실제 이동 경로가 달라진다. 대화 target일 때만 reply 액션을 보여준다.
+  const actions = conversationId ? [{ action: "reply", title: "메시지 작성하기" }] : [];
   if (allowFieldWork) {
     actions.push({ action: "field-work", title: "외근 중 (30분 후 재알림)" });
   }
