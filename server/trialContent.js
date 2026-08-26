@@ -107,5 +107,6 @@ export const TRIAL_DAILY_REPORT = {
     { en: 'Thank you for your patience.', ko: '기다려주셔서 감사합니다.', note: '지연 상황을 전달할 때 상대를 배려하는 느낌을 더해줘요.' },
     { en: "I'll keep you posted.", ko: '진행 상황 계속 알려드릴게요.', note: '동료 사이의 캐주얼한 후속 안내 표현이에요.' },
   ],
-  next_day_context: null,
+  next_day_context:
+    "내일은 오늘 교정한 ‘I will have it ready by 3 p.m.’과 ‘Thank you for your patience.’를 다른 업무 상황에서 다시 써보며, 상사·거래처에게 마감 시간과 지연 상황을 정중하게 전달하는 표현을 연습해요.",
 }

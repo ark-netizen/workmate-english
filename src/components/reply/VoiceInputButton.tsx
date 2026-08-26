@@ -5,13 +5,16 @@ import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 export function VoiceInputButton({ onTranscript }: { onTranscript: (text: string) => void }) {
   const { supported, listening, start, stop } = useSpeechRecognition({ lang: "en-US" });
 
+  const baseClass =
+    "inline-flex h-8 w-8 min-h-8 min-w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border p-0 leading-none";
+
   if (!supported) {
     return (
       <span
         title="이 브라우저는 음성 입력을 지원하지 않아요 (Chrome/Edge 권장)"
-        className="shrink-0 rounded-full border border-border p-1.5 text-foreground/20"
+        className={`${baseClass} border-border text-foreground/20`}
       >
-        <MicOff className="size-4" />
+        <MicOff className="block size-4 shrink-0" />
       </span>
     );
   }
@@ -21,13 +24,13 @@ export function VoiceInputButton({ onTranscript }: { onTranscript: (text: string
       type="button"
       onClick={() => (listening ? stop() : start(onTranscript))}
       title={listening ? "음성 입력 중지" : "음성으로 입력"}
-      className={`shrink-0 rounded-full border p-1.5 transition-colors ${
+      className={`${baseClass} transition-colors ${
         listening
           ? "animate-pulse border-red-300 bg-red-50 text-red-600"
           : "border-border text-foreground/50 hover:bg-black/[.03]"
       }`}
     >
-      <Mic className="size-4" />
+      <Mic className="block size-4 shrink-0" />
     </button>
   );
 }

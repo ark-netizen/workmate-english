@@ -148,6 +148,35 @@ function AppRoutes() {
     return false;
   };
 
+  // 1분 체험은 외근 단계에서 브라우저 시스템 알림을 실제로 보여주는 것이 핵심 시연 요소다.
+  // 새 PC에서도 체험 도중 뒤늦게 권한을 묻지 않도록, 사용자가 체험 버튼을 누른 그 제스처에서
+  // 먼저 알림 권한과 Service Worker를 준비한다. 차단/미지원 상태면 체험 진입 자체를 막아서
+  // 대회 시연 중 "될 때도 있고 안 될 때도 있는" 상태를 만들지 않는다.
+  const prepareTrialNotifications = async () => {
+    if (!("Notification" in window) || !("serviceWorker" in navigator)) {
+      window.alert("이 브라우저에서는 웹 알림을 사용할 수 없어요. 알림을 지원하는 최신 브라우저에서 다시 시도해주세요.");
+      throw new Error("trial notification unsupported");
+    }
+
+    let permission = Notification.permission;
+    if (permission === "default") {
+      permission = await Notification.requestPermission();
+    }
+
+    if (permission !== "granted") {
+      window.alert("1분 체험을 위해 웹 알림 권한이 필요해요. 주소창의 사이트 권한에서 알림을 '허용'으로 바꾼 뒤 다시 1분 체험하기를 눌러주세요.");
+      throw new Error("trial notification permission required");
+    }
+
+    try {
+      await navigator.serviceWorker.register("/sw.js");
+      await navigator.serviceWorker.ready;
+    } catch {
+      window.alert("웹 알림 준비에 실패했어요. 페이지를 새로고침한 뒤 다시 1분 체험하기를 눌러주세요.");
+      throw new Error("trial notification service worker unavailable");
+    }
+  };
+
   // 러프한 인트로 게이트: 새로고침/재방문할 때마다 매번 노출(영구 저장 안 함).
   const [entered, setEntered] = useState(() => {
     // 카카오 등 OAuth 콜백으로 돌아온 경우(#access_token / ?code)만 인트로 건너뛰기
@@ -222,6 +251,7 @@ function AppRoutes() {
         <IntroTextRhythmStyles />
         <IntroPage
           onContinueWithoutLogin={async () => {
+            await prepareTrialNotifications();
             await startFreshGuestTrial();
             await refresh();
             setEntered(true);
