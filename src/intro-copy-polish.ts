@@ -94,11 +94,11 @@ function polishIntroAboutLink(page: HTMLElement) {
     aboutLink.className = expectedClassName;
   }
 
-  // WorkMate English 밖으로 갑자기 이탈하지 않도록 외부 사이트 이동 전에 한 번 확인한다.
+  // 제작자 개인 브랜드 페이지로 이동한다는 점을 먼저 알려서 외부 이동 맥락을 명확히 한다.
   aboutLink.onclick = (event) => {
     event.preventDefault();
     const shouldLeave = window.confirm(
-      "About은 WorkMate English 외부 사이트(www.idealwhy.com)로 연결됩니다.\n이동하시겠어요?",
+      "WorkMate English를 만든 제작자의 개인 브랜드 페이지로 연결돼요.\nidealwhy.com으로 이동할까요?",
     );
     if (shouldLeave) window.location.assign("https://www.idealwhy.com");
   };
