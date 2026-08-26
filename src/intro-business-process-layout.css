@@ -13,7 +13,6 @@
     gap: 0 !important;
   }
 
-  /* 텍스트는 한 덩어리 자체의 폭만 잡고, 남는 공간은 부모가 균등 배분한다. */
   .intro-business .intro-business-feature-card > div:first-child {
     flex: 0 1 360px !important;
     width: min(34%, 360px) !important;
@@ -22,7 +21,6 @@
     margin: 0 !important;
   }
 
-  /* 그래픽도 카드 절반을 억지로 점유하지 않고 실제 보기 좋은 폭까지만 사용한다. */
   .intro-business .intro-business-feature-card > div:last-child {
     flex: 0 1 500px !important;
     width: min(44%, 500px) !important;
@@ -37,22 +35,21 @@
     box-sizing: border-box !important;
   }
 
-  /* space-evenly의 전체 균형은 유지하되 두 덩어리만 바깥쪽으로 10px씩 벌린다.
-     → 좌우 바깥 여백은 조금 줄고, 가운데 여백은 총 20px 정도 더 넓어진다. */
+  /* 바깥 여백은 조금 더 줄이고, 그만큼 중앙 여백을 아주 살짝 더 확보한다. */
   .intro-business .intro-business-features > div:first-child > div:nth-child(odd) .intro-business-feature-card > div:first-child {
-    transform: translateX(-10px);
+    transform: translateX(-16px);
   }
 
   .intro-business .intro-business-features > div:first-child > div:nth-child(odd) .intro-business-feature-card > div:last-child {
-    transform: translateX(10px);
+    transform: translateX(16px);
   }
 
   .intro-business .intro-business-features > div:first-child > div:nth-child(even) .intro-business-feature-card > div:first-child {
-    transform: translateX(10px);
+    transform: translateX(16px);
   }
 
   .intro-business .intro-business-features > div:first-child > div:nth-child(even) .intro-business-feature-card > div:last-child {
-    transform: translateX(-10px);
+    transform: translateX(-16px);
   }
 }
 
@@ -69,20 +66,19 @@
     max-width: 430px !important;
   }
 
-  /* 중간 폭에서는 과하게 벌어지지 않도록 이동량만 살짝 줄인다. */
   .intro-business .intro-business-features > div:first-child > div:nth-child(odd) .intro-business-feature-card > div:first-child {
-    transform: translateX(-6px);
+    transform: translateX(-9px);
   }
 
   .intro-business .intro-business-features > div:first-child > div:nth-child(odd) .intro-business-feature-card > div:last-child {
-    transform: translateX(6px);
+    transform: translateX(9px);
   }
 
   .intro-business .intro-business-features > div:first-child > div:nth-child(even) .intro-business-feature-card > div:first-child {
-    transform: translateX(6px);
+    transform: translateX(9px);
   }
 
   .intro-business .intro-business-features > div:first-child > div:nth-child(even) .intro-business-feature-card > div:last-child {
-    transform: translateX(-6px);
+    transform: translateX(-9px);
   }
 }
