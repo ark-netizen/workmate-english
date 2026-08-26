@@ -23,6 +23,7 @@ import "./intro-scroll-qa.css";
 import "./mobile-device-resilience.css";
 import "./mobile-vertical-density.css";
 import "./foldable-vertical-reset.css";
+import "./mobile-designer-polish.css";
 import "./intro-scroll-enhance";
 import "./intro-game-flutter";
 import "./intro-copy-polish";
