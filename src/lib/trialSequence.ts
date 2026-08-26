@@ -3,9 +3,12 @@ import { useCallback, useEffect, useState } from "react";
 export type TrialStep =
   | "home-tour"
   | "colleague"
+  | "colleague-review"
   | "manager-hint"
   | "manager-reply"
+  | "manager-review"
   | "client"
+  | "client-review"
   | "fieldwork-push"
   | "comfort"
   | "checkout"
@@ -19,9 +22,12 @@ const INITIAL_STEP: TrialStep = "home-tour";
 const VALID_STEPS = new Set<TrialStep>([
   "home-tour",
   "colleague",
+  "colleague-review",
   "manager-hint",
   "manager-reply",
+  "manager-review",
   "client",
+  "client-review",
   "fieldwork-push",
   "comfort",
   "checkout",
