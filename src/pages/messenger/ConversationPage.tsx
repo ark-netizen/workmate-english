@@ -3,11 +3,19 @@ import { useParams } from "react-router-dom";
 import type { Conversation } from "@/types/domain";
 import { useWorkday } from "@/context/useWorkday";
 import { ConversationView } from "@/components/messenger/ConversationView";
+import { VentStartPage } from "@/pages/messenger/VentStartPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 
 export function ConversationPage() {
   const { conversationId } = useParams<{ conversationId: string }>();
   const { getConversationById } = useWorkday();
+
+  // /messenger/vent는 고함항아리 전용 경로다. 라우터가 동적 :conversationId로
+  // 해석하는 경우에도 절대 NotFound로 떨어지지 않도록 여기서 한 번 더 방어한다.
+  if (conversationId === "vent") {
+    return <VentStartPage />;
+  }
+
   const conversation = conversationId ? getConversationById(conversationId) : undefined;
 
   // 답장 직후 refresh()(자동진행 QA 토글이면 연달아 한 번 더)로 대화 목록이 다시 만들어지는 사이,
