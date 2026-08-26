@@ -3,6 +3,7 @@
 // body에 { advanceDay: true }만 있으면 [개발용 QA] 오늘을 마감하고 다음 접속 시 새로운 하루로 취급되게 함
 // body에 { resetAccount: true }만 있으면 [개발용 QA] 이 계정의 진행상황을 전부 지우고 온보딩부터 다시 시작
 import { requireUser } from '../../server/auth.js'
+import { getAdminRole } from '../../server/admin.js'
 import {
   closeWorkday,
   devResetToday,
@@ -17,6 +18,16 @@ import { sendPushToUser } from '../../server/push.js'
 export default withErrors('POST', async (req, res) => {
   const userId = await requireUser(req)
   const { workdayId, reset, advanceDay, resetAccount, testKakaoInactive } = req.body || {}
+
+  // 운영 서비스에 QA용 파괴적 액션이 그대로 열려 있으면 일반 로그인 사용자도 자기 계정 데이터를
+  // 초기화/임의 진행할 수 있다. QA 전용 동작은 full 관리자에게만 허용한다.
+  if (testKakaoInactive || reset || resetAccount || advanceDay) {
+    const role = await getAdminRole(userId)
+    if (role !== 'full') {
+      res.status(403).json({ error: 'QA 관리자 권한이 없습니다' })
+      return
+    }
+  }
 
   if (testKakaoInactive) {
     const result = await devSendKakaoInactiveReminder(userId)
