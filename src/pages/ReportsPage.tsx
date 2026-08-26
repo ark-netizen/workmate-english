@@ -388,6 +388,7 @@ function DailyReportView() {
   const [pastReport, setPastReport] = useState<WorkdayReport | null>(null);
   const [loadingPast, setLoadingPast] = useState(false);
   const [pastError, setPastError] = useState<string | null>(null);
+  const [pastReloadKey, setPastReloadKey] = useState(0);
 
   // 퇴근 처리 후 "리포트 준비됨" 푸시를 눌러 들어오면, 앱이 이미 떠 있던 상태에서 받은
   // 스냅샷(아직 퇴근 전으로 캐싱된 상태)이 그대로 보여서 리포트가 안 뜨는 것처럼 보일 수 있다 —
@@ -422,7 +423,7 @@ function DailyReportView() {
     return () => {
       cancelled = true;
     };
-  }, [daysAgo]);
+  }, [daysAgo, pastReloadKey]);
 
   const report = daysAgo === 0 ? todayReport : pastReport;
 
@@ -462,7 +463,7 @@ function DailyReportView() {
     return (
       <div>
         {dayNav}
-        <InlineLoadError message={pastError} onRetry={() => setDaysAgo((d) => d)} />
+        <InlineLoadError message={pastError} onRetry={() => setPastReloadKey((key) => key + 1)} />
       </div>
     );
   }
