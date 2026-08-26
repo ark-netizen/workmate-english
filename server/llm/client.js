@@ -108,7 +108,28 @@ export const generateDailyReport = (args) => generate(buildDailyReportPrompt, Da
 export const generatePeriodReport = (args) => generate(buildPeriodReportPrompt, PeriodReportSchema, args)
 export const createWorkdayMemory = (args) => generate(buildWorkdayMemoryPrompt, WorkdayMemorySchema, args)
 export const generateOjtWelcomeEmail = (args) => generate(buildOjtWelcomePrompt, MessageSchema, args)
-export const generateVentMessage = (args) => generate(buildVentResponsePrompt, VentMessageSchema, args)
+
+// 로그인 없는 1분 체험은 외부 LLM 상태와 무관하게 항상 같은 흐름으로 재현돼야 한다.
+// 실사용자는 기존처럼 SOLAR 응답을 사용하고, 체험판의 고함항아리/선제 위로만 고정 문구로 처리한다.
+export const generateVentMessage = (args) => {
+  if (args?.profile?.is_trial) {
+    return Promise.resolve(
+      VentMessageSchema.parse(
+        args?.isComfortPing
+          ? {
+              body: 'Hey, you seem really busy today. You okay? Want to take a second to vent? 😮‍💨',
+              korean_hint: '오늘 많이 바빠 보이는데 괜찮냐고, 잠깐 털어놓아도 된다는 뜻이에요.',
+            }
+          : {
+              body: 'I hear you. That sounds exhausting. Want to tell me a little more? 😮‍💨',
+              korean_hint: '많이 힘들었겠다고 공감하면서, 조금 더 이야기해도 된다는 뜻이에요.',
+            },
+      ),
+    )
+  }
+  return generate(buildVentResponsePrompt, VentMessageSchema, args)
+}
+
 export const generateTranslation = (args) => generate(buildTranslationPrompt, TranslationSchema, args)
 export const generateSpellingFix = (args) => generate(buildSpellingFixPrompt, SpellingFixSchema, args)
 export const generateSupportAnswer = (args) => generate(buildSupportAnswerPrompt, SupportAnswerSchema, args)
