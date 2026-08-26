@@ -1,0 +1,34 @@
+/* 히어로 "오늘의 업무 연락" 카드 글자 확대.
+   동료 이름과 영어 문장이 너무 작아서 넓은 화면에서 읽기 어려웠다.
+
+   폭이 좁아지면 영어 문장이 두 줄로 접히면서 카드가 흔들리므로, 한 줄이 유지되는
+   1200px 이상에서만 키운다(1199px 이하는 기존 크기 그대로, 모바일 규칙도 그대로 유지).
+   index.html의 게임 모드 인라인 규칙이 !important라서 여기서도 !important가 필요하고,
+   번들 CSS가 인라인 <style>보다 뒤에 실려서 이 파일이 최종적으로 적용된다. */
+
+@media (min-width: 1200px) {
+  .intro-page .hero .person strong {
+    font-size: 17px !important;
+  }
+
+  .intro-page .hero .person small {
+    font-size: 15.5px !important;
+  }
+
+  .intro-page .hero .tone {
+    font-size: 12px !important;
+  }
+
+  /* 게임 모드는 카드 자체가 더 커서 한 단계 더 키운다. */
+  .intro-page.intro-game .hero .person strong {
+    font-size: 18px !important;
+  }
+
+  .intro-page.intro-game .hero .person small {
+    font-size: 16.5px !important;
+  }
+
+  .intro-page.intro-game .hero .tone {
+    font-size: 13px !important;
+  }
+}
