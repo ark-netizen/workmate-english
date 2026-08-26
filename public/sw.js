@@ -10,6 +10,16 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(self.clients.claim());
 });
 
+function conversationIdFromUrl(url) {
+  try {
+    const pathname = new URL(url, self.location.origin).pathname;
+    const match = pathname.match(/^\/(?:messenger|email)\/([^/?#]+)/);
+    return match?.[1] || null;
+  } catch {
+    return null;
+  }
+}
+
 self.addEventListener("push", (event) => {
   if (!event.data) return;
 
@@ -21,14 +31,26 @@ self.addEventListener("push", (event) => {
   }
 
   const title = payload.title || "부캐영어";
+  const targetUrl = payload.url || "/";
+  const conversationId = conversationIdFromUrl(targetUrl);
+  // 리포트/고함항아리/이미 보낸 답장의 회신 알림에는 "외근 중"이 의미가 없다.
+  // 실제 업무 연락(메신저/이메일)에서만 30분 재알림 액션을 노출한다.
+  const allowFieldWork =
+    !!conversationId &&
+    title !== "고함항아리" &&
+    !title.includes("회신했습니다") &&
+    !title.includes("업무일지");
+
+  const actions = [{ action: "reply", title: "메시지 작성하기" }];
+  if (allowFieldWork) {
+    actions.push({ action: "field-work", title: "외근 중 (30분 후 재알림)" });
+  }
+
   const options = {
     body: payload.body,
     icon: "/brand/logo-mark.png",
-    data: { url: payload.url || "/" },
-    actions: [
-      { action: "reply", title: "메시지 작성하기" },
-      { action: "field-work", title: "외근 중 (30분 후 재알림)" },
-    ],
+    data: { url: targetUrl, conversationId },
+    actions,
   };
 
   event.waitUntil(self.registration.showNotification(title, options));
@@ -58,8 +80,9 @@ function focusOrOpen(url) {
   });
 }
 
-// 앱을 열지 않고도 "외근중"을 처리 — 로그인 세션이 없으므로 이 기기의 구독 endpoint로 사용자를 식별
-function handleFieldWorkAction() {
+// 앱을 열지 않고도 "외근중"을 처리 — 로그인 세션이 없으므로 이 기기의 구독 endpoint로 사용자를 식별.
+// 알림 data에 conversationId도 같이 넣어 "그 알림"을 정확히 30분 뒤 다시 보낸다.
+function handleFieldWorkAction(conversationId) {
   return self.registration.pushManager
     .getSubscription()
     .then((subscription) => {
@@ -67,17 +90,22 @@ function handleFieldWorkAction() {
       return fetch(`${API_BASE_URL}/api/push`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ endpoint: subscription.endpoint, action: "field-work" }),
+        body: JSON.stringify({ endpoint: subscription.endpoint, action: "field-work", conversationId }),
       });
     })
     .then((response) => {
       if (!response.ok) throw new Error(`외근 처리 실패: ${response.status}`);
-      return self.registration.showNotification("외근 처리됐습니다", {
-        body: "30분 후 다시 알려드릴게요.",
+      return response.json().catch(() => ({}));
+    })
+    .then((result) =>
+      self.registration.showNotification("외근 처리됐습니다", {
+        body: result?.reminderScheduled
+          ? "이 연락을 30분 후 다시 알려드릴게요."
+          : "외근 상태를 기록했습니다.",
         icon: "/brand/logo-mark.png",
         tag: "field-work-ack",
-      });
-    })
+      }),
+    )
     .catch(() =>
       self.registration.showNotification("외근 처리 실패", {
         body: "네트워크 문제로 처리가 안 됐어요. 앱에서 다시 시도해주세요.",
@@ -92,7 +120,7 @@ self.addEventListener("notificationclick", (event) => {
   const targetUrl = event.notification.data?.url || "/";
 
   if (event.action === "field-work") {
-    event.waitUntil(handleFieldWorkAction());
+    event.waitUntil(handleFieldWorkAction(event.notification.data?.conversationId || conversationIdFromUrl(targetUrl)));
     return;
   }
 
