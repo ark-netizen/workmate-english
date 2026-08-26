@@ -1,17 +1,17 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useBusinessMode } from "@/context/useBusinessMode";
 import { useWorkday } from "@/context/useWorkday";
 import { endGuestTrial } from "@/lib/session";
 import { TRIAL_REPLY_TEXT } from "@/lib/trialReplies";
-import { TRIAL_ROLE_LABEL, TRIAL_ROLE_ORDER, useTrialTargets } from "@/lib/trialTargets";
+import { TRIAL_ROLE_LABEL, useTrialTargets, type TrialTarget } from "@/lib/trialTargets";
+import { useTrialSequence, type TrialStep } from "@/lib/trialSequence";
 import { TrialActionBar } from "./TrialActionBar";
-
-type FinalTrialStage = "fieldwork" | "comfort" | "checkout" | "report" | "kakao";
 
 const KAKAO_TEXT_MAX = 190;
 const FIELD_WORK_PREVIEW_MS = 2600;
 const FIELD_WORK_CLICK_GAP_MS = 320;
+const PROGRESS_DOTS = 8;
 
 function truncateKakaoText(value: string | undefined, max: number) {
   if (!value) return value;
@@ -20,6 +20,37 @@ function truncateKakaoText(value: string | undefined, max: number) {
 
 function wait(ms: number) {
   return new Promise<void>((resolve) => window.setTimeout(resolve, ms));
+}
+
+function roleForStep(step: TrialStep): TrialTarget["role"] | null {
+  if (step === "colleague") return "colleague";
+  if (step === "manager-hint" || step === "manager-reply") return "manager";
+  if (step === "client") return "client";
+  return null;
+}
+
+function progressForStep(step: TrialStep) {
+  switch (step) {
+    case "home-tour":
+      return 0;
+    case "colleague":
+      return 0;
+    case "manager-hint":
+    case "manager-reply":
+      return 1;
+    case "client":
+      return 2;
+    case "fieldwork-push":
+      return 3;
+    case "comfort":
+      return 4;
+    case "checkout":
+      return 5;
+    case "report":
+      return 6;
+    case "kakao":
+      return 8;
+  }
 }
 
 // 체험판에서는 서버 푸시 구독을 별도로 저장하지 않는다. 대신 사용자가 외근 시연의 "다음"을 누른
@@ -48,13 +79,15 @@ async function showTrialBrowserNotification(title: string, body: string, url: st
   }
 }
 
-// "1분 체험하기" 게스트 전용 — 실제 화면을 그대로 쓰되 하나의 안내 카드로 진행한다.
-// 업무 3건 이후에는 외근 알림 → 바쁨 감지 → 선제 위로 → 홈의 실제 퇴근 안내 → 리포트 → 카카오 알림까지
-// 실제 서비스의 연결 구조가 보이도록 체험 단계를 이어준다.
+// 1분 체험의 진행 순서는 오직 trialStep 하나로 결정한다.
+// conversations/report 같은 실제 데이터는 "해당 단계의 화면 대상이 준비됐는지"만 확인하고,
+// 데이터를 보고 현재 단계를 역추론하지 않는다. 그래서 홈 재진입/비동기 배달 때문에 단계가 겹치거나
+// 처음으로 되돌아가는 회귀가 생기지 않는다.
 export function TrialGuideBar() {
   const { report, conversations, sendReply, finishWorkday, goOnFieldWork, triggerTrialHint } = useWorkday();
   const { businessMode } = useBusinessMode();
-  const { targets, doneCount, allDone, activeTarget } = useTrialTargets();
+  const { targets } = useTrialTargets();
+  const { step, setStep } = useTrialSequence();
   const navigate = useNavigate();
   const location = useLocation();
   // 이 프로젝트 관례상 businessMode=true가 실제 게임모드다.
@@ -62,16 +95,22 @@ export function TrialGuideBar() {
   const [finishing, setFinishing] = useState(false);
   const [sending, setSending] = useState(false);
   const [fieldWorkSimulating, setFieldWorkSimulating] = useState(false);
-  const [finalStage, setFinalStage] = useState<FinalTrialStage>("fieldwork");
   const [showFieldWorkPreview, setShowFieldWorkPreview] = useState(false);
-  const [showKakaoPreview, setShowKakaoPreview] = useState(false);
-  // 상사(매니저) 단계 한정 — "답변 모르겠으면 한국어 힌트부터" 시나리오의 진행 상태
-  const [managerHintStage, setManagerHintStage] = useState<"ask" | "shown">("ask");
 
-  const onActivePage = !!activeTarget && location.pathname === activeTarget.path;
+  const colleagueTarget = targets.find((target) => target.role === "colleague");
+  const managerTarget = targets.find((target) => target.role === "manager");
+  const clientTarget = targets.find((target) => target.role === "client");
+  const targetByRole: Partial<Record<TrialTarget["role"], TrialTarget>> = {
+    colleague: colleagueTarget,
+    manager: managerTarget,
+    client: clientTarget,
+  };
+  const stepRole = roleForStep(step);
+  const stepTarget = stepRole ? targetByRole[stepRole] : undefined;
+  const onStepTargetPage = !!stepTarget && location.pathname === stepTarget.path;
   const onReportPage = location.pathname === "/reports";
   const onHomePage = location.pathname === "/";
-  const colleagueTarget = targets.find((target) => target.role === "colleague");
+
   const colleagueConversation = colleagueTarget
     ? conversations.find((conversation) => conversation.id === colleagueTarget.id)
     : undefined;
@@ -80,209 +119,223 @@ export function TrialGuideBar() {
     (colleagueConversation?.messages ?? []).find((message) => message.from === "contact")?.body ??
     "Hey, can you take a look by 3? 🙏";
   const ventConversation = conversations.find((conversation) => conversation.kind === "vent");
-  const onVentPage = !!ventConversation && location.pathname === `/messenger/${ventConversation.id}`;
-  // "상사" 단계에서만 등장하는 "답변 모르겠으면 한국어 힌트부터 눌러보기" 시나리오
-  const isManagerStep = activeTarget?.role === "manager" && onActivePage;
-  const showHintAsk = isManagerStep && managerHintStage === "ask";
+  const ventPath = ventConversation ? `/messenger/${ventConversation.id}` : null;
+  const onVentPage = !!ventPath && location.pathname === ventPath;
 
-  // 기본 업무 3건이 끝나면 바로 퇴근시키지 않는다.
-  // 외근 2회 → 위로 메시지를 본 다음에는 실제 홈 화면으로 돌아가 원래 서비스의 퇴근 안내 카드를 확인한다.
+  // 시퀀스가 바뀌면 그 단계가 요구하는 실제 화면으로만 이동한다.
+  // 대상 데이터가 아직 도착하지 않았으면 단계는 그대로 두고 기다렸다가, 데이터가 생긴 순간 이동한다.
   useEffect(() => {
-    if (!allDone || report) return;
+    if (step === "home-tour") return;
 
-    if (!ventConversation) {
-      setFinalStage("fieldwork");
-      if (colleagueTarget && location.pathname !== colleagueTarget.path) {
-        navigate(colleagueTarget.path);
-      }
+    if (stepTarget) {
+      if (location.pathname !== stepTarget.path) navigate(stepTarget.path);
       return;
     }
 
-    if (finalStage === "checkout") {
+    if (step === "fieldwork-push" && colleagueTarget) {
+      if (location.pathname !== colleagueTarget.path) navigate(colleagueTarget.path);
+      return;
+    }
+
+    if (step === "comfort" && ventPath) {
+      if (location.pathname !== ventPath) navigate(ventPath);
+      return;
+    }
+
+    if (step === "checkout") {
       if (!onHomePage) navigate("/");
       return;
     }
 
-    setFinalStage("comfort");
-    const ventPath = `/messenger/${ventConversation.id}`;
-    if (location.pathname !== ventPath) navigate(ventPath);
+    if (step === "report" || step === "kakao") {
+      if (!onReportPage) navigate("/reports");
+    }
   }, [
-    allDone,
-    report,
-    ventConversation?.id,
+    step,
+    stepTarget?.path,
     colleagueTarget?.path,
+    ventPath,
     location.pathname,
     navigate,
-    finalStage,
     onHomePage,
+    onReportPage,
   ]);
-
-  // "○○에게 가기" 버튼을 눌러야만 다음 대화로 이동하는 게 번거롭다는 피드백 — 새 대상이
-  // 나타나면(직전 대상과 다르면) 자동으로 그 대화로 이동한다. 한 번 자동 이동한 대상으로는
-  // 다시 강제로 데려가지 않아서, 사용자가 스스로 다른 화면을 둘러보는 것까지 막지는 않는다.
-  const autoNavigatedIdRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (!activeTarget) return;
-    if (autoNavigatedIdRef.current === activeTarget.id) return;
-    autoNavigatedIdRef.current = activeTarget.id;
-    if (location.pathname !== activeTarget.path) {
-      navigate(activeTarget.path);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTarget?.id]);
 
   const handleEnd = async () => {
     await endGuestTrial();
     window.location.href = "/";
   };
 
-  const handlePrimaryAction = async () => {
-    if (sending || finishing || fieldWorkSimulating) return;
-
-    if (allDone) {
-      // 체험판에서는 실제 버튼을 두 번 찾아 누르게 하지 않고, "다음" 한 번으로 외근 이벤트 2회를 기록한다.
-      // 우하단 인앱 알림과 실제 Edge/브라우저 알림을 먼저 보여준 뒤 신호 2회를 처리한다.
-      if (!report && !ventConversation) {
-        const targetPath = colleagueTarget?.path ?? "/messenger";
-        // requestPermission이 브라우저의 사용자 액션으로 인정되도록 첫 await 전에 호출한다.
-        void showTrialBrowserNotification("Jake · 동료", fieldWorkPreviewBody, targetPath);
-
-        if (colleagueTarget && location.pathname !== colleagueTarget.path) {
-          navigate(colleagueTarget.path);
-        }
-        setFieldWorkSimulating(true);
-        setShowFieldWorkPreview(true);
-        try {
-          await wait(FIELD_WORK_PREVIEW_MS);
-          setShowFieldWorkPreview(false);
-          await goOnFieldWork();
-          await wait(FIELD_WORK_CLICK_GAP_MS);
-          await goOnFieldWork();
-        } finally {
-          setShowFieldWorkPreview(false);
-          setFieldWorkSimulating(false);
-        }
-        return;
-      }
-
-      if (!report && ventConversation) {
-        // 선제 위로 메시지를 확인한 다음에는 실제 홈 화면의 "오늘의 연락을 모두 처리했어요 / 퇴근하기"
-        // 카드를 먼저 보여준다. 여기서는 아직 퇴근 처리하지 않는다.
-        if (finalStage === "comfort") {
-          setFinalStage("checkout");
-          navigate("/");
-          window.setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 80);
-          return;
-        }
-
-        // 홈의 실제 퇴근 안내를 확인한 뒤 체험 가이드의 같은 오른쪽 버튼으로 실제 finishWorkday를 실행한다.
-        if (finalStage === "checkout") {
-          setFinishing(true);
-          try {
-            await finishWorkday();
-            setFinalStage("report");
-            navigate("/reports");
-          } finally {
-            setFinishing(false);
-          }
-          return;
-        }
-      }
-
-      // 리포트 확인 뒤 실제 서비스에서 받는 카카오톡 리포트 알림 형태를 보여준다.
-      if (report && finalStage === "report") {
-        if (!onReportPage) {
-          navigate("/reports");
-          return;
-        }
-        setFinalStage("kakao");
-        setShowKakaoPreview(true);
-      }
-      return;
-    }
-
-    if (!activeTarget) return;
-    // "상사" 단계 — 아직 힌트를 안 보여줬으면, 이번 클릭은 전송이 아니라 한국어 힌트를 대신 펼쳐 보여주는 동작
-    if (showHintAsk) {
-      triggerTrialHint();
-      setManagerHintStage("shown");
-      return;
-    }
-    if (!onActivePage) {
-      navigate(activeTarget.path);
+  const sendRoleReply = async (target: TrialTarget, nextStep: TrialStep) => {
+    if (location.pathname !== target.path) {
+      navigate(target.path);
       return;
     }
     setSending(true);
     try {
-      await sendReply(activeTarget.id, TRIAL_REPLY_TEXT[activeTarget.role] ?? "", activeTarget.subject);
+      await sendReply(target.id, TRIAL_REPLY_TEXT[target.role] ?? "", target.subject);
+      setStep(nextStep);
     } finally {
       setSending(false);
     }
   };
 
-  // 평소 홈 화면은 SectionTourGuide가 대신 안내한다. 단, 퇴근 안내를 실제 홈에서 보여주는 checkout 단계만 예외다.
-  if ((onHomePage && finalStage !== "checkout") || targets.length === 0) return null;
+  const handlePrimaryAction = async () => {
+    if (sending || finishing || fieldWorkSimulating) return;
 
-  // 답장 3개 + 스트레스 감지/선제 위로 + 홈 퇴근 안내 + 리포트 + 카카오톡 알림 = 총 7단계.
-  const progressDots = TRIAL_ROLE_ORDER.length + 4;
-  const checkoutReached = finalStage === "checkout" || !!report;
-  const filledDots =
-    doneCount +
-    (ventConversation ? 1 : 0) +
-    (checkoutReached ? 1 : 0) +
-    (report ? 1 : 0) +
-    (finalStage === "kakao" ? 1 : 0);
+    if (step === "colleague") {
+      if (!colleagueTarget) return;
+      await sendRoleReply(colleagueTarget, "manager-hint");
+      return;
+    }
 
-  const primaryLabel = allDone
-    ? !report
-      ? !ventConversation
-        ? fieldWorkSimulating
-          ? "웹 알림 확인 중..."
-          : "다음"
-        : finalStage === "comfort"
-          ? "다음"
-          : finalStage === "checkout"
-            ? finishing
-              ? "퇴근 처리 중..."
-              : "다음"
-            : null
-      : finalStage === "report"
-        ? onReportPage
-          ? "카카오톡 알림 미리보기"
-          : "리포트 보러가기"
-        : null
-    : !activeTarget
-      ? null
-      : sending
-        ? "전송 중..."
-        : showHintAsk
-          ? "한국어 힌트 보기"
-          : onActivePage
-            ? "이 내용으로 답장 보내기"
-            : `${TRIAL_ROLE_LABEL[activeTarget.role]}에게 가기`;
+    if (step === "manager-hint") {
+      if (!managerTarget) return;
+      if (location.pathname !== managerTarget.path) {
+        navigate(managerTarget.path);
+        return;
+      }
+      triggerTrialHint();
+      setStep("manager-reply");
+      return;
+    }
 
-  const message = allDone
-    ? !report
-      ? finalStage === "fieldwork"
-        ? "실서비스에서는 ‘지금 외근 중’을 누르면 예정된 연락을 30분 뒤 다시 받을 수 있어요.\n다음을 누르면 우하단 웹 알림과 Edge/브라우저 알림을 먼저 보여드린 뒤, 외근 신호 2회를 한 번에 재현할게요."
-        : finalStage === "checkout"
-          ? "오늘 할 일을 모두 처리하면 홈에 실제 퇴근 안내가 나타나요.\n강조된 ‘퇴근하기’ 카드를 확인하고 다음을 눌러 퇴근해볼게요."
-          : onVentPage
-            ? "외근 신호가 반복되자 동료가 먼저 말을 걸어왔어요. 이렇게 먼저 온 위로 메시지는 고함항아리에 모여요.\n다음을 누르면 홈에서 실제 퇴근 안내를 확인해볼게요."
-            : "반복된 바쁨을 감지했어요. 동료의 메시지로 이동하는 중이에요..."
-      : finalStage === "report"
-        ? onReportPage
-          ? "오늘 대화를 바탕으로 잘한 표현, 교정 포인트, 꼭 기억할 표현이 업무일지에 정리돼요."
-          : "리포트로 이동하는 중이에요..."
-        : "카카오톡으로 로그인 후 알림 설정에 동의하면 오늘의 업무일지를 카카오톡으로 확인해볼 수 있고, 2일 이상 결석했을 때 리마인드 알림도 받아볼 수 있어요!"
-    : activeTarget
-      ? showHintAsk
-        ? "이건 답변을 모르겠다구요? 한국어 힌트를 눌러볼게요!"
-        : isManagerStep
-          ? "이걸 토대로 답변을 작성할게요"
-          : `${TRIAL_ROLE_LABEL[activeTarget.role]}에게 온 연락에 답장해보세요`
-      // 다음 대상이 아직 도착 전(시차 발송 중) — 곧 오니 잠깐 기다려달라는 안내
-      : "곧 다음 연락이 도착해요...";
+    if (step === "manager-reply") {
+      if (!managerTarget) return;
+      await sendRoleReply(managerTarget, "client");
+      return;
+    }
+
+    if (step === "client") {
+      if (!clientTarget) return;
+      await sendRoleReply(clientTarget, "fieldwork-push");
+      return;
+    }
+
+    if (step === "fieldwork-push") {
+      const targetPath = colleagueTarget?.path ?? "/messenger";
+      // requestPermission이 브라우저의 사용자 액션으로 인정되도록 첫 await 전에 호출한다.
+      void showTrialBrowserNotification("Jake · 동료", fieldWorkPreviewBody, targetPath);
+
+      if (colleagueTarget && location.pathname !== colleagueTarget.path) {
+        navigate(colleagueTarget.path);
+      }
+      setFieldWorkSimulating(true);
+      setShowFieldWorkPreview(true);
+      try {
+        await wait(FIELD_WORK_PREVIEW_MS);
+        setShowFieldWorkPreview(false);
+        await goOnFieldWork();
+        await wait(FIELD_WORK_CLICK_GAP_MS);
+        await goOnFieldWork();
+        setStep("comfort");
+      } finally {
+        setShowFieldWorkPreview(false);
+        setFieldWorkSimulating(false);
+      }
+      return;
+    }
+
+    if (step === "comfort") {
+      if (!ventConversation) return;
+      if (!onVentPage && ventPath) {
+        navigate(ventPath);
+        return;
+      }
+      setStep("checkout");
+      navigate("/");
+      window.setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 80);
+      return;
+    }
+
+    if (step === "checkout") {
+      setFinishing(true);
+      try {
+        await finishWorkday();
+        setStep("report");
+        navigate("/reports");
+      } finally {
+        setFinishing(false);
+      }
+      return;
+    }
+
+    if (step === "report") {
+      if (!onReportPage) {
+        navigate("/reports");
+        return;
+      }
+      if (!report) return;
+      setStep("kakao");
+    }
+  };
+
+  // 최초 홈 투어는 HomePage의 SectionTourGuide가 전담한다.
+  if (step === "home-tour") return null;
+
+  const waitingForTarget = !!stepRole && !stepTarget;
+  const waitingForComfort = step === "comfort" && !ventConversation;
+  const waitingForReport = step === "report" && !report;
+
+  const primaryLabel = (() => {
+    if (step === "colleague") {
+      if (!colleagueTarget) return "연락 기다리는 중...";
+      return sending ? "전송 중..." : onStepTargetPage ? "이 내용으로 답장 보내기" : `${TRIAL_ROLE_LABEL.colleague}에게 가기`;
+    }
+    if (step === "manager-hint") {
+      if (!managerTarget) return "다음 연락 기다리는 중...";
+      return onStepTargetPage ? "한국어 힌트 보기" : `${TRIAL_ROLE_LABEL.manager}에게 가기`;
+    }
+    if (step === "manager-reply") {
+      if (!managerTarget) return "다음 연락 기다리는 중...";
+      return sending ? "전송 중..." : onStepTargetPage ? "이 내용으로 답장 보내기" : `${TRIAL_ROLE_LABEL.manager}에게 가기`;
+    }
+    if (step === "client") {
+      if (!clientTarget) return "다음 연락 기다리는 중...";
+      return sending ? "전송 중..." : onStepTargetPage ? "이 내용으로 답장 보내기" : `${TRIAL_ROLE_LABEL.client}에게 가기`;
+    }
+    if (step === "fieldwork-push") return fieldWorkSimulating ? "웹 알림 확인 중..." : "다음";
+    if (step === "comfort") {
+      if (!ventConversation) return "위로 메시지 기다리는 중...";
+      return onVentPage ? "다음" : "위로 메시지 보기";
+    }
+    if (step === "checkout") return finishing ? "퇴근 처리 중..." : "다음";
+    if (step === "report") {
+      if (!report) return "리포트 만드는 중...";
+      return onReportPage ? "카카오톡 알림 미리보기" : "리포트 보러가기";
+    }
+    return null;
+  })();
+
+  const message = (() => {
+    if (step === "colleague") {
+      return colleagueTarget ? "동료에게 온 연락에 답장해보세요" : "첫 연락이 도착하는 중이에요...";
+    }
+    if (step === "manager-hint") {
+      return managerTarget ? "이건 답변을 모르겠다구요? 한국어 힌트를 눌러볼게요!" : "상사의 연락이 도착하는 중이에요...";
+    }
+    if (step === "manager-reply") return "이걸 토대로 답변을 작성할게요";
+    if (step === "client") {
+      return clientTarget ? "거래처에게 온 연락에 답장해보세요" : "거래처의 연락이 도착하는 중이에요...";
+    }
+    if (step === "fieldwork-push") {
+      return "실서비스에서는 ‘지금 외근 중’을 누르면 예정된 연락을 30분 뒤 다시 받을 수 있어요.\n다음을 누르면 우하단 웹 알림과 Edge/브라우저 알림을 먼저 보여드린 뒤, 외근 신호 2회를 한 번에 재현할게요.";
+    }
+    if (step === "comfort") {
+      return ventConversation
+        ? "외근 신호가 반복되자 동료가 먼저 말을 걸어왔어요. 이렇게 먼저 온 위로 메시지는 고함항아리에 모여요.\n다음을 누르면 홈에서 실제 퇴근 안내를 확인해볼게요."
+        : "반복된 바쁨을 감지했어요. 동료가 먼저 말을 걸어오는 중이에요...";
+    }
+    if (step === "checkout") {
+      return "오늘 할 일을 모두 처리하면 홈에 실제 퇴근 안내가 나타나요.\n강조된 ‘퇴근하기’ 카드를 확인하고 다음을 눌러 퇴근해볼게요.";
+    }
+    if (step === "report") {
+      return report
+        ? "오늘 대화를 바탕으로 잘한 표현, 교정 포인트, 꼭 기억할 표현이 업무일지에 정리돼요."
+        : "오늘의 업무일지를 만드는 중이에요...";
+    }
+    return "카카오톡으로 로그인 후 알림 설정에 동의하면 오늘의 업무일지를 카카오톡으로 확인해볼 수 있고, 2일 이상 결석했을 때 리마인드 알림도 받아볼 수 있어요!";
+  })();
 
   const goodCount = report?.goodExpressions?.length ?? 0;
   const correctionCount = report?.improvementPoints?.length ?? 0;
@@ -307,17 +360,19 @@ export function TrialGuideBar() {
       {showFieldWorkPreview && (
         <div className="fixed bottom-20 right-4 z-50 w-80 max-w-[calc(100vw-2rem)] md:bottom-4">
           <div
-            className={`absolute -top-9 right-0 rounded-full px-3 py-1.5 text-[11px] font-bold text-white shadow-lg ${
-              isGameMode ? "bg-[#2f795d]" : "bg-[#1a56ff]"
+            className={`absolute -top-9 right-0 px-3 py-1.5 text-[11px] font-bold ${
+              isGameMode
+                ? "rounded-full bg-[#2f795d] text-white shadow-lg"
+                : "rounded-full bg-[#1a56ff] text-white shadow-lg"
             }`}
           >
             웹 알림은 여기에서 떠요
           </div>
           <div
-            className={`flex items-start gap-3 rounded-lg border-2 bg-surface p-4 text-foreground ring-4 ${
+            className={`flex items-start gap-3 rounded-lg p-4 text-foreground ${
               isGameMode
-                ? "border-[#2f795d] shadow-[0_16px_40px_rgba(47,121,93,0.26)] ring-[#2f795d]/20"
-                : "border-[#1a56ff] shadow-[0_16px_40px_rgba(26,86,255,0.26)] ring-[#1a56ff]/20"
+                ? "border-2 border-[#2f795d] bg-surface shadow-[0_16px_40px_rgba(47,121,93,0.26)] ring-4 ring-[#2f795d]/20"
+                : "border-2 border-[#1a56ff] bg-surface shadow-[0_16px_40px_rgba(26,86,255,0.26)] ring-4 ring-[#1a56ff]/20"
             }`}
           >
             <div className="min-w-0 flex-1">
@@ -331,7 +386,7 @@ export function TrialGuideBar() {
         </div>
       )}
 
-      {showKakaoPreview && report && (
+      {step === "kakao" && report && (
         <div className="relative z-20 mx-3 my-2 overflow-hidden rounded-2xl border border-[#d9cf73] bg-[#fee500] shadow-xl md:fixed md:right-[23rem] md:top-1/2 md:mx-0 md:my-0 md:w-[340px] md:-translate-y-1/2">
           <div className="px-4 py-3">
             <p className="text-xs font-bold text-[#2d2926]">카카오톡 알림 미리보기</p>
@@ -353,14 +408,21 @@ export function TrialGuideBar() {
 
       <TrialActionBar
         message={message}
-        dotsTotal={progressDots}
-        dotsFilled={filledDots}
+        dotsTotal={PROGRESS_DOTS}
+        dotsFilled={progressForStep(step)}
         primaryLabel={primaryLabel}
         onPrimary={primaryLabel ? handlePrimaryAction : undefined}
-        primaryDisabled={sending || finishing || fieldWorkSimulating}
+        primaryDisabled={
+          sending ||
+          finishing ||
+          fieldWorkSimulating ||
+          waitingForTarget ||
+          waitingForComfort ||
+          waitingForReport
+        }
         onEnd={handleEnd}
-        endPrimary={finalStage === "kakao"}
-        showEnd={finalStage === "kakao" && showKakaoPreview}
+        endPrimary={step === "kakao"}
+        showEnd
       />
     </>
   );
