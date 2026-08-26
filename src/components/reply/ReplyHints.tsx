@@ -97,8 +97,10 @@ export function ReplyHints({
     <div ref={containerRef} className="relative space-y-2">
       {trialHighlight && (
         <span
-          className={`absolute -top-7 left-0 z-10 rounded-full px-2.5 py-1 text-[10px] font-bold text-white shadow-md ${
-            isGameMode ? "bg-[#2f795d]" : "bg-[#1a56ff]"
+          className={`absolute -top-7 left-0 z-10 px-2.5 py-1 text-[10px] font-bold ${
+            isGameMode
+              ? "rounded border-2 border-[#28352f] bg-[#ffe28a] text-[#28352f] shadow-[2px_2px_0_#28352f]"
+              : "rounded-full bg-[#1a56ff] text-white shadow-md"
           }`}
         >
           힌트는 여기에서 확인해요
@@ -119,7 +121,7 @@ export function ReplyHints({
               className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-[background-color,border-color,box-shadow,color] ${
                 trialKorean
                   ? isGameMode
-                    ? "border-[#2f795d] bg-[#e6f1e9] text-[#2f795d] shadow-[0_0_0_2px_rgba(47,121,93,0.2)]"
+                    ? "border-2 border-[#28352f] bg-[#ffe28a] font-bold text-[#28352f] shadow-[3px_3px_0_#2f795d] ring-2 ring-[#ffe28a]/70"
                     : "border-[#1a56ff] bg-[#eef4ff] text-[#1a56ff] shadow-[0_0_0_2px_rgba(26,86,255,0.18)]"
                   : locked
                     ? "cursor-not-allowed border-border text-foreground/30"
@@ -140,7 +142,7 @@ export function ReplyHints({
           className={`rounded-lg border p-3 transition-[background-color,border-color,box-shadow] ${
             trialHighlight
               ? isGameMode
-                ? "border-[#6aa58e] bg-[#f2f8f3] shadow-[0_0_0_2px_rgba(47,121,93,0.12)]"
+                ? "border-2 border-[#28352f] bg-[#fff9e9] shadow-[4px_4px_0_#2f795d] ring-2 ring-[#ffe28a]/80"
                 : "border-[#7ca2ff] bg-[#f5f8ff] shadow-[0_0_0_2px_rgba(26,86,255,0.1)]"
               : "border-border bg-black/[.02]"
           }`}
