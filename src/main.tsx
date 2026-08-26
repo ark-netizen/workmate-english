@@ -25,6 +25,7 @@ import "./mobile-vertical-density.css";
 import "./foldable-vertical-reset.css";
 import "./mobile-designer-polish.css";
 import "./mobile-runtime-qa.css";
+import "./mobile-nav-order-fix.css";
 import "./intro-scroll-enhance";
 import "./intro-game-flutter";
 import "./intro-copy-polish";
