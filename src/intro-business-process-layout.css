@@ -35,21 +35,21 @@
     box-sizing: border-box !important;
   }
 
-  /* 바깥 여백은 조금 더 줄이고, 그만큼 중앙 여백을 아주 살짝 더 확보한다. */
+  /* 이전보다 바깥쪽으로 4px씩 더 벌려 좌우 여백을 조금 더 줄이고 중앙 여백은 아주 살짝 키운다. */
   .intro-business .intro-business-features > div:first-child > div:nth-child(odd) .intro-business-feature-card > div:first-child {
-    transform: translateX(-16px);
+    transform: translateX(-20px);
   }
 
   .intro-business .intro-business-features > div:first-child > div:nth-child(odd) .intro-business-feature-card > div:last-child {
-    transform: translateX(16px);
+    transform: translateX(20px);
   }
 
   .intro-business .intro-business-features > div:first-child > div:nth-child(even) .intro-business-feature-card > div:first-child {
-    transform: translateX(16px);
+    transform: translateX(20px);
   }
 
   .intro-business .intro-business-features > div:first-child > div:nth-child(even) .intro-business-feature-card > div:last-child {
-    transform: translateX(-16px);
+    transform: translateX(-20px);
   }
 }
 
@@ -67,18 +67,18 @@
   }
 
   .intro-business .intro-business-features > div:first-child > div:nth-child(odd) .intro-business-feature-card > div:first-child {
-    transform: translateX(-9px);
+    transform: translateX(-11px);
   }
 
   .intro-business .intro-business-features > div:first-child > div:nth-child(odd) .intro-business-feature-card > div:last-child {
-    transform: translateX(9px);
+    transform: translateX(11px);
   }
 
   .intro-business .intro-business-features > div:first-child > div:nth-child(even) .intro-business-feature-card > div:first-child {
-    transform: translateX(9px);
+    transform: translateX(11px);
   }
 
   .intro-business .intro-business-features > div:first-child > div:nth-child(even) .intro-business-feature-card > div:last-child {
-    transform: translateX(-9px);
+    transform: translateX(-11px);
   }
 }
