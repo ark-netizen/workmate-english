@@ -12,12 +12,12 @@ const RANK_IMAGE: Record<string, string> = {
   이사: `${import.meta.env.BASE_URL}characters/rank/rank-07.webp`,
 };
 
-export function RankAvatar({ rank, className = "h-12 w-12 rounded-full" }: { rank?: string | null; className?: string }) {
+export function RankAvatar({ rank, className = "h-12 w-12 rounded-[4px]" }: { rank?: string | null; className?: string }) {
   const safeRank = rank && RANKS.includes(rank) ? rank : "사원";
 
   return (
     <span
-      className={`inline-flex shrink-0 items-center justify-center overflow-hidden bg-black/[.04] ${className}`}
+      className={`inline-flex shrink-0 items-center justify-center overflow-hidden border border-[#315d53] bg-[#fffaf0] p-px ${className}`}
       role="img"
       aria-label={`${safeRank} 수달 캐릭터`}
     >
