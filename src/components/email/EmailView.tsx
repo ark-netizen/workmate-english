@@ -335,14 +335,12 @@ export function EmailView({ thread }: { thread: EmailThread }) {
               setText(e.target.value);
             }}
           />
-          {!isLockedTrialReply && (
-            <VoiceInputButton
-              onTranscript={(spoken) => {
-                textIsDefaultRef.current = false;
-                setText((prev) => (prev.trim() ? `${prev.trim()} ${spoken}` : spoken));
-              }}
-            />
-          )}
+          <VoiceInputButton
+            onTranscript={(spoken) => {
+              textIsDefaultRef.current = false;
+              setText((prev) => (prev.trim() ? `${prev.trim()} ${spoken}` : spoken));
+            }}
+          />
         </div>
       </div>
 
@@ -360,15 +358,13 @@ export function EmailView({ thread }: { thread: EmailThread }) {
         >
           지금 외근 중
         </button>
-        {!isLockedTrialReply && (
-          <SpellFixButton
-            text={text}
-            onFixed={(corrected) => {
-              textIsDefaultRef.current = false;
-              setText(corrected);
-            }}
-          />
-        )}
+        <SpellFixButton
+          text={text}
+          onFixed={(corrected) => {
+            textIsDefaultRef.current = false;
+            setText(corrected);
+          }}
+        />
         <button
           type="button"
           onClick={handleSend}
