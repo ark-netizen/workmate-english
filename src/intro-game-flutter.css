@@ -1,4 +1,4 @@
-/* Game mode: hero fades into mint, then Work Process + 1-minute trial share one continuous mint field. */
+/* Game mode: hero fades into mint, then Work Process + 1-minute trial + reviews share one continuous mint field. */
 
 .intro-page.intro-game {
   position: relative;
@@ -9,9 +9,10 @@
   background: linear-gradient(180deg, #83cef1 0%, #cdeeff 72%, #eaf5dc 100%) !important;
 }
 
-/* The two sections are visually one field now; their own opaque backgrounds are removed. */
+/* All mint sections are visually one continuous field; their own opaque backgrounds are removed. */
 .intro-game .intro-features-section,
-.intro-game .intro-trial-showcase {
+.intro-game .intro-trial-showcase,
+.intro-game .intro-reviews {
   position: relative;
   z-index: 2;
   isolation: isolate;
@@ -20,14 +21,16 @@
 }
 
 .intro-game .intro-features-section::after,
-.intro-game .intro-trial-showcase::after {
+.intro-game .intro-trial-showcase::after,
+.intro-game .intro-reviews::after {
   content: none !important;
   display: none !important;
 }
 
 .intro-game .intro-features-section > .mx-auto,
 .intro-game .intro-trial-heading,
-.intro-game .intro-trial-frame {
+.intro-game .intro-trial-frame,
+.intro-game .intro-reviews > .mx-auto {
   position: relative;
   z-index: 3;
 }
@@ -38,7 +41,7 @@
   overflow: visible;
 }
 
-/* One absolute canvas spans from the start of Work Process to the end of the trial. */
+/* One absolute canvas spans from the start of Work Process to the end of reviews. */
 .intro-game-process-bg-layer {
   position: absolute;
   left: 0;
@@ -179,7 +182,8 @@
   }
 
   .intro-game .intro-features-section,
-  .intro-game .intro-trial-showcase {
+  .intro-game .intro-trial-showcase,
+  .intro-game .intro-reviews {
     background: transparent !important;
   }
 
