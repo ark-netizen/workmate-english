@@ -1,0 +1,70 @@
+/* Intro right-side progress controls.
+   게임 모드는 활성 항목의 실제 button 폭을 바꾸지 않고 내부 표시만 늘려
+   모든 항목의 중심축이 정확히 맞도록 다시 구성한다.
+   비즈니스 모드는 페이지의 로고 블루 계열로 통일한다. */
+
+@media (min-width: 768px) {
+  /* GAME: 고정 hit-area + 중앙 indicator 방식으로 재구성 */
+  .intro-game .intro-global-progress {
+    right: 14px !important;
+    width: 38px !important;
+    gap: 5px !important;
+    align-items: center !important;
+    padding: 8px 4px !important;
+    border: 2px solid #315d53 !important;
+    border-radius: 8px !important;
+    background: rgba(255, 250, 240, .94) !important;
+    box-shadow: 3px 3px 0 rgba(49, 93, 83, .22) !important;
+    box-sizing: border-box !important;
+  }
+
+  .intro-game .intro-global-progress button,
+  .intro-game .intro-global-progress button[aria-current="true"] {
+    position: relative !important;
+    width: 28px !important;
+    height: 16px !important;
+    flex: 0 0 16px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .intro-game .intro-global-progress button::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #8db8a6;
+    transform: translate(-50%, -50%);
+    transition: width 180ms ease, background-color 180ms ease;
+  }
+
+  .intro-game .intro-global-progress button[aria-current="true"]::before {
+    width: 24px;
+    background: #2f795d;
+  }
+
+  .intro-game .intro-global-progress button:hover::before,
+  .intro-game .intro-global-progress button:focus-visible::before {
+    background: #5fb8b0;
+  }
+
+  .intro-game .intro-global-progress button:focus-visible {
+    outline: 2px solid #f09a63 !important;
+    outline-offset: 1px !important;
+  }
+
+  /* BUSINESS: 민트 대신 페이지의 블루 계열 */
+  .intro-business .intro-global-progress button {
+    background: rgba(26, 86, 255, .18) !important;
+  }
+
+  .intro-business .intro-global-progress button[aria-current="true"] {
+    background: #1a56ff !important;
+  }
+}

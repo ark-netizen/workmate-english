@@ -7,7 +7,7 @@ const processCopy = [
   },
   {
     title: "내 업종·직무 맞춤 시나리오",
-    body: "업종·직무만 입력하면 나만의 동료·상사·거래처가 매일 자동으로 생겨요.",
+    body: "업종·직무만 입력하면 나만의 동료·상사·거래처가<br/>매일 자동으로 생겨서 대화할 수 있어요.",
   },
   {
     title: "웹·카카오톡으로 놓치지 않는 알림",
@@ -80,7 +80,7 @@ function polishIntroAboutLink(page: HTMLElement) {
     aboutLink = document.createElement("a");
     aboutLink.href = "https://www.idealwhy.com";
     aboutLink.textContent = "About";
-    aboutLink.setAttribute("aria-label", "About");
+    aboutLink.setAttribute("aria-label", "About · 외부 사이트로 이동");
     aboutLink.className = expectedClassName;
   }
 
@@ -93,6 +93,15 @@ function polishIntroAboutLink(page: HTMLElement) {
   if (aboutLink.className !== expectedClassName) {
     aboutLink.className = expectedClassName;
   }
+
+  // 제작자 개인 브랜드 페이지로 이동한다는 점을 먼저 알려서 외부 이동 맥락을 명확히 한다.
+  aboutLink.onclick = (event) => {
+    event.preventDefault();
+    const shouldLeave = window.confirm(
+      "WorkMate English를 만든 제작자의 개인 브랜드 페이지로 연결돼요.\nidealwhy.com으로 이동할까요?",
+    );
+    if (shouldLeave) window.location.assign("https://www.idealwhy.com");
+  };
 
   // About은 항상 미리보기보다 왼쪽(네비게이션 첫 항목)에 둔다.
   if (navGroup.firstElementChild !== aboutLink) {

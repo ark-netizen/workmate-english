@@ -2,7 +2,7 @@
  * 모바일에서는 실제 1분 체험 앱을 억지로 구동하지 않는다.
  * 실서비스 화면은 데스크톱 기준으로 설계되어 안내 카드/입력창/탭바가 서로 겹칠 수 있으므로,
  * Intro의 1분 체험 CTA를 누르면 모바일 전용 '읽기 전용 미리보기'를 연다.
- * 데스크톱에서는 기존 React 체험 시작 로직을 그대로 사용한다.
+ * 일반 스마트폰뿐 아니라 폴더블/태블릿형 터치 기기도 폭만으로 제외하지 않는다.
  */
 
 type PreviewStep = {
@@ -225,18 +225,37 @@ const steps: PreviewStep[] = [
 
 let currentStep = 0;
 let previousOverflow = "";
+let touchStartX = 0;
+let touchStartY = 0;
+let ignoreCurrentSwipe = false;
 
-function isMobile() {
-  return window.matchMedia("(max-width: 767px)").matches;
+function isMobileExperience() {
+  const narrowViewport = window.matchMedia("(max-width: 767px)").matches;
+  const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
+  const noHover = window.matchMedia("(hover: none)").matches;
+  const touchCapable = navigator.maxTouchPoints > 0;
+
+  // 폴더블을 펼치거나 가로 회전하면 CSS 폭이 768px을 넘을 수 있다.
+  // 폭만 보지 않고 실제 터치 중심 기기인지 함께 판별해 모바일 미리보기를 유지한다.
+  return narrowViewport || coarsePointer || (touchCapable && noHover);
 }
 
 function isGameMode() {
   return document.querySelector(".intro-page")?.classList.contains("intro-game") ?? true;
 }
 
+function centerActiveTab(overlay: HTMLElement) {
+  const tabs = overlay.querySelector<HTMLElement>(".mtp-tabs");
+  const active = overlay.querySelector<HTMLElement>("[data-mtp-tab].is-active");
+  if (!tabs || !active) return;
+  const targetLeft = active.offsetLeft - (tabs.clientWidth - active.offsetWidth) / 2;
+  tabs.scrollTo({ left: Math.max(0, targetLeft), behavior: "smooth" });
+}
+
 function renderStep(overlay: HTMLElement) {
   const step = steps[currentStep];
   const screenHost = overlay.querySelector<HTMLElement>("[data-mtp-screen]");
+  const main = overlay.querySelector<HTMLElement>(".mtp-main");
   const title = overlay.querySelector<HTMLElement>("[data-mtp-title]");
   const subtitle = overlay.querySelector<HTMLElement>("[data-mtp-subtitle]");
   const details = overlay.querySelector<HTMLElement>("[data-mtp-details]");
@@ -252,14 +271,19 @@ function renderStep(overlay: HTMLElement) {
   next.textContent = currentStep === steps.length - 1 ? "인트로로 돌아가기" : "다음 화면";
 
   overlay.querySelectorAll<HTMLElement>("[data-mtp-tab]").forEach((tab, index) => {
-    tab.classList.toggle("is-active", index === currentStep);
-    tab.setAttribute("aria-current", index === currentStep ? "step" : "false");
+    const active = index === currentStep;
+    tab.classList.toggle("is-active", active);
+    tab.setAttribute("aria-current", active ? "step" : "false");
+    tab.setAttribute("aria-selected", active ? "true" : "false");
   });
   overlay.querySelectorAll<HTMLElement>("[data-mtp-dot]").forEach((dot, index) => {
     dot.classList.toggle("is-active", index === currentStep);
   });
 
+  // 화면을 바꿀 때 이전 단계의 내부/외부 스크롤 위치를 물려받지 않는다.
   screenHost.scrollTop = 0;
+  if (main) main.scrollTop = 0;
+  requestAnimationFrame(() => centerActiveTab(overlay));
 }
 
 function closePreview() {
@@ -289,7 +313,7 @@ function createPreview() {
         <small>모바일에서는 서비스의 주요 화면과 흐름을 읽기 전용 미리보기로 제공해요. 실제 답장·첨삭 체험은 PC에서 이용할 수 있어요.</small>
       </div>
       <div class="mtp-tabs" role="tablist">
-        ${steps.map((step, index) => `<button type="button" data-mtp-tab="${index}" role="tab">${index + 1}. ${step.label}</button>`).join("")}
+        ${steps.map((step, index) => `<button type="button" data-mtp-tab="${index}" role="tab" aria-selected="${index === 0 ? "true" : "false"}">${index + 1}. ${step.label}</button>`).join("")}
       </div>
       <div class="mtp-device">
         <div class="mtp-device-speaker" aria-hidden="true"></div>
@@ -334,27 +358,42 @@ function createPreview() {
     }
   });
 
-  let touchStartX = 0;
-  let touchStartY = 0;
-  overlay.addEventListener("touchstart", (event) => {
-    touchStartX = event.touches[0]?.clientX ?? 0;
-    touchStartY = event.touches[0]?.clientY ?? 0;
-  }, { passive: true });
-  overlay.addEventListener("touchend", (event) => {
-    const touchEndX = event.changedTouches[0]?.clientX ?? touchStartX;
-    const touchEndY = event.changedTouches[0]?.clientY ?? touchStartY;
-    const deltaX = touchEndX - touchStartX;
-    const deltaY = touchEndY - touchStartY;
-    if (Math.abs(deltaX) < 55 || Math.abs(deltaX) <= Math.abs(deltaY)) return;
-    currentStep = deltaX < 0 ? Math.min(steps.length - 1, currentStep + 1) : Math.max(0, currentStep - 1);
-    renderStep(overlay);
-  }, { passive: true });
+  overlay.addEventListener(
+    "touchstart",
+    (event) => {
+      const touch = event.touches[0];
+      touchStartX = touch?.clientX ?? 0;
+      touchStartY = touch?.clientY ?? 0;
+      const target = event.target instanceof Element ? event.target : null;
+      // 탭 바를 좌우 스크롤하거나 버튼을 누르는 제스처는 화면 전환 스와이프로 취급하지 않는다.
+      ignoreCurrentSwipe = Boolean(target?.closest(".mtp-tabs, button, a, input, textarea, select"));
+    },
+    { passive: true },
+  );
+  overlay.addEventListener(
+    "touchend",
+    (event) => {
+      if (ignoreCurrentSwipe) {
+        ignoreCurrentSwipe = false;
+        return;
+      }
+      const touchEndX = event.changedTouches[0]?.clientX ?? touchStartX;
+      const touchEndY = event.changedTouches[0]?.clientY ?? touchStartY;
+      const deltaX = touchEndX - touchStartX;
+      const deltaY = touchEndY - touchStartY;
+      if (Math.abs(deltaX) < 55 || Math.abs(deltaX) <= Math.abs(deltaY)) return;
+      currentStep = deltaX < 0 ? Math.min(steps.length - 1, currentStep + 1) : Math.max(0, currentStep - 1);
+      renderStep(overlay);
+    },
+    { passive: true },
+  );
 
   return overlay;
 }
 
 function openPreview() {
-  document.getElementById(OVERLAY_ID)?.remove();
+  // 더블탭/연속 클릭으로 기존 오버레이를 다시 열면서 원래 body overflow 값을 잃지 않게 한다.
+  if (document.getElementById(OVERLAY_ID)) return;
   currentStep = 0;
   previousOverflow = document.body.style.overflow;
   document.body.style.overflow = "hidden";
@@ -364,11 +403,25 @@ function openPreview() {
   overlay.querySelector<HTMLButtonElement>("[data-mtp-close]")?.focus();
 }
 
+function syncPreviewWithViewport() {
+  const overlay = document.getElementById(OVERLAY_ID);
+  if (!overlay) return;
+
+  // 일반 데스크톱에서 개발자도구 폭만 줄였다가 다시 넓힌 경우에는 정상적으로 닫고 스크롤 잠금을 복원한다.
+  // 폴더블/태블릿형 터치 기기는 펼침·회전 후 폭이 넓어져도 isMobileExperience()가 true라 유지된다.
+  if (!isMobileExperience()) {
+    closePreview();
+    return;
+  }
+
+  overlay.classList.toggle("is-short-landscape", window.innerHeight < 560 && window.innerWidth > window.innerHeight);
+}
+
 if (typeof window !== "undefined" && typeof document !== "undefined") {
   document.addEventListener(
     "click",
     (event) => {
-      if (!isMobile()) return;
+      if (!isMobileExperience()) return;
       const target = event.target instanceof Element ? event.target.closest(TRIAL_SELECTOR) : null;
       if (!target) return;
       event.preventDefault();
@@ -378,4 +431,12 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
     },
     true,
   );
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && document.getElementById(OVERLAY_ID)) closePreview();
+  });
+
+  window.addEventListener("resize", syncPreviewWithViewport, { passive: true });
+  window.addEventListener("orientationchange", syncPreviewWithViewport, { passive: true });
+  window.visualViewport?.addEventListener("resize", syncPreviewWithViewport, { passive: true });
 }

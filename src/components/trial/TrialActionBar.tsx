@@ -13,6 +13,7 @@ export function TrialActionBar({
   primaryDisabled,
   onEnd,
   endPrimary,
+  showEnd = true,
 }: {
   message: string;
   dotsTotal?: number;
@@ -22,6 +23,7 @@ export function TrialActionBar({
   primaryDisabled?: boolean;
   onEnd: () => void;
   endPrimary?: boolean;
+  showEnd?: boolean;
 }) {
   const barRef = useRef<HTMLDivElement>(null);
   const [showNudge, setShowNudge] = useState(false);
@@ -49,6 +51,14 @@ export function TrialActionBar({
       if (hideTimer) clearTimeout(hideTimer);
     };
   }, [primaryLabel, onPrimary]);
+
+  const hasPrimaryAction = !!(primaryLabel && onPrimary);
+  // 중간 단계에서는 체험 종료를 항상 보조 버튼 위치에 고정한다.
+  // 메시지 도착 대기처럼 주 액션이 잠깐 없는 순간에도 오른쪽 주 버튼 슬롯을 비활성 상태로 남겨,
+  // 사용자가 진행 버튼을 연속으로 누르다가 실수로 체험 종료를 누르는 위치 변경을 막는다.
+  const shouldShowEnd = endPrimary ? showEnd : true;
+  const showWaitingPrimarySlot = !endPrimary && !hasPrimaryAction;
+  const hasActions = shouldShowEnd || hasPrimaryAction || showWaitingPrimarySlot;
 
   return (
     <div
@@ -102,47 +112,75 @@ export function TrialActionBar({
       </div>
 
       <p
-        className={`mt-2 text-[13px] leading-relaxed sm:mt-2.5 sm:text-sm ${
+        className={`mt-2 whitespace-pre-line text-[13px] leading-relaxed sm:mt-2.5 sm:text-sm ${
           isBusinessMode ? "font-medium text-[#17345f]" : "font-medium text-[#38443f]"
         }`}
       >
         {message}
       </p>
 
-      <div className="mt-3 flex flex-wrap items-center justify-end gap-1.5">
-        <button
-          type="button"
-          onClick={onEnd}
-          className={
-            endPrimary
-              ? `shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 ${
-                  isBusinessMode ? "bg-[#1a56ff]" : "border-2 border-[#28352f] bg-[#2f795d] shadow-[2px_2px_0_#28352f]"
-                }`
-              : `shrink-0 rounded-full px-3 py-1.5 text-xs hover:bg-black/[.03] ${
-                  isBusinessMode
-                    ? "border border-[#9bb7ff] text-[#36527a]"
-                    : "border border-[#b9cbbb] bg-[#fbfcf7] text-[#52615a]"
-                }`
-          }
-        >
-          체험 종료
-        </button>
-        {primaryLabel && onPrimary && (
-          <button
-            type="button"
-            onClick={onPrimary}
-            disabled={primaryDisabled}
-            className={`flex min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-60 sm:flex-none ${
-              isBusinessMode
-                ? "bg-[#1a56ff]"
-                : "border-2 border-[#28352f] bg-[#2f795d] shadow-[2px_2px_0_#28352f]"
-            }`}
-          >
-            <span className="min-w-0 truncate">{primaryLabel}</span>
-            <ArrowRight className="size-3.5 shrink-0" strokeWidth={2.5} />
-          </button>
-        )}
-      </div>
+      {hasActions && (
+        <div className="mt-3 flex flex-nowrap items-center justify-end gap-1.5">
+          {shouldShowEnd && !endPrimary && (
+            <button
+              type="button"
+              onClick={onEnd}
+              className={`shrink-0 rounded-full px-3 py-1.5 text-xs hover:bg-black/[.03] ${
+                isBusinessMode
+                  ? "border border-[#9bb7ff] text-[#36527a]"
+                  : "border border-[#b9cbbb] bg-[#fbfcf7] text-[#52615a]"
+              }`}
+            >
+              체험 종료
+            </button>
+          )}
+
+          {hasPrimaryAction && (
+            <button
+              type="button"
+              onClick={onPrimary}
+              disabled={primaryDisabled}
+              className={`flex min-w-[116px] items-center justify-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-60 ${
+                isBusinessMode
+                  ? "bg-[#1a56ff]"
+                  : "border-2 border-[#28352f] bg-[#2f795d] shadow-[2px_2px_0_#28352f]"
+              }`}
+            >
+              <span className="min-w-0 truncate">{primaryLabel}</span>
+              <ArrowRight className="size-3.5 shrink-0" strokeWidth={2.5} />
+            </button>
+          )}
+
+          {showWaitingPrimarySlot && (
+            <button
+              type="button"
+              disabled
+              aria-disabled="true"
+              className={`flex min-w-[116px] cursor-default items-center justify-center rounded-full px-3 py-1.5 text-xs font-semibold opacity-55 ${
+                isBusinessMode
+                  ? "bg-[#1a56ff] text-white"
+                  : "border-2 border-[#28352f] bg-[#2f795d] text-white shadow-[2px_2px_0_#28352f]"
+              }`}
+            >
+              진행 대기 중
+            </button>
+          )}
+
+          {shouldShowEnd && endPrimary && (
+            <button
+              type="button"
+              onClick={onEnd}
+              className={`ml-auto shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 ${
+                isBusinessMode
+                  ? "bg-[#1a56ff]"
+                  : "border-2 border-[#28352f] bg-[#2f795d] shadow-[2px_2px_0_#28352f]"
+              }`}
+            >
+              체험 종료
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

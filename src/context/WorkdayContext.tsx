@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
 import * as api from "@/lib/api";
 import { ensureSession } from "@/lib/session";
 import { finalizePendingConsent, finalizePendingKakaoNotify } from "@/lib/auth";
@@ -87,7 +86,6 @@ function findArrival(
 }
 
 export function WorkdayProvider({ children }: { children: ReactNode }) {
-  const navigate = useNavigate();
   const [data, setData] = useState<TodayResponse>({ needsOnboarding: false });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -306,21 +304,15 @@ export function WorkdayProvider({ children }: { children: ReactNode }) {
         const arrival = buildBannerForItem(item, current);
         if (!arrival) return;
 
+        // OS/Web Push는 서버의 durable notification_schedules 하나만 담당한다.
+        // 앱이 계속 열려 있는 경우에는 화면 안에서만 배너를 다시 띄워, 같은 시점에
+        // 로컬 Notification + 서버 Push가 두 번 울리는 중복 알림을 막는다.
         setBanner(arrival);
-
-        if (typeof Notification !== "undefined" && Notification.permission === "granted") {
-          const notification = new Notification(arrival.title, { body: arrival.body });
-          notification.onclick = () => {
-            window.focus();
-            navigate(arrival.to);
-            notification.close();
-          };
-        }
       }, FIELD_WORK_RENOTIFY_MS);
     }
 
     return result;
-  }, [refresh, navigate]);
+  }, [refresh]);
 
   const deliverNext = useCallback(async () => {
     const result = await api.deliverNext();

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { SquarePen, GripVertical } from "lucide-react";
+import { GripVertical } from "lucide-react";
 import { useWorkday } from "@/context/useWorkday";
 import { ContactAvatar } from "@/components/ui/ContactAvatar";
 import { formatDateTime } from "@/lib/format";
@@ -40,19 +40,8 @@ export function EmailList() {
         className="resizable-pane flex h-full flex-col"
         style={{ "--pane-width": `${size}px` } as React.CSSProperties}
       >
-        <div className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-[#4B5A66] px-4">
+        <div className="flex h-12 shrink-0 items-center border-b border-border bg-[#4B5A66] px-4">
           <h1 className="text-sm font-semibold text-white">Email</h1>
-          <Link
-            to="/email/compose"
-            className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${
-              pathname === "/email/compose"
-                ? "bg-white text-[#36454F]"
-                : "text-white/80 hover:bg-white/10 hover:text-white"
-            }`}
-          >
-            <SquarePen className="size-3.5" strokeWidth={2} />
-            새 메일
-          </Link>
         </div>
         <ul className="flex-1 overflow-y-auto">
           {emailThreads.length === 0 && (

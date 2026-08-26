@@ -1,0 +1,112 @@
+/* Intro UX QA fixes.
+   - 게임 배경 flutter 레이어가 첫 자식으로 들어와도 실제 WORK PROCESS 슬롯을 정확히 선택한다.
+   - 게임/비즈니스 모두 한 단계 이동 시 카드가 상단이 아니라 사용 가능한 화면의 중앙에 오도록
+     JS 중앙 스크롤과 맞는 동일한 슬롯 높이/정렬 기준을 사용한다.
+   - 우측 진행 토글은 두 모드 모두 고정 hit-area를 사용해 활성 막대가 커져도 중심축이 움직이지 않는다. */
+
+@media (min-width: 768px) {
+  .intro-game .intro-game-features > div:not(.intro-game-flutter-layer):not(.fixed),
+  .intro-business .intro-business-features > div:not(.fixed) {
+    gap: 0 !important;
+  }
+
+  .intro-game .intro-game-features > div:not(.intro-game-flutter-layer):not(.fixed) > .snap-center,
+  .intro-business .intro-business-features > div:not(.fixed) > .snap-center {
+    box-sizing: border-box !important;
+    display: grid !important;
+    min-height: clamp(560px, 72dvh, 700px) !important;
+    align-items: center !important;
+    padding-block: clamp(26px, 3.5vh, 38px) !important;
+    scroll-margin-top: var(--intro-nav-offset, 72px) !important;
+  }
+
+  /* 공통: 클릭 가능한 영역 크기는 고정. 시각적인 점/막대만 ::before에서 변화한다. */
+  .intro-page .intro-global-progress {
+    align-items: center !important;
+  }
+
+  .intro-page .intro-global-progress button,
+  .intro-page .intro-global-progress button[aria-current="true"] {
+    position: relative !important;
+    width: 30px !important;
+    height: 18px !important;
+    flex: 0 0 18px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .intro-page .intro-global-progress button::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    transform: translate(-50%, -50%);
+    transition: width 180ms ease, background-color 180ms ease, opacity 180ms ease;
+  }
+
+  .intro-page .intro-global-progress button[aria-current="true"]::before {
+    width: 24px;
+  }
+
+  /* GAME: 크림 패널 + 짙은 초록 진행 표시 */
+  .intro-game .intro-global-progress {
+    right: 14px !important;
+    width: 40px !important;
+    gap: 4px !important;
+    padding: 8px 3px !important;
+    border: 2px solid #315d53 !important;
+    border-radius: 8px !important;
+    background: rgba(255, 250, 240, .95) !important;
+    box-shadow: 3px 3px 0 rgba(49, 93, 83, .22) !important;
+    box-sizing: border-box !important;
+  }
+
+  .intro-game .intro-global-progress button::before {
+    background: #9bbcab !important;
+  }
+
+  .intro-game .intro-global-progress button[aria-current="true"]::before {
+    background: #2f795d !important;
+  }
+
+  .intro-game .intro-global-progress button:hover::before,
+  .intro-game .intro-global-progress button:focus-visible::before {
+    background: #5f9f88 !important;
+  }
+
+  .intro-game .intro-global-progress button:focus-visible {
+    outline: 2px solid #f09a63 !important;
+    outline-offset: 1px !important;
+  }
+
+  /* BUSINESS: 게임과 동일한 축/클릭 영역, 색상만 페이지의 블루 계열로 사용 */
+  .intro-business .intro-global-progress {
+    right: 16px !important;
+    width: 36px !important;
+    gap: 4px !important;
+  }
+
+  .intro-business .intro-global-progress button::before {
+    background: rgba(26, 86, 255, .24) !important;
+  }
+
+  .intro-business .intro-global-progress button[aria-current="true"]::before {
+    background: #1a56ff !important;
+  }
+
+  .intro-business .intro-global-progress button:hover::before,
+  .intro-business .intro-global-progress button:focus-visible::before {
+    background: #174fae !important;
+  }
+
+  .intro-business .intro-global-progress button:focus-visible {
+    outline: 2px solid rgba(26, 86, 255, .35) !important;
+    outline-offset: 1px !important;
+  }
+}

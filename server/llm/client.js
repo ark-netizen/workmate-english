@@ -100,15 +100,110 @@ async function generate(build, schema, args) {
   }
 }
 
+// 후속 회신은 모델이 자연스러움을 만들다가 새 프로젝트/새 부탁을 즉흥적으로 꺼내는 게 가장 위험하다.
+// 기존 prompt가 character.register를 system 영역에 넣으므로, 그 자리에 당일 사건/역할 범위를 함께 고정해
+// 동료·상사·거래처가 각자 자기 대화와 같은 사건 밖으로 튀지 않게 한다.
+function withRoleContinuityGuard(args) {
+  const scenario = args?.scenario || {}
+  const character = args?.character || {}
+  const continuity = [
+    'STRICT CONTINUITY GUARD:',
+    `Stay on TODAY'S SAME work event only${scenario.title ? `: "${scenario.title}"` : ''}.`,
+    scenario.summary ? `Event facts: ${scenario.summary}` : '',
+    character.goal ? `Your role-specific goal: ${character.goal}` : '',
+    character.known_info ? `Facts you already know: ${character.known_info}` : '',
+    character.unknown_info ? `Facts you do not yet know: ${character.unknown_info}` : '',
+    'Do NOT introduce a different project, deliverable, deadline, client, meeting, or unrelated task unless the USER explicitly changes the subject.',
+    'Do NOT contradict project names, dates, quantities, deadlines, or commitments already present in the event or this conversation history.',
+    'Do NOT claim knowledge of another role\'s private conversation. React only as this character to the shared event facts and this thread.',
+    'If the user answered the ask, acknowledge it and close naturally; do not invent a new ask just to continue talking.',
+  ].filter(Boolean).join('\n')
+
+  return {
+    ...args,
+    character: {
+      ...character,
+      register: [character.register, continuity].filter(Boolean).join('\n'),
+    },
+  }
+}
+
+// 사용자 메시지는 LLM 호출보다 먼저 DB에 저장된다. 그래서 Solar가 순간적으로 실패했을 때 예외를 그대로
+// 던지면 "내 답장은 저장됐는데 상대는 답을 안 하고 대화 상태만 replied"로 굳을 수 있다.
+// 후속 회신에 한해서는 역할별 짧은 안전 응답으로 닫아 대화/리포트 데이터가 끊기지 않게 한다.
+function fallbackRoleResponse(args) {
+  const character = args?.character || {}
+  const role = character.role
+  const name = character.name || (role === 'client' ? 'Business Partner' : 'Teammate')
+
+  if (role === 'client' || character.channel === 'email') {
+    const userName = args?.profile?.display_name
+    const greeting = userName ? `Dear ${userName},` : 'Hello,'
+    return ResponseSchema.parse({
+      reaction_type: 'close',
+      subject: args?.scenario?.title ? `Re: ${args.scenario.title}` : 'Re: Update',
+      body: `${greeting}\n\nThank you for the update. We appreciate your confirmation and will proceed based on the information provided.\n\nBest regards,\n${name}`,
+      needs_followup: false,
+      korean_summary: '',
+      korean_reply_points: [],
+      reply_hints: [],
+      word_hints: [],
+    })
+  }
+
+  const body =
+    role === 'manager'
+      ? "Thanks for confirming. I'll proceed based on that. We can follow up tomorrow if anything else comes up."
+      : "Got it, thanks! I'll keep an eye on it. We can pick it up tomorrow if anything else comes up."
+
+  return ResponseSchema.parse({
+    reaction_type: 'close',
+    body,
+    needs_followup: false,
+    korean_summary: '',
+    korean_reply_points: [],
+    reply_hints: [],
+    word_hints: [],
+  })
+}
+
 // ── 고수준 생성 함수 (기획서 17장 기능 단위) ─────────
 export const generateScenario = (args) => generate(buildScenarioPrompt, ScenarioSchema, args)
 export const generateRoleMessage = (args) => generate(buildRoleMessagePrompt, MessageSchema, args)
-export const generateRoleResponse = (args) => generate(buildRoleResponsePrompt, ResponseSchema, args)
+export const generateRoleResponse = async (args) => {
+  try {
+    return await generate(buildRoleResponsePrompt, ResponseSchema, withRoleContinuityGuard(args))
+  } catch (err) {
+    console.error('[llm] role response fallback:', err?.message || err)
+    return fallbackRoleResponse(args)
+  }
+}
 export const generateDailyReport = (args) => generate(buildDailyReportPrompt, DailyReportSchema, args)
 export const generatePeriodReport = (args) => generate(buildPeriodReportPrompt, PeriodReportSchema, args)
 export const createWorkdayMemory = (args) => generate(buildWorkdayMemoryPrompt, WorkdayMemorySchema, args)
 export const generateOjtWelcomeEmail = (args) => generate(buildOjtWelcomePrompt, MessageSchema, args)
-export const generateVentMessage = (args) => generate(buildVentResponsePrompt, VentMessageSchema, args)
+
+// 로그인 없는 1분 체험은 외부 LLM 상태와 무관하게 항상 같은 흐름으로 재현돼야 한다.
+// 실사용자는 기존처럼 SOLAR 응답을 사용하고, 체험판의 고함항아리/선제 위로만 고정 문구로 처리한다.
+export const generateVentMessage = (args) => {
+  if (args?.profile?.is_trial) {
+    return Promise.resolve(
+      VentMessageSchema.parse(
+        args?.isComfortPing
+          ? {
+              body: 'Hey, you seem really busy today. You okay? Want to take a second to vent? 😮‍💨',
+              korean_hint: '오늘 많이 바빠 보이는데 괜찮냐고, 잠깐 털어놓아도 된다는 뜻이에요.',
+            }
+          : {
+              body: 'I hear you. That sounds exhausting. Want to tell me a little more? 😮‍💨',
+              korean_hint: '많이 힘들었겠다고 공감하면서, 조금 더 이야기해도 된다는 뜻이에요.',
+            },
+      ),
+    )
+  }
+  return generate(buildVentResponsePrompt, VentMessageSchema, args)
+}
+
 export const generateTranslation = (args) => generate(buildTranslationPrompt, TranslationSchema, args)
 export const generateSpellingFix = (args) => generate(buildSpellingFixPrompt, SpellingFixSchema, args)
 export const generateSupportAnswer = (args) => generate(buildSupportAnswerPrompt, SupportAnswerSchema, args)

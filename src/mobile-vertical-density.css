@@ -1,0 +1,266 @@
+/* Final compact-height pass for mobile and foldable intro layouts.
+   Keep sections content-driven so short rows do not inherit large desktop heights. */
+
+@media (max-width: 767px) {
+  /* Header: keep two-row navigation on narrow phones, but remove the oversized 78px shell. */
+  .intro-page .intro-nav-inner {
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  .intro-page .intro-nav-inner > div:last-child {
+    min-height: 0 !important;
+  }
+
+  /* WORKMATE SYSTEM: do not equalize every row to the tallest cell. */
+  .intro-game .hero > .hero-system,
+  .intro-business .hero > .hero-system {
+    grid-auto-rows: auto !important;
+    align-items: stretch !important;
+    margin-top: 10px !important;
+  }
+
+  .intro-game .hero > .hero-system {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .intro-game .hero > .hero-system::before {
+    padding: 8px 10px !important;
+    font-size: 14px !important;
+    line-height: 1.1 !important;
+  }
+
+  .intro-game .hero > .hero-system .feat {
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 9px 10px !important;
+    justify-content: flex-start !important;
+  }
+
+  .intro-game .hero > .hero-system .feat b {
+    font-size: 11.5px !important;
+    line-height: 1.2 !important;
+  }
+
+  .intro-game .hero > .hero-system .feat span {
+    margin-top: 3px !important;
+    font-size: 10.5px !important;
+    line-height: 1.35 !important;
+  }
+
+  .intro-game .hero > .hero-system .hero-system-footer {
+    padding: 8px 10px !important;
+    font-size: 10.5px !important;
+    line-height: 1.35 !important;
+  }
+
+  /* Business system uses the same compact 2-column rhythm instead of six tall stacked cards. */
+  .intro-business .hero > .hero-system {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 7px !important;
+    padding-inline: 0 !important;
+  }
+
+  .intro-business .hero > .hero-system .feat {
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 10px 9px !important;
+    border-radius: 10px !important;
+  }
+
+  .intro-business .hero > .hero-system .feat b {
+    font-size: 11.5px !important;
+    line-height: 1.25 !important;
+  }
+
+  .intro-business .hero > .hero-system .feat span {
+    margin-top: 4px !important;
+    font-size: 10.5px !important;
+    line-height: 1.4 !important;
+  }
+
+  .intro-business .hero > .hero-system .hero-system-footer {
+    margin-top: 1px !important;
+    padding-top: 8px !important;
+    font-size: 10.5px !important;
+    line-height: 1.35 !important;
+  }
+
+  /* Trial flow previously forced 108-112px per item. Let copy define the height. */
+  .intro-page .intro-trial-flow > div {
+    min-height: 72px !important;
+    height: auto !important;
+    grid-template-columns: 31px minmax(0, 1fr) !important;
+    column-gap: 10px !important;
+    padding: 10px 11px !important;
+  }
+
+  .intro-page .intro-trial-flow em {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
+  .intro-page .intro-trial-flow b {
+    font-size: 14.5px !important;
+    line-height: 1.25 !important;
+  }
+
+  .intro-page .intro-trial-flow span {
+    margin-top: 2px !important;
+    font-size: 11.5px !important;
+    line-height: 1.35 !important;
+  }
+
+  /* Remove accidental vertical reserves from cards/sections on the intro. */
+  .intro-page .intro-game-feature-window,
+  .intro-page .intro-business-feature-card,
+  .intro-page .intro-review-card {
+    min-height: 0 !important;
+    height: auto !important;
+  }
+
+  .intro-page .intro-features-section,
+  .intro-page .intro-trial-showcase,
+  .intro-page .intro-reviews {
+    padding-top: 40px !important;
+    padding-bottom: 40px !important;
+  }
+}
+
+@media (max-width: 430px) {
+  /* Two rows remain readable, but the whole bar stays close to 58-62px rather than 78px+. */
+  .intro-page .intro-nav-inner {
+    min-height: 0 !important;
+    padding: 4px 7px 3px !important;
+    gap: 1px 4px !important;
+    align-items: center !important;
+  }
+
+  .intro-page .intro-nav-inner > img:nth-of-type(2) {
+    width: 80px !important;
+    max-width: 80px !important;
+    height: 27px !important;
+  }
+
+  .intro-page .intro-nav-inner > div:last-child {
+    row-gap: 0 !important;
+    column-gap: 2px !important;
+  }
+
+  .intro-page .intro-nav-inner > div:last-child > div:first-child {
+    margin-top: 0 !important;
+    min-height: 22px !important;
+  }
+
+  .intro-page .intro-nav-link {
+    height: 22px !important;
+    min-height: 22px !important;
+    padding: 2px 4px !important;
+    font-size: 9.5px !important;
+  }
+
+  .intro-page .intro-trial-btn {
+    min-height: 28px !important;
+    padding: 4px 6px !important;
+    font-size: 9.5px !important;
+  }
+
+  .intro-page .intro-mode-toggle {
+    min-height: 28px !important;
+    padding: 1px !important;
+  }
+
+  .intro-page .intro-mode-option {
+    min-height: 24px !important;
+    padding: 2px 4px !important;
+  }
+
+  .intro-page .intro-mode-option svg {
+    width: 12px !important;
+    height: 12px !important;
+  }
+
+  .intro-page .hero {
+    padding-top: 28px !important;
+    padding-bottom: 24px !important;
+  }
+}
+
+@media (max-width: 350px) {
+  .intro-page .intro-nav-inner > img:nth-of-type(2) {
+    width: 72px !important;
+    max-width: 72px !important;
+  }
+
+  .intro-page .intro-nav-link {
+    padding-inline: 3px !important;
+    font-size: 9px !important;
+  }
+
+  .intro-game .hero > .hero-system .feat,
+  .intro-business .hero > .hero-system .feat {
+    padding: 8px !important;
+  }
+}
+
+/* Unfolded foldables / small tablets: compact the same structures that inherit desktop min-heights. */
+@media (min-width: 768px) and (max-width: 1024px) and (pointer: coarse),
+       (min-width: 768px) and (max-width: 1024px) and (hover: none) {
+  .intro-page .intro-nav-inner {
+    min-height: 52px !important;
+    height: auto !important;
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+  }
+
+  .intro-game .hero > .hero-system,
+  .intro-business .hero > .hero-system {
+    grid-auto-rows: auto !important;
+    margin-top: 12px !important;
+  }
+
+  .intro-game .hero > .hero-system::before {
+    padding: 9px 12px !important;
+    font-size: 15px !important;
+  }
+
+  .intro-game .hero > .hero-system .feat,
+  .intro-business .hero > .hero-system .feat {
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 11px 12px !important;
+  }
+
+  .intro-game .hero > .hero-system .feat b,
+  .intro-business .hero > .hero-system .feat b {
+    font-size: 13px !important;
+    line-height: 1.25 !important;
+  }
+
+  .intro-game .hero > .hero-system .feat span,
+  .intro-business .hero > .hero-system .feat span {
+    margin-top: 4px !important;
+    font-size: 11.5px !important;
+    line-height: 1.4 !important;
+  }
+
+  .intro-game .hero > .hero-system .hero-system-footer,
+  .intro-business .hero > .hero-system .hero-system-footer {
+    padding: 9px 12px !important;
+    font-size: 11.5px !important;
+    line-height: 1.4 !important;
+  }
+
+  .intro-page .intro-trial-flow > div {
+    min-height: 78px !important;
+    height: auto !important;
+    padding: 11px 12px !important;
+  }
+
+  .intro-page .intro-game-feature-window,
+  .intro-page .intro-business-feature-card,
+  .intro-page .intro-review-card {
+    min-height: 0 !important;
+    height: auto !important;
+  }
+}

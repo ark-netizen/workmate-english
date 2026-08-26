@@ -27,8 +27,34 @@ export default withErrors(null, async (req, res) => {
       return
     }
     if (action === 'promotion.submit') {
+      // 화면의 disabled 상태만 믿으면 직접 API 호출로 출근일수 게이트를 우회할 수 있다.
+      // 제출 시점에도 서버에서 자격과 실제 평가 시작 여부를 다시 확인한다.
+      const status = await getPromotionStatus(userId)
+      if (!status.eligible) {
+        res.status(409).json({ error: '아직 인사평가 대상이 아닙니다' })
+        return
+      }
+      if (!status.inProgress) {
+        res.status(409).json({ error: '인사평가를 먼저 시작해주세요' })
+        return
+      }
+
       const { personaFeedback, qna } = req.body || {}
-      res.status(200).json(await submitEvaluation(userId, { personaFeedback, qna }))
+      const feedback = Array.isArray(personaFeedback) ? personaFeedback : []
+      const answers = Array.isArray(qna) ? qna : []
+      const feedbackComplete =
+        feedback.length >= 3 &&
+        feedback.every((item) => Number(item?.satisfaction) >= 1 && Number(item?.satisfaction) <= 5)
+      const qnaComplete =
+        answers.length >= 3 &&
+        answers.every((item) => typeof item?.prompt === 'string' && item.prompt.trim() && typeof item?.answer === 'string' && item.answer.trim())
+
+      if (!feedbackComplete || !qnaComplete) {
+        res.status(400).json({ error: '인사평가의 필수 항목을 모두 완료해주세요' })
+        return
+      }
+
+      res.status(200).json(await submitEvaluation(userId, { personaFeedback: feedback, qna: answers }))
       return
     }
     // 회원 탈퇴 — 본인 계정만 삭제 가능(관리자용 deleteUserAccount를 자기 자신 id로 재사용).

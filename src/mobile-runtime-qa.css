@@ -1,0 +1,147 @@
+/* Final runtime visual QA overrides.
+   These rules intentionally load after the broader mobile designer pass. */
+
+@media (max-width: 767px) {
+  /* The game hero still inherited desktop-only inline spacing from index.html. */
+  .intro-page.intro-game .hero .copy {
+    padding-top: 0 !important;
+  }
+
+  .intro-game .intro-pixel-office-bg {
+    height: clamp(104px, 29vw, 124px) !important;
+    object-fit: cover !important;
+    object-position: center bottom !important;
+  }
+
+  /* Keep the hero preview informative without making it another full screen. */
+  .intro-page .hero .mailcard {
+    box-sizing: border-box !important;
+  }
+
+  .intro-business .hero .mailcard {
+    padding: 13px !important;
+    border-radius: 16px !important;
+  }
+
+  .intro-business .hero .mailhead {
+    padding-bottom: 9px !important;
+  }
+
+  .intro-business .hero .mailhead b {
+    font-size: 12.5px !important;
+  }
+
+  .intro-business .hero .live {
+    padding: 4px 6px !important;
+    font-size: 9px !important;
+  }
+
+  .intro-business .hero .person {
+    min-height: 54px !important;
+    gap: 9px !important;
+    padding: 7px 2px !important;
+  }
+
+  .intro-business .hero .avatar {
+    width: 36px !important;
+    height: 36px !important;
+    flex-basis: 36px !important;
+  }
+
+  .intro-business .hero .person strong {
+    font-size: 12px !important;
+  }
+
+  .intro-business .hero .person small {
+    margin-top: 2px !important;
+    font-size: 10.5px !important;
+    line-height: 1.3 !important;
+  }
+
+  .intro-business .hero .tone {
+    padding: 4px 6px !important;
+    font-size: 9px !important;
+  }
+
+  .intro-page.intro-game .hero .mailhead {
+    padding: 8px 10px !important;
+  }
+
+  .intro-page.intro-game .hero .mailhead b {
+    font-size: 12px !important;
+  }
+
+  .intro-page.intro-game .hero .live {
+    padding: 4px 6px !important;
+    font-size: 9px !important;
+  }
+
+  .intro-page.intro-game .hero .person {
+    min-height: 0 !important;
+    margin-inline: 8px !important;
+    gap: 9px !important;
+    padding: 7px 2px !important;
+  }
+
+  .intro-page.intro-game .hero .avatar {
+    width: 44px !important;
+    height: 50px !important;
+    flex-basis: 44px !important;
+    padding: 1px !important;
+  }
+
+  .intro-page.intro-game .hero .person strong {
+    font-size: 12px !important;
+  }
+
+  .intro-page.intro-game .hero .person small {
+    margin-top: 2px !important;
+    font-size: 10.5px !important;
+    line-height: 1.3 !important;
+  }
+
+  .intro-page.intro-game .hero .tone {
+    padding: 4px 5px !important;
+    font-size: 9px !important;
+  }
+}
+
+/* Unfolded foldables should keep the same compact hero proportions. */
+@media (min-width: 768px) and (max-width: 1024px) and (pointer: coarse),
+       (min-width: 768px) and (max-width: 1024px) and (hover: none) {
+  .intro-page.intro-game .hero .copy {
+    padding-top: 0 !important;
+  }
+
+  .intro-page .hero .mailcard {
+    max-width: 680px !important;
+    margin-inline: auto !important;
+  }
+
+  .intro-business .hero .mailcard {
+    padding: 16px !important;
+  }
+
+  .intro-business .hero .person,
+  .intro-page.intro-game .hero .person {
+    min-height: 62px !important;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+  }
+
+  .intro-page.intro-game .hero .avatar {
+    width: 50px !important;
+    height: 58px !important;
+    flex-basis: 50px !important;
+  }
+
+  .intro-page.intro-game .hero .person strong,
+  .intro-business .hero .person strong {
+    font-size: 13px !important;
+  }
+
+  .intro-page.intro-game .hero .person small,
+  .intro-business .hero .person small {
+    font-size: 11.5px !important;
+  }
+}

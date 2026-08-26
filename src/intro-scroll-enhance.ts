@@ -1,6 +1,6 @@
 const TARGET_SELECTOR = [
-  ".intro-game-features > div:first-child > div",
-  ".intro-business-features > div:first-child > div",
+  ".intro-game-features > div:not(.intro-game-flutter-layer):not(.fixed) > .snap-center",
+  ".intro-business-features > div:not(.fixed) > .snap-center",
   ".intro-trial-showcase",
   ".intro-reviews",
   ".intro-final-cta",
@@ -8,6 +8,14 @@ const TARGET_SELECTOR = [
 
 let cleanupCurrent: (() => void) | null = null;
 let currentPage: HTMLElement | null = null;
+
+function isTouchPrimaryExperience() {
+  const narrowViewport = window.matchMedia("(max-width: 767px)").matches;
+  const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
+  const noHover = window.matchMedia("(hover: none)").matches;
+  const touchCapable = navigator.maxTouchPoints > 0;
+  return narrowViewport || coarsePointer || (touchCapable && noHover);
+}
 
 function targetLabel(el: HTMLElement, index: number) {
   if (el.matches(".intro-trial-showcase")) return "1분 무료체험";
@@ -57,8 +65,14 @@ function setup(page: HTMLElement) {
   const scrollToTarget = (index: number) => {
     const target = targets[index];
     if (!target) return;
+
     const rect = target.getBoundingClientRect();
-    const destination = window.scrollY + rect.top - navHeight();
+    const topInset = navHeight();
+    const usableHeight = Math.max(1, window.innerHeight - topInset);
+    const targetCenter = window.scrollY + rect.top + rect.height / 2;
+    const viewportCenter = topInset + usableHeight / 2;
+    const destination = targetCenter - viewportCenter;
+
     window.scrollTo({ top: Math.max(0, destination), behavior: "smooth" });
   };
 
@@ -161,8 +175,16 @@ function setup(page: HTMLElement) {
       const handler = (event: MouseEvent) => {
         event.preventDefault();
         event.stopPropagation();
-        if (label === "미리보기") openPreviewPicker(button);
-        else {
+        if (label === "미리보기") {
+          // 실제 모바일/폴더블에서 다시 '모바일 화면' iframe을 여는 중첩 미리보기는 불필요하다.
+          // 현재 인트로의 미리보기 영역으로 바로 이동하고, PC에서만 기기 선택 메뉴를 제공한다.
+          if (isTouchPrimaryExperience()) {
+            closePreviewPicker();
+            scrollToNamedSection("preview");
+          } else {
+            openPreviewPicker(button);
+          }
+        } else {
           closePreviewPicker();
           scrollToNamedSection(label === "기능" ? "features" : "reviews");
         }
@@ -228,6 +250,9 @@ function setup(page: HTMLElement) {
       const button = document.createElement("button");
       button.type = "button";
       button.setAttribute("aria-label", targetLabel(target, index));
+      button.setAttribute("aria-posinset", String(index + 1));
+      button.setAttribute("aria-setsize", String(targets.length));
+      button.title = targetLabel(target, index);
       button.addEventListener("click", () => scrollToTarget(index));
       progress.appendChild(button);
       return button;
@@ -260,7 +285,9 @@ function setup(page: HTMLElement) {
   };
 
   const onWheel = (event: WheelEvent) => {
-    if (window.innerWidth < 768 || event.ctrlKey || Math.abs(event.deltaY) < 16 || wheelLocked || targets.length < 2) return;
+    // 펼친 폴드/작은 태블릿은 폭이 768px을 넘어도 모바일형 레이아웃이다.
+    // 마우스나 트랙패드가 연결돼도 데스크톱 카드 스냅을 강제하지 않고 자연 스크롤을 유지한다.
+    if (isTouchPrimaryExperience() || event.ctrlKey || Math.abs(event.deltaY) < 16 || wheelLocked || targets.length < 2) return;
 
     const first = targets[0].getBoundingClientRect();
     const last = targets[targets.length - 1].getBoundingClientRect();
