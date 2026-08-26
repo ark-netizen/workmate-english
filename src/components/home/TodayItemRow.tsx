@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import type { TodayItem } from "@/types/domain";
 import { useWorkday } from "@/context/useWorkday";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { ContactAvatar } from "@/components/ui/ContactAvatar";
 import { formatTime } from "@/lib/format";
 
 const statusLabel = {
@@ -21,19 +22,6 @@ const channelStyle = {
   email: { label: "Email", className: "bg-slate-500/10 text-slate-600" },
 } as const;
 
-function initials(name?: string) {
-  if (!name) return "";
-  const words = name.trim().split(/\s+/);
-  const firstWord = words[0] ?? "";
-  // 이름 첫 단어가 이미 약어(예: "HR Team"의 "HR")면 단어별 첫 글자 조합("HT") 대신 그 약어 그대로 씀
-  if (/^[A-Z]{2,}$/.test(firstWord)) return firstWord.slice(0, 2);
-  return words
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
-
 export function TodayItemRow({ item, highlighted }: { item: TodayItem; highlighted?: boolean }) {
   const { getContactById } = useWorkday();
   const contact = getContactById(item.contactId);
@@ -48,9 +36,7 @@ export function TodayItemRow({ item, highlighted }: { item: TodayItem; highlight
         highlighted ? "ring-2 ring-accent ring-offset-2 animate-pulse" : ""
       }`}
     >
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-black/[.04] text-xs font-semibold text-foreground/70">
-        {initials(contact?.name)}
-      </span>
+      <ContactAvatar name={contact?.name ?? "?"} role={contact?.role} size="md" />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span

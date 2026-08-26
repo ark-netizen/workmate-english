@@ -156,7 +156,7 @@ function AppRoutes() {
     return false;
   });
   // 알림(웹푸시) 클릭으로 새 탭이 열린 경우처럼, 실계정으로 이미 로그인된 세션이 남아있으면
-  // 인트로(소개) 화면을 거치지 않고 바로 앱으로 들어가야 함 — 확인 전까지 잠깐 로딩만 보여준다
+  // 인트로(소개) 화면을 거치지 않고 바로 앱으로 들어가야 함. /intro에서는 화면을 먼저 그리고 백그라운드에서 확인한다.
   const [checkingRealSession, setCheckingRealSession] = useState(!entered);
 
   useEffect(() => {
@@ -204,7 +204,9 @@ function AppRoutes() {
     return <Navigate to="/" replace />;
   }
 
-  if (!entered && checkingRealSession) {
+  // 일반 앱 경로는 기존처럼 세션 확인이 끝날 때까지 기다리되,
+  // /intro 자체는 강력 새로고침에서도 빈 로딩 화면으로 가리지 않고 즉시 렌더한다.
+  if (!entered && checkingRealSession && location.pathname !== "/intro") {
     return <FullScreenLoading />;
   }
 

@@ -4,12 +4,16 @@ import { useWorkday } from "@/context/useWorkday";
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { useResizable } from "@/hooks/useResizable";
 
+const TRIAL_VENT_TEXT = "Ugh, today was so busy. I just want to scream!";
+
 // "고함항아리" 첫 메시지 작성 화면 — 아직 오늘의 vent 대화가 없을 때만 보임.
 // 이미 있으면 실제 대화방으로 바로 넘어감(다른 대화처럼 메신저 안에서 열리도록).
 export function VentStartPage() {
-  const { conversations, sendVent } = useWorkday();
+  const { conversations, sendVent, isTrial } = useWorkday();
   const navigate = useNavigate();
-  const [text, setText] = useState("");
+  // 1분 무료체험에서는 시연자가 타이핑에 시간을 쓰지 않고 바로 기능을 보여줄 수 있도록
+  // 짧은 예시 문장을 미리 채운다. 일반 사용자는 기존처럼 빈 입력창에서 시작한다.
+  const [text, setText] = useState(() => (isTrial ? TRIAL_VENT_TEXT : ""));
   const [sending, setSending] = useState(false);
   const { size: inputHeight, onDragStart: onInputResizeStart, onResetToDefault: onInputResizeReset } = useResizable({
     storageKey: "messenger-input-height-v2",
@@ -47,6 +51,11 @@ export function VentStartPage() {
       <div className="min-h-0 flex-1 space-y-2 overflow-y-auto px-4 py-6 text-center text-sm text-foreground/50 [scrollbar-gutter:stable]">
         <p>업무 얘기가 아니어도 괜찮아요.</p>
         <p>편하게 영어로, 하고 싶은 말을 동료에게 먼저 걸어보세요.</p>
+        {isTrial && (
+          <p className="mx-auto mt-4 max-w-md rounded-lg border border-border bg-surface px-3 py-2 text-xs leading-relaxed text-foreground/60">
+            체험용 문장을 미리 넣어뒀어요. 그대로 보내거나 원하는 말로 바꿔보세요.
+          </p>
+        )}
       </div>
 
       <div className="flex shrink-0 flex-col border-t border-border">

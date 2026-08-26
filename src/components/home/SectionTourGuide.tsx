@@ -294,10 +294,10 @@ export function SectionTourGuide({
   const businessCardBase = "border border-accent/30 bg-surface shadow-xl";
 
   const cardClassName = extendPanel
-    ? `fixed z-30 w-[17rem] max-w-[calc(100vw-1rem)] rounded-r-xl p-3 transition-[top,left,bottom] duration-200 ease-out ${extendPanel.bg}`
+    ? `fixed z-[10000] w-[17rem] max-w-[calc(100vw-1rem)] rounded-r-xl p-3 transition-[top,left,bottom] duration-200 ease-out ${extendPanel.bg}`
     : anchor
-      ? `fixed z-30 w-[17rem] max-w-[calc(100vw-1rem)] rounded-xl p-3 transition-[top,left,bottom] duration-200 ease-out ${gameMode ? gameCardBase : businessCardBase}`
-      : `fixed inset-x-4 top-1/2 z-30 mx-auto max-w-sm -translate-y-1/2 rounded-xl p-4 md:inset-x-auto md:right-6 md:w-80 ${gameMode ? gameCardBase : businessCardBase}`;
+      ? `fixed z-[10000] w-[17rem] max-w-[calc(100vw-1rem)] rounded-xl p-3 transition-[top,left,bottom] duration-200 ease-out ${gameMode ? gameCardBase : businessCardBase}`
+      : `fixed inset-x-4 top-1/2 z-[10000] mx-auto max-w-sm -translate-y-1/2 rounded-xl p-4 md:inset-x-auto md:right-6 md:w-80 ${gameMode ? gameCardBase : businessCardBase}`;
 
   const titleClass = extendPanel
     ? `text-xs font-semibold ${extendPanel.title}`

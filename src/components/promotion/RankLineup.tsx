@@ -1,8 +1,5 @@
-import { RANKS, RANK_SUBLABELS, RANK_BODY } from "./rankArt";
-
-// translate x 간격(94px)은 캐릭터 폭(56px) + 여백 기준.
-const GROUP_GAP = 94;
-const GROUP_X_START = 12;
+import { RankAvatar } from "./RankAvatar";
+import { RANKS, RANK_SUBLABELS } from "./rankArt";
 
 export function RankLineup({
   currentRank,
@@ -13,41 +10,61 @@ export function RankLineup({
   topPercent?: number | null;
   totalUsers?: number | null;
 }) {
-  const currentIndex = Math.max(0, RANKS.indexOf(currentRank || "사원"));
-  const markerX = GROUP_X_START + currentIndex * GROUP_GAP + 28;
+  const safeRank = currentRank && RANKS.includes(currentRank) ? currentRank : "사원";
+  const currentIndex = Math.max(0, RANKS.indexOf(safeRank));
   const barPosition = topPercent != null ? Math.min(96, Math.max(4, 100 - topPercent)) : null;
 
   return (
     <div className="mx-auto w-full max-w-[920px]">
-      <svg
-        viewBox="0 -34 640 190"
-        preserveAspectRatio="xMidYMid meet"
-        className="mx-auto block h-auto w-full"
+      <div
+        className="grid grid-cols-4 gap-x-3 gap-y-5 px-1 sm:grid-cols-7 sm:gap-x-4 sm:gap-y-0"
         role="img"
-        aria-label={`수달 직급 라인업, 현재 ${currentRank ?? "사원"}`}
+        aria-label={`수달 직급 라인업, 현재 ${safeRank}`}
       >
-        <g transform={`translate(${markerX},-8)`}>
-          <rect x="-17" y="-24" width="34" height="17" rx="3" fill="var(--accent)" />
-          <text x="0" y="-11" textAnchor="middle" fontSize="10" fontWeight="700" fill="#fff" fontFamily="sans-serif">
-            나
-          </text>
-          <polygon points="-6,-7 6,-7 0,3" fill="var(--accent)" />
-        </g>
+        {RANKS.map((rank, i) => {
+          const isCurrent = i === currentIndex;
+          const hideArrowOnMobileRowEnd = i === 3;
 
-        {RANKS.map((rank, i) => (
-          <g key={rank} transform={`translate(${GROUP_X_START + i * GROUP_GAP},10)`}>
-            {RANK_BODY[rank]}
-            <text x="28" y="121" textAnchor="middle" fontSize="15" fontWeight="700" fill="#2c2c2a" fontFamily="sans-serif">
-              {rank}
-            </text>
-            <text x="28" y="137" textAnchor="middle" fontSize="10" fill="#5f5e5a" fontFamily="sans-serif">
-              {RANK_SUBLABELS[rank]}
-            </text>
-          </g>
-        ))}
-      </svg>
+          return (
+            <div key={rank} className="relative flex min-w-0 flex-col items-center text-center">
+              {isCurrent && (
+                <span className="absolute -top-4 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded bg-accent px-1.5 py-0.5 text-[9px] font-bold text-white shadow-sm sm:-top-5 sm:text-[10px]">
+                  나
+                </span>
+              )}
 
-      <div className="relative mt-3 px-1">
+              <div
+                className={`flex items-center justify-center rounded-md p-1 transition-colors ${
+                  isCurrent ? "border-2 border-accent bg-accent/5" : "border border-transparent"
+                }`}
+              >
+                <RankAvatar
+                  rank={rank}
+                  className="h-[58px] w-[52px] rounded-sm bg-transparent sm:h-[72px] sm:w-[64px]"
+                />
+              </div>
+
+              <span className="mt-1 text-[11px] font-bold text-foreground sm:text-xs">{rank}</span>
+              <span className="mt-0.5 hidden break-keep text-[9px] leading-tight text-foreground/45 sm:block">
+                {RANK_SUBLABELS[rank]}
+              </span>
+
+              {i < RANKS.length - 1 && (
+                <span
+                  aria-hidden="true"
+                  className={`absolute -right-2 top-[34px] text-xs font-bold text-foreground/30 sm:-right-3 sm:top-[42px] sm:block ${
+                    hideArrowOnMobileRowEnd ? "hidden" : "block"
+                  }`}
+                >
+                  →
+                </span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="relative mt-8 px-1 sm:mt-9">
         {barPosition != null ? (
           <span
             className="absolute -top-6 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-white shadow-sm"
@@ -82,7 +99,7 @@ export function RankLineup({
       </div>
 
       <p className="mt-3 text-center text-xs text-foreground/50">
-        현재 직급: <span className="font-semibold text-foreground">{currentRank ?? "사원"}</span>
+        현재 직급: <span className="font-semibold text-foreground">{safeRank}</span>
       </p>
       <p className="mt-1 text-center text-[11px] text-foreground/35">현재 수달 캐릭터 모드 · 인간 캐릭터 모드 준비 중</p>
     </div>

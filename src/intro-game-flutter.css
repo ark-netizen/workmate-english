@@ -1,0 +1,164 @@
+/* Game mode only: leaves and paper scraps drifting behind the Work Process cards. */
+.intro-game .intro-game-features {
+  isolation: isolate;
+}
+
+.intro-game .intro-game-features > div:not(.intro-game-flutter-layer) {
+  position: relative;
+  z-index: 1;
+}
+
+.intro-game-flutter-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+
+.intro-game-flutter-particle {
+  position: absolute;
+  left: var(--flutter-left);
+  top: var(--flutter-top);
+  width: 34px;
+  height: 34px;
+  opacity: 0.58;
+  animation: intro-game-flutter-drift var(--flutter-duration) ease-in-out var(--flutter-delay) infinite alternate;
+  will-change: transform;
+  perspective: 500px;
+}
+
+.intro-game-flutter-particle > i {
+  position: absolute;
+  inset: 0;
+  display: block;
+  transform-origin: center;
+  animation: intro-game-flutter-flap var(--flutter-flap-duration) ease-in-out var(--flutter-delay) infinite alternate;
+  will-change: transform;
+}
+
+.intro-game-flutter-particle.is-leaf {
+  width: 30px;
+  height: 24px;
+}
+
+.intro-game-flutter-particle.is-leaf > i {
+  width: 24px;
+  height: 15px;
+  left: 3px;
+  top: 4px;
+  border-radius: 85% 12% 80% 18%;
+  background: linear-gradient(145deg, rgba(88, 137, 85, 0.78), rgba(127, 165, 101, 0.48));
+  box-shadow: 0 3px 5px rgba(48, 69, 45, 0.08);
+}
+
+.intro-game-flutter-particle.is-leaf > i::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 8px;
+  width: 19px;
+  height: 1px;
+  background: rgba(73, 103, 66, 0.34);
+  transform: rotate(-24deg);
+  transform-origin: left center;
+}
+
+.intro-game-flutter-particle.is-leaf > i::after {
+  content: "";
+  position: absolute;
+  right: -5px;
+  bottom: 2px;
+  width: 8px;
+  height: 1px;
+  background: rgba(73, 103, 66, 0.34);
+  transform: rotate(30deg);
+  transform-origin: left center;
+}
+
+.intro-game-flutter-particle.is-paper {
+  width: 27px;
+  height: 31px;
+}
+
+.intro-game-flutter-particle.is-paper > i {
+  width: 22px;
+  height: 27px;
+  left: 2px;
+  top: 2px;
+  border: 1px solid rgba(87, 76, 62, 0.16);
+  border-radius: 2px 4px 3px 2px;
+  background:
+    linear-gradient(168deg, transparent 0 68%, rgba(134, 115, 91, 0.05) 69% 71%, transparent 72%),
+    rgba(255, 249, 228, 0.82);
+  box-shadow: 0 3px 7px rgba(87, 76, 62, 0.07);
+}
+
+.intro-game-flutter-particle.is-paper > i::before {
+  content: "";
+  position: absolute;
+  right: -1px;
+  top: -1px;
+  width: 7px;
+  height: 7px;
+  background: linear-gradient(225deg, rgba(234, 222, 193, 0.9) 49%, transparent 51%);
+}
+
+.intro-game-flutter-particle.is-paper > i::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  top: 10px;
+  height: 1px;
+  background: rgba(117, 99, 76, 0.13);
+  box-shadow: 0 5px 0 rgba(117, 99, 76, 0.09), 0 10px 0 rgba(117, 99, 76, 0.07);
+}
+
+@keyframes intro-game-flutter-drift {
+  0% {
+    transform: translate3d(-26px, -16px, 0) scale(var(--flutter-scale)) rotate(-7deg);
+  }
+  28% {
+    transform: translate3d(var(--flutter-x1), 13px, 0) scale(var(--flutter-scale)) rotate(5deg);
+  }
+  58% {
+    transform: translate3d(var(--flutter-x2), 31px, 0) scale(var(--flutter-scale)) rotate(-4deg);
+  }
+  100% {
+    transform: translate3d(var(--flutter-x3), 54px, 0) scale(var(--flutter-scale)) rotate(8deg);
+  }
+}
+
+@keyframes intro-game-flutter-flap {
+  0% {
+    transform: rotateX(62deg) rotateY(-24deg) rotateZ(-12deg) skewX(-3deg);
+  }
+  35% {
+    transform: rotateX(-18deg) rotateY(32deg) rotateZ(7deg) skewX(2deg);
+  }
+  70% {
+    transform: rotateX(38deg) rotateY(-38deg) rotateZ(-5deg) skewX(-2deg);
+  }
+  100% {
+    transform: rotateX(-44deg) rotateY(20deg) rotateZ(11deg) skewX(3deg);
+  }
+}
+
+@media (max-width: 767px) {
+  .intro-game-flutter-particle {
+    opacity: 0.42;
+  }
+
+  .intro-game-flutter-particle:nth-child(3n) {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-game-flutter-particle,
+  .intro-game-flutter-particle > i {
+    animation: none !important;
+  }
+}

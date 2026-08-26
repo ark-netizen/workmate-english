@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronDown, ChevronUp, Maximize2, Minimize2, Minus, Send } from "lucide-react";
-import type { Email, EmailThread } from "@/types/domain";
+import type { ContactRole, Email, EmailThread } from "@/types/domain";
 import { useWorkday } from "@/context/useWorkday";
+import { useBusinessMode } from "@/context/useBusinessMode";
 import { Avatar } from "@/components/ui/Avatar";
+import { ContactAvatar } from "@/components/ui/ContactAvatar";
+import { RankAvatar } from "@/components/promotion/RankAvatar";
 import { ReplyHints } from "@/components/reply/ReplyHints";
 import { TranslateButton } from "@/components/reply/TranslateButton";
 import { SpeakButton } from "@/components/reply/SpeakButton";
@@ -36,17 +39,31 @@ function EmailMessage({
   expanded,
   onToggle,
   highlighted,
+  gameMode,
+  userRank,
 }: {
   email: Email;
   senderName: string;
-  senderRole?: string;
+  senderRole?: ContactRole;
   expanded: boolean;
   onToggle: () => void;
   highlighted?: boolean;
+  gameMode: boolean;
+  userRank?: string;
 }) {
   const isUser = email.from === "user";
   const displayName = isUser ? "나" : senderName;
   const highlightClass = highlighted ? "ring-2 ring-accent ring-offset-2 animate-pulse" : "";
+
+  const userAvatar = (size: "sm" | "md") =>
+    gameMode ? (
+      <RankAvatar
+        rank={userRank}
+        className={size === "sm" ? "h-7 w-7 rounded-[4px]" : "h-9 w-9 rounded-[4px]"}
+      />
+    ) : (
+      <Avatar name={displayName} size={size} />
+    );
 
   if (!expanded) {
     return (
@@ -55,7 +72,7 @@ function EmailMessage({
         onClick={onToggle}
         className={`flex w-full items-center gap-3 rounded-lg border border-border bg-surface px-4 py-2.5 text-left transition-shadow hover:bg-black/[.02] ${highlightClass}`}
       >
-        <Avatar name={displayName} size="sm" />
+        {isUser ? userAvatar("sm") : <ContactAvatar name={senderName} role={senderRole} size="sm" />}
         <span className="shrink-0 truncate text-sm font-medium text-foreground/80">{displayName}</span>
         <span className="min-w-0 flex-1 truncate text-sm text-foreground/40">{email.body}</span>
         <span className="shrink-0 text-xs text-foreground/40">{formatDateTime(email.timestamp)}</span>
@@ -67,7 +84,7 @@ function EmailMessage({
   return (
     <div className={`rounded-lg border border-border bg-surface transition-shadow ${highlightClass}`}>
       <button type="button" onClick={onToggle} className="flex w-full items-center gap-3 px-4 py-3 text-left">
-        <Avatar name={displayName} />
+        {isUser ? userAvatar("md") : <ContactAvatar name={senderName} role={senderRole} size="md" />}
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium text-foreground">{displayName}</p>
           <p className="truncate text-xs text-foreground/40">{isUser ? `to ${senderName}` : "to 나"}</p>
@@ -101,6 +118,9 @@ export function EmailView({ thread }: { thread: EmailThread }) {
     clearHighlightedMessage,
     pendingReplies,
   } = useWorkday();
+  const { businessMode } = useBusinessMode();
+  // 현재 앱의 실제 화면에서는 businessMode=true가 게임모드다.
+  const gameMode = businessMode;
   const contact = getContactById(thread.contactId);
   // "1분 체험하기" 게스트는 실제 화면은 그대로 두고, 답장을 미리 채워주고 보내기 버튼만 반짝이게 안내
   const trialPreset = isTrial && contact ? TRIAL_REPLY_TEXT[contact.role] : undefined;
@@ -109,8 +129,15 @@ export function EmailView({ thread }: { thread: EmailThread }) {
   const isReview = thread.kind === "review";
 
   const [displayName, setDisplayName] = useState<string | undefined>(undefined);
+  const [userRank, setUserRank] = useState<string | undefined>(undefined);
   useEffect(() => {
-    api.getProfile().then((p) => setDisplayName(p.display_name ?? undefined)).catch(() => {});
+    api
+      .getProfile()
+      .then((p) => {
+        setDisplayName(p.display_name ?? undefined);
+        setUserRank(p.avatar_rank || p.job_rank || undefined);
+      })
+      .catch(() => {});
   }, []);
   // 본문을 직접 건드리기 전까지만 Dear/Best 기본틀을 자동으로 채워준다(이미 입력 중인 내용을 덮어쓰지 않기 위해)
   const textIsDefaultRef = useRef(true);
@@ -290,7 +317,7 @@ export function EmailView({ thread }: { thread: EmailThread }) {
           </div>
         )}
         <div className="flex min-h-0 flex-1 gap-3">
-          <Avatar name="나" size="sm" />
+          {gameMode ? <RankAvatar rank={userRank} className="h-7 w-7 rounded-[4px]" /> : <Avatar name="나" size="sm" />}
           <textarea
             className={`min-h-[110px] min-w-0 flex-1 resize-none border-0 bg-transparent p-0 text-sm leading-relaxed outline-none placeholder:text-foreground/40 ${
               isMaximized ? "min-h-[320px]" : ""
@@ -377,6 +404,8 @@ export function EmailView({ thread }: { thread: EmailThread }) {
             expanded={expandedId === email.id}
             onToggle={() => setExpandedId((current) => (current === email.id ? null : email.id))}
             highlighted={email.id === highlightedMessageId}
+            gameMode={gameMode}
+            userRank={userRank}
           />
         ))}
       </div>
