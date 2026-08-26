@@ -1,68 +1,40 @@
-/* Game mode Work Process + trial: one continuous sky background.
-   The hero ends in the same sky tone, Work Process stays flat sky, and the fade to mint happens only after the 1-minute trial. */
+/* Game mode: hero fades into the original mint, then Work Process + 1-minute trial stay on one flat mint field.
+   Only decorative UI motifs float; clouds remain static. */
 
-/* Remove the mint band left by the original game hero gradient. */
+/* Restore the original game hero sky -> mint transition. */
 .intro-game .hero {
-  background: linear-gradient(180deg, #83cef1 0%, #cdeeff 72%, #dceff8 100%) !important;
+  background: linear-gradient(180deg, #83cef1 0%, #cdeeff 72%, #eaf5dc 100%) !important;
 }
 
-.intro-game .intro-features-section {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  background: #dceff8 !important;
-}
-
-/* Work Process itself has no end fade anymore. */
-.intro-game .intro-features-section::after {
-  content: none !important;
-  display: none !important;
-}
-
-/* Keep all real heading/card content above the decorative layer. */
-.intro-game .intro-features-section > .mx-auto {
-  position: relative;
-  z-index: 3;
-}
-
-/* Never draw an inset background rectangle around the vertical card list. */
-.intro-game .intro-game-features {
-  background: transparent !important;
-  isolation: auto;
-  overflow: visible;
-}
-
-/* 1-minute trial continues the exact same sky and only then fades to the following mint section. */
+/* Work Process and 1-minute trial share the exact same mint background. */
+.intro-game .intro-features-section,
 .intro-game .intro-trial-showcase {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  padding-bottom: 190px !important;
-  background: #dceff8 !important;
+  background: #eaf5dc !important;
 }
 
+/* No extra fade panel is drawn inside either section. */
+.intro-game .intro-features-section::after,
 .intro-game .intro-trial-showcase::after {
-  content: "";
-  position: absolute;
-  z-index: 1;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 145px;
-  pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    rgba(220, 239, 248, 0) 0%,
-    rgba(226, 242, 239, 0.34) 38%,
-    rgba(234, 245, 220, 0.78) 76%,
-    #eaf5dc 100%
-  );
+  content: none !important;
+  display: none !important;
 }
 
+/* Keep actual headings/cards above the decorative layer. */
+.intro-game .intro-features-section > .mx-auto,
 .intro-game .intro-trial-heading,
 .intro-game .intro-trial-frame {
   position: relative;
   z-index: 3;
+}
+
+/* Never draw an inset rectangle around the vertical Work Process list. */
+.intro-game .intro-game-features {
+  background: transparent !important;
+  isolation: auto;
+  overflow: visible;
 }
 
 .intro-game-process-bg-layer {
@@ -79,14 +51,14 @@
   display: block;
   width: 54px;
   height: 54px;
-  color: rgba(72, 160, 218, 0.19);
+  color: rgba(70, 145, 166, 0.18);
   transform:
     translate(calc(-50% + var(--decor-x, 0px)), calc(-50% + var(--decor-y, 0px)))
     rotate(var(--decor-rotate, 0deg))
     scale(var(--decor-scale, 1));
   transform-origin: center;
   will-change: transform;
-  filter: saturate(0.78);
+  filter: saturate(0.76);
 }
 
 .intro-game-process-decor svg {
@@ -109,43 +81,44 @@
 }
 
 .intro-game-process-decor.is-chat {
-  color: rgba(63, 154, 216, 0.22);
+  color: rgba(59, 139, 158, 0.21);
 }
 
 .intro-game-process-decor.is-mail,
 .intro-game-process-decor.is-document,
 .intro-game-process-decor.is-chart {
-  color: rgba(65, 157, 218, 0.18);
+  color: rgba(64, 146, 164, 0.18);
 }
 
 .intro-game-process-decor.is-leaf {
   width: 42px;
   height: 42px;
-  color: rgba(69, 150, 151, 0.18);
+  color: rgba(55, 137, 104, 0.2);
 }
 
+/* Clouds are the only intentionally static elements. */
 .intro-game-process-decor.is-cloud {
   width: 104px;
   height: 68px;
-  color: rgba(255, 255, 255, 0.58);
+  color: rgba(255, 255, 255, 0.52);
 }
 
 .intro-game-process-decor.is-cloud svg {
-  fill: rgba(255, 255, 255, 0.28);
-  stroke: rgba(255, 255, 255, 0.42);
+  fill: rgba(255, 255, 255, 0.22);
+  stroke: rgba(255, 255, 255, 0.38);
   stroke-width: 1.5;
 }
 
 .intro-game-process-decor.is-spark {
   width: 26px;
   height: 26px;
-  color: rgba(67, 165, 225, 0.24);
+  color: rgba(73, 158, 166, 0.23);
 }
 
 .intro-game-process-decor.is-grid {
   width: 48px;
   height: 48px;
-  color: rgba(73, 164, 219, 0.105);
+  color: rgba(70, 146, 157, 0.1);
 }
 
 .intro-game-process-decor.is-grid svg,
@@ -157,10 +130,9 @@
 .intro-game-process-decor.is-pixel {
   width: 24px;
   height: 24px;
-  color: rgba(75, 175, 218, 0.21);
+  color: rgba(72, 155, 161, 0.2);
 }
 
-/* A little more presence in the wide side gutters; still behind the cards. */
 @media (min-width: 1180px) {
   .intro-game-process-decor.is-chat,
   .intro-game-process-decor.is-mail,
@@ -178,7 +150,7 @@
 
 @media (max-width: 900px) {
   .intro-game-process-decor {
-    opacity: 0.78;
+    opacity: 0.76;
   }
 
   .intro-game-process-decor.is-chat,
@@ -197,27 +169,18 @@
 
 @media (max-width: 767px) {
   .intro-game .hero {
-    background: linear-gradient(180deg, #9bd8f1 0%, #d3edf8 72%, #e2f2f9 100%) !important;
+    background: linear-gradient(180deg, #9bd8f1 0%, #d3edf8 72%, #eaf5dc 100%) !important;
   }
 
   .intro-game .intro-features-section,
   .intro-game .intro-trial-showcase {
-    background: #e2f2f9 !important;
-  }
-
-  .intro-game .intro-trial-showcase {
-    padding-bottom: 150px !important;
-  }
-
-  .intro-game .intro-trial-showcase::after {
-    height: 115px;
-    background: linear-gradient(180deg, rgba(226,242,249,0), #eaf5dc 100%);
+    background: #eaf5dc !important;
   }
 
   .intro-game-process-decor {
     width: 36px;
     height: 36px;
-    opacity: 0.58;
+    opacity: 0.56;
   }
 
   .intro-game-process-decor.is-chat,
