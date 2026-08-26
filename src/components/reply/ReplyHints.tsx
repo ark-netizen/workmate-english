@@ -31,11 +31,20 @@ export function ReplyHints({
   const [trialHighlight, setTrialHighlight] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const { businessMode } = useBusinessMode();
-  // 현재 앱에서는 businessMode=true가 실제 게임모드다.
-  const isGameMode = businessMode;
+  // 현재 저장값은 businessMode=true가 비즈니스모드, false가 게임모드다.
+  const isGameMode = !businessMode;
 
-  // 체험 신호는 전역 값이지만 ConversationView가 상사 대화에만 전달한다.
-  // 마운트 시점의 값을 기준값으로 잡고 그 이후 새로 증가한 신호에만 반응해,
+  // 체험 신호는 ConversationView가 상사 대화에만 넘긴다.
+  // 아직 힌트를 열기 전(signal=0)에는 "한국어 힌트를 확인" 안내가 뜨는 시점에 맞춰
+  // 한국어 힌트 버튼 위치를 한 번 강조해 사용자가 어디를 봐야 하는지 바로 알 수 있게 한다.
+  useEffect(() => {
+    if (externalOpenSignal !== 0) return;
+    setTrialHighlight(true);
+    const timer = window.setTimeout(() => setTrialHighlight(false), TRIAL_HIGHLIGHT_MS);
+    return () => window.clearTimeout(timer);
+  }, [externalOpenSignal]);
+
+  // 마운트 시점의 신호를 기준값으로 잡고 그 이후 새로 증가한 신호에만 반응해,
   // 외근/고함항아리 단계에서 한국어 힌트가 다시 열리거나 강조되는 현상을 막는다.
   const lastExternalSignalRef = useRef(externalOpenSignal ?? 0);
 
