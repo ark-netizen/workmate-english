@@ -15,8 +15,9 @@ type Row =
   | { id: string; kind: "conversation"; conversation: Conversation }
   | { id: "vent"; kind: "vent" };
 
-// 고함항아리도 다른 대화처럼 목록에서 드래그로 순서를 옮길 수 있음 —
-// 아직 시작 전이면 /messenger/vent(첫 메시지 작성 화면)로, 있으면 실제 대화방으로.
+// 고함항아리는 항상 고정 경로 /messenger/vent로 연다.
+// 기존 vent 대화가 있더라도 ConversationList가 개별 conversation id로 직접 이동하지 않게 해서,
+// 날짜 전환/refresh 중 stale id 때문에 NotFound로 떨어지는 문제를 막는다.
 function ShoutJarRow({
   index,
   dragIndex,
@@ -36,7 +37,7 @@ function ShoutJarRow({
   const { conversations } = useWorkday();
 
   const ventConversation = conversations.find((c) => c.kind === "vent");
-  const to = ventConversation ? `/messenger/${ventConversation.id}` : "/messenger/vent";
+  const to = "/messenger/vent";
   const active = pathname === to;
   const lastMessage = ventConversation?.messages[ventConversation.messages.length - 1];
 
