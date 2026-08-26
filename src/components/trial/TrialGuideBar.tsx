@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useBusinessMode } from "@/context/useBusinessMode";
 import { useWorkday } from "@/context/useWorkday";
 import { endGuestTrial } from "@/lib/session";
 import { TRIAL_REPLY_TEXT } from "@/lib/trialReplies";
@@ -9,7 +10,7 @@ import { TrialActionBar } from "./TrialActionBar";
 type FinalTrialStage = "fieldwork" | "comfort" | "report" | "kakao";
 
 const KAKAO_TEXT_MAX = 190;
-const FIELD_WORK_PREVIEW_MS = 2200;
+const FIELD_WORK_PREVIEW_MS = 2600;
 const FIELD_WORK_CLICK_GAP_MS = 320;
 
 function truncateKakaoText(value: string | undefined, max: number) {
@@ -26,9 +27,12 @@ function wait(ms: number) {
 // 실제 서비스의 연결 구조가 보이도록 체험 단계를 이어준다.
 export function TrialGuideBar() {
   const { report, conversations, sendReply, finishWorkday, goOnFieldWork, triggerTrialHint } = useWorkday();
+  const { businessMode } = useBusinessMode();
   const { targets, doneCount, allDone, activeTarget } = useTrialTargets();
   const navigate = useNavigate();
   const location = useLocation();
+  // 현재 앱에서는 businessMode=true가 실제 게임모드다.
+  const isGameMode = businessMode;
   const [finishing, setFinishing] = useState(false);
   const [sending, setSending] = useState(false);
   const [fieldWorkSimulating, setFieldWorkSimulating] = useState(false);
@@ -99,7 +103,7 @@ export function TrialGuideBar() {
     if (allDone) {
       // 체험판에서는 실제 버튼을 두 번 찾아 누르게 하지 않고, "다음" 한 번으로 외근 이벤트 2회를 기록한다.
       // 다만 외근 신호를 바로 처리해 위로 메시지가 먼저 나타나면 알림 UI를 볼 시간이 없으므로,
-      // 실제 사이트의 InAppBanner와 같은 위치/형태의 알림을 먼저 충분히 보여준 뒤 신호 2회를 처리한다.
+      // 실제 사이트의 InAppBanner와 같은 우하단 위치/크기의 알림을 먼저 충분히 보여준 뒤 신호 2회를 처리한다.
       if (!report && !ventConversation) {
         if (colleagueTarget && location.pathname !== colleagueTarget.path) {
           navigate(colleagueTarget.path);
@@ -203,7 +207,7 @@ export function TrialGuideBar() {
   const message = allDone
     ? !report
       ? finalStage === "fieldwork"
-        ? "실서비스에서는 ‘지금 외근 중’을 누르면 예정된 연락을 30분 뒤 다시 받을 수 있어요.\n다음을 누르면 사이트 안에서 알림이 뜨는 위치를 먼저 보여드린 뒤, 외근 신호 2회를 한 번에 재현할게요."
+        ? "실서비스에서는 ‘지금 외근 중’을 누르면 예정된 연락을 30분 뒤 다시 받을 수 있어요.\n다음을 누르면 우하단에 뜨는 웹 알림을 먼저 보여드린 뒤, 외근 신호 2회를 한 번에 재현할게요."
         : onVentPage
           ? "외근 신호가 반복되자 동료가 먼저 말을 걸어왔어요. 이렇게 먼저 온 위로 메시지는 고함항아리에 모여요."
           : "반복된 바쁨을 감지했어요. 동료의 메시지로 이동하는 중이에요..."
@@ -243,10 +247,20 @@ export function TrialGuideBar() {
     <>
       {showFieldWorkPreview && (
         <div className="fixed bottom-20 right-4 z-50 w-80 max-w-[calc(100vw-2rem)] md:bottom-4">
-          <div className="absolute -top-9 right-0 animate-bounce rounded-full bg-[#1a56ff] px-3 py-1.5 text-[11px] font-bold text-white shadow-lg">
-            알림은 여기에서 확인해요
+          <div
+            className={`absolute -top-9 right-0 rounded-full px-3 py-1.5 text-[11px] font-bold text-white shadow-lg ${
+              isGameMode ? "bg-[#2f795d]" : "bg-[#1a56ff]"
+            }`}
+          >
+            웹 알림은 여기에서 떠요
           </div>
-          <div className="flex items-start gap-3 rounded-lg border-2 border-[#1a56ff] bg-surface p-4 text-foreground shadow-[0_16px_40px_rgba(26,86,255,0.26)] ring-4 ring-[#1a56ff]/20">
+          <div
+            className={`flex items-start gap-3 rounded-lg border-2 bg-surface p-4 text-foreground ${
+              isGameMode
+                ? "border-[#2f795d] shadow-[0_16px_40px_rgba(47,121,93,0.24)] ring-4 ring-[#2f795d]/20"
+                : "border-[#1a56ff] shadow-[0_16px_40px_rgba(26,86,255,0.26)] ring-4 ring-[#1a56ff]/20"
+            }`}
+          >
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium">Jake</p>
               <p className="mt-0.5 truncate text-xs text-foreground/60">{fieldWorkPreviewBody}</p>
