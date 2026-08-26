@@ -66,13 +66,18 @@ export async function startFreshGuestTrial(): Promise<void> {
   await ensureSession();
 }
 
-// "체험 종료" — 익명 체험 세션을 끝내고 로그인 전 상태로 되돌린다
+// "체험 종료" — 화면 전환을 막지 않도록 로컬 체험 상태를 즉시 비운다.
+// Supabase 익명 세션 정리는 fire-and-forget으로 처리한다. 다음 체험 시작 시에도
+// startFreshGuestTrial()이 남아 있는 세션을 다시 정리하므로 체험 데이터가 이어지지 않는다.
 export async function endGuestTrial(): Promise<void> {
-  if (supabaseReady && supabase) {
-    await supabase.auth.signOut();
-  }
   clearAccessToken();
   resetTrialSequence();
+
+  if (supabaseReady && supabase) {
+    void supabase.auth.signOut({ scope: "local" }).catch(() => {
+      // 인트로 복귀 UX는 백그라운드 세션 정리 실패와 무관하게 즉시 완료한다.
+    });
+  }
 }
 
 // 현재 세션이 "1분 체험하기"로 만든 익명 세션인지 — 온보딩 화면에서 직접 입력 없이 기본값으로
