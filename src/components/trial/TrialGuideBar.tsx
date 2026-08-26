@@ -94,6 +94,7 @@ export function TrialGuideBar() {
   const isGameMode = businessMode;
   const [finishing, setFinishing] = useState(false);
   const [sending, setSending] = useState(false);
+  const [ending, setEnding] = useState(false);
   const [fieldWorkSimulating, setFieldWorkSimulating] = useState(false);
   const [showFieldWorkPreview, setShowFieldWorkPreview] = useState(false);
 
@@ -162,8 +163,29 @@ export function TrialGuideBar() {
   ]);
 
   const handleEnd = async () => {
-    await endGuestTrial();
-    window.location.href = "/";
+    if (ending) return;
+    setEnding(true);
+    setShowFieldWorkPreview(false);
+
+    // 체험 중 띄운 시스템 알림이 체험 종료 뒤까지 남아 있으면 실제 서비스 알림처럼 오해될 수 있으므로
+    // trial 전용 tag의 알림만 닫고, 익명 세션/시퀀스를 정리한 뒤 인트로로 history를 교체한다.
+    try {
+      if ("serviceWorker" in navigator) {
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (registration) {
+          const notifications = await registration.getNotifications({ tag: "trial-field-work-preview" });
+          notifications.forEach((notification) => notification.close());
+        }
+      }
+    } catch {
+      // 알림 정리에 실패해도 체험 종료 자체는 계속 진행한다.
+    }
+
+    try {
+      await endGuestTrial();
+    } finally {
+      window.location.replace("/intro");
+    }
   };
 
   const sendRoleReply = async (target: TrialTarget, nextStep: TrialStep) => {
@@ -181,7 +203,7 @@ export function TrialGuideBar() {
   };
 
   const handlePrimaryAction = async () => {
-    if (sending || finishing || fieldWorkSimulating) return;
+    if (sending || finishing || ending || fieldWorkSimulating) return;
 
     if (step === "colleague") {
       if (!colleagueTarget) return;
@@ -362,7 +384,7 @@ export function TrialGuideBar() {
           <div
             className={`absolute -top-9 right-0 px-3 py-1.5 text-[11px] font-bold ${
               isGameMode
-                ? "rounded-full bg-[#2f795d] text-white shadow-lg"
+                ? "rounded-full bg-[#2f795d] text-white shadow-[0_0_0_3px_rgba(47,121,93,0.22),0_0_20px_rgba(47,121,93,0.44)]"
                 : "rounded-full bg-[#1a56ff] text-white shadow-lg"
             }`}
           >
@@ -371,7 +393,7 @@ export function TrialGuideBar() {
           <div
             className={`flex items-start gap-3 rounded-lg p-4 text-foreground ${
               isGameMode
-                ? "border-2 border-[#2f795d] bg-surface shadow-[0_16px_40px_rgba(47,121,93,0.26)] ring-4 ring-[#2f795d]/20"
+                ? "border-2 border-[#2f795d] bg-surface shadow-[0_16px_40px_rgba(47,121,93,0.26),0_0_30px_rgba(47,121,93,0.34)] ring-4 ring-[#2f795d]/30"
                 : "border-2 border-[#1a56ff] bg-surface shadow-[0_16px_40px_rgba(26,86,255,0.26)] ring-4 ring-[#1a56ff]/20"
             }`}
           >
@@ -415,6 +437,7 @@ export function TrialGuideBar() {
         primaryDisabled={
           sending ||
           finishing ||
+          ending ||
           fieldWorkSimulating ||
           waitingForTarget ||
           waitingForComfort ||
