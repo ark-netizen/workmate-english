@@ -1,7 +1,10 @@
 const FOLD_LOGIN_NOTICE_ID = "foldable-login-notice";
 
-function isFoldableMobileExperience() {
-  if (window.innerWidth < 768) return false;
+// 원래는 768px 이상(폴더블·태블릿)만 걸러서, 정작 일반 폰에서는 안내 없이 로그인 모달이 열렸다.
+// 상단바 로그인 버튼은 폰에서 숨겨두면서 하단 최종 CTA는 그대로 열려 있어 경로가 어긋났던 것 —
+// 실제 이용이 PC에서만 가능하므로 폭 조건을 빼고 터치 기기 전체에 안내를 띄운다.
+// (마우스가 달린 노트북은 주 포인터가 fine이라 여기 걸리지 않는다.)
+function isTouchOnlyExperience() {
   const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
   const noHover = window.matchMedia("(hover: none)").matches;
   const touchCapable = navigator.maxTouchPoints > 0;
@@ -66,7 +69,7 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
   document.addEventListener(
     "click",
     (event) => {
-      if (!isFoldableMobileExperience()) return;
+      if (!isTouchOnlyExperience()) return;
       const target = event.target instanceof Element
         ? event.target.closest(".intro-login-btn, .intro-final-button")
         : null;

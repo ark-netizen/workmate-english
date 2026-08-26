@@ -138,21 +138,21 @@ const steps: PreviewStep[] = [
     title: "근무 기록이 쌓이면 출석·연차·마일스톤도 쌓여요",
     subtitle: "하루씩 출근한 기록을 캘린더로 보고, 연속 출근과 누적 출석을 게임처럼 이어갈 수 있어요.",
     points: [
-      "연속 출근 5일마다 적립연차가 +1 되고, 출석·외근·휴가 기록은 캘린더에서 구분해서 확인할 수 있어요.",
-      "출석일이 쌓일수록 마일스톤이 열려 단순 학습일수보다 ‘회사 생활을 이어가는 느낌’을 만들어요.",
+      "연속 출근 5일마다 적립연차가 +1 되고, 직급별 기본 연차도 따로 있어요(사원 2일 → 주임 3일 …).",
+      "빠진 날은 연차로 덮이고, 남은 연차가 없으면 연속 기록이 처음부터 다시 시작돼요.",
     ],
     screen: `
       <div class="mtp-appbar"><b>출석</b><span>2026년 8월</span></div>
       <div class="mtp-page mtp-attendance mtp-long-screen">
         <div class="mtp-grid-3">
-          <div><small>현재 연속 출석</small><b>4일</b></div>
+          <div><small>현재 연속 출석</small><b>24일</b></div>
           <div><small>누적 출석</small><b>24일</b></div>
           <div><small>다음 마일스톤</small><b>30일</b></div>
         </div>
         <section class="mtp-card">
           <div class="mtp-section-title"><b>사원 → 주임</b><span>24 / 30일</span></div>
           <div class="mtp-progress"><i style="width:80%"></i></div>
-          <p>6일 더 근무하면 인사평가 대상이 돼요.</p>
+          <p>6일 더 연속 출근하면 인사평가 대상이 돼요.</p>
         </section>
         <section class="mtp-card">
           <div class="mtp-section-title"><b>적립연차</b><span>4개 적립</span></div>
@@ -174,18 +174,18 @@ const steps: PreviewStep[] = [
         </section>
         <section class="mtp-card">
           <div class="mtp-section-title"><b>마일스톤</b><span>3 / 7 달성</span></div>
-          <div class="mtp-badges"><span class="done">첫 출근</span><span class="done">3일 연속</span><span class="done">첫 주 완료</span><span>30일 근무</span><span>첫 승진</span></div>
+          <div class="mtp-badges"><span class="done">3일 연속</span><span class="done">7일 연속</span><span class="done">누적 20일</span><span>30일 연속</span><span>누적 50일</span></div>
         </section>
       </div>
     `,
   },
   {
     label: "승급",
-    title: "30일 근무 후 인사평가를 거쳐 다음 직급으로 올라가요",
-    subtitle: "사원부터 이사까지 직급이 이어지고, 전체 사용자 중 내 위치와 다음 승급까지 남은 기간을 확인할 수 있어요.",
+    title: "연속 출근 30일을 채우면 인사평가가 열려요",
+    subtitle: "사원부터 이사까지 7단계가 이어지고, 전체 사용자 중 내 위치와 다음 승급까지 남은 일수를 확인할 수 있어요.",
     points: [
-      "근무일을 채우면 자동 승진이 아니라 인사평가 단계가 열려 ‘회사에서 성장하는 경험’을 이어가요.",
-      "승급하면 직급 캐릭터와 프로필의 분위기도 함께 변해 장기적으로 쌓인 학습 기록을 시각적으로 느낄 수 있어요.",
+      "필요한 연속 출근일은 직급마다 늘어나요 — 사원 30일, 주임 60일, 대리 90일 순이에요.",
+      "일수를 채워도 자동 승진이 아니라 인사평가가 열리고, 평가를 마쳐야 다음 직급으로 올라가요.",
     ],
     screen: `
       <div class="mtp-appbar"><b>Performance Review</b><span>인사평가</span></div>
@@ -207,7 +207,7 @@ const steps: PreviewStep[] = [
         </section>
         <section class="mtp-card mtp-review-lock">
           <div class="mtp-review-title"><span>🔒</span><b>아직 인사평가 기간이 아닙니다</b></div>
-          <p>현재 사원 직급으로 <strong>24일</strong> 근무했어요. 앞으로 <strong>6일</strong> 더 근무하면 인사평가 대상이 됩니다.</p>
+          <p>현재 사원 직급으로 <strong>24일</strong> 연속 출근했어요. 앞으로 <strong>6일</strong> 더 출근하면 인사평가 대상이 됩니다.</p>
           <div class="mtp-progress"><i style="width:80%"></i></div>
           <small>24 / 30일</small>
         </section>
