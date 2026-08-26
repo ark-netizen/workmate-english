@@ -20,16 +20,18 @@
     overflow: hidden !important;
   }
 
+  /* 가로 로고는 75px을 먹어서 섹션 링크(About·미리보기·기능·후기 130px)가 들어갈 자리를 뺏는다.
+     모바일 미리보기처럼 스크롤바만큼 폭이 더 좁아지면 링크가 넘쳐서 잘렸다 → 컴팩트 마크를 쓴다. */
   .intro-page .intro-nav-inner > img:first-of-type {
-    display: none !important;
+    display: block !important;
+    width: auto !important;
+    max-width: 30px !important;
+    height: 28px !important;
+    flex: 0 0 auto !important;
   }
 
   .intro-page .intro-nav-inner > img:nth-of-type(2) {
-    display: block !important;
-    width: clamp(68px, 20vw, 96px) !important;
-    max-width: 96px !important;
-    height: 28px !important;
-    flex: 0 0 auto !important;
+    display: none !important;
   }
 
   .intro-page .intro-nav-inner > div:last-child {
