@@ -1,47 +1,68 @@
 const TARGET_SELECTOR = ".intro-game .intro-features-section";
 
 type DecorType = "chat" | "mail" | "document" | "chart" | "leaf" | "cloud" | "spark" | "grid" | "pixel";
-
 type DecorSpec = readonly [DecorType, number, number, number, number, number, number];
 
-// Background-only motifs from the approved reference image.
-// The layer is attached to the full Work Process section, not the inner card container.
+/*
+ * Background-only motifs for the full Work Process section.
+ * Most pieces live in the left/right gutters so the existing vertical cards remain readable.
+ * Y positions deliberately cover the whole section from the heading through the fifth card.
+ */
 const DECOR: readonly DecorSpec[] = [
-  ["cloud", 4, 4, 1.12, 0, 0, 0],
-  ["pixel", 16, 5, 0.8, 8, 6, 0.4],
-  ["document", 87, 5, 0.76, 7, 5, 1.2],
-  ["cloud", 97, 8, 0.94, 0, 0, 0],
+  ["cloud", 4, 3, 1.08, 0, 0, 0],
+  ["pixel", 14, 5, 0.76, 9, 6, 0.3],
+  ["document", 88, 5, 0.76, 8, 6, 1.1],
+  ["cloud", 97, 7, 0.9, 0, 0, 0],
 
-  ["chat", 4, 12, 0.9, 12, 8, 0.2],
-  ["mail", 16, 18, 0.72, 10, 7, 1.7],
-  ["grid", 10, 23, 0.82, 7, 5, 2.1],
-  ["spark", 1.5, 29, 0.58, 6, 5, 2.4],
-  ["pixel", 22, 31, 0.62, 9, 7, 3.4],
+  ["chat", 4, 11, 0.9, 13, 9, 0.2],
+  ["mail", 13, 15, 0.72, 10, 7, 1.5],
+  ["spark", 95, 13, 0.56, 7, 5, 2.0],
+  ["chart", 88, 17, 0.82, 10, 7, 0.8],
 
-  ["chart", 85, 20, 0.84, 9, 7, 0.8],
-  ["leaf", 93, 22, 0.72, 11, 8, 2.0],
-  ["chat", 97, 30, 0.74, 13, 9, 3.2],
-  ["spark", 75, 12, 0.54, 6, 5, 1.0],
-  ["pixel", 80, 34, 0.74, 8, 6, 4.0],
+  ["pixel", 6, 21, 0.68, 10, 8, 2.5],
+  ["grid", 14, 24, 0.72, 8, 6, 3.0],
+  ["chat", 96, 23, 0.72, 13, 9, 3.2],
+  ["leaf", 87, 27, 0.68, 11, 8, 2.2],
 
-  ["cloud", 3, 41, 0.92, 0, 0, 0],
-  ["spark", 8, 49, 0.5, 6, 5, 4.3],
-  ["grid", 96, 47, 0.72, 8, 6, 0.6],
-  ["mail", 92, 56, 0.64, 10, 7, 2.8],
-  ["pixel", 5, 57, 0.58, 8, 7, 1.9],
+  ["mail", 5, 31, 0.66, 11, 8, 4.1],
+  ["spark", 13, 34, 0.5, 7, 5, 4.7],
+  ["pixel", 94, 32, 0.62, 10, 7, 1.8],
+  ["document", 86, 36, 0.68, 9, 7, 3.6],
 
-  ["document", 6, 67, 0.64, 8, 6, 3.7],
-  ["spark", 2, 74, 0.5, 6, 5, 5.1],
-  ["chart", 93, 74, 0.7, 9, 7, 4.0],
-  ["leaf", 85, 65, 0.62, 11, 8, 5.4],
-  ["pixel", 96, 68, 0.72, 9, 6, 2.5],
+  ["chat", 4, 40, 0.74, 14, 10, 5.0],
+  ["leaf", 13, 43, 0.62, 11, 8, 5.6],
+  ["grid", 96, 42, 0.68, 8, 6, 0.7],
+  ["chart", 87, 46, 0.72, 10, 7, 4.0],
 
-  ["grid", 9, 86, 0.66, 7, 6, 2.7],
-  ["cloud", 5, 96, 0.96, 0, 0, 0],
-  ["spark", 79, 90, 0.52, 6, 5, 0.5],
-  ["chat", 95, 91, 0.7, 12, 8, 1.5],
-  ["cloud", 97, 97, 1.05, 0, 0, 0],
-  ["pixel", 27, 93, 0.66, 8, 6, 4.6],
+  ["pixel", 6, 50, 0.62, 10, 8, 2.0],
+  ["document", 14, 53, 0.64, 9, 7, 3.2],
+  ["chat", 95, 51, 0.72, 14, 10, 1.4],
+  ["spark", 86, 55, 0.52, 7, 5, 5.2],
+
+  ["mail", 4, 59, 0.68, 11, 8, 0.9],
+  ["grid", 13, 62, 0.68, 8, 6, 2.7],
+  ["pixel", 96, 60, 0.68, 10, 7, 4.5],
+  ["leaf", 87, 64, 0.64, 11, 8, 5.3],
+
+  ["chat", 5, 68, 0.76, 14, 10, 3.7],
+  ["spark", 14, 71, 0.5, 7, 5, 1.2],
+  ["document", 95, 69, 0.66, 9, 7, 2.4],
+  ["chart", 86, 73, 0.72, 10, 7, 4.3],
+
+  ["pixel", 4, 77, 0.68, 10, 8, 5.8],
+  ["mail", 13, 80, 0.66, 11, 8, 2.0],
+  ["chat", 96, 78, 0.74, 14, 10, 0.5],
+  ["grid", 87, 82, 0.66, 8, 6, 3.8],
+
+  ["leaf", 5, 86, 0.64, 11, 8, 1.7],
+  ["pixel", 14, 89, 0.64, 10, 7, 4.9],
+  ["spark", 95, 87, 0.52, 7, 5, 2.9],
+  ["document", 87, 91, 0.62, 9, 7, 5.4],
+
+  ["cloud", 4, 96, 0.92, 0, 0, 0],
+  ["chat", 14, 95, 0.68, 12, 8, 4.1],
+  ["pixel", 94, 95, 0.64, 9, 7, 1.0],
+  ["cloud", 97, 97, 1.0, 0, 0, 0],
 ];
 
 let currentTarget: HTMLElement | null = null;
@@ -115,9 +136,9 @@ function animateDecor(time: number) {
     if (ampX === 0 && ampY === 0) return;
 
     const phase = Number(el.dataset.phase ?? 0);
-    const x = Math.sin(t * (0.15 + (index % 4) * 0.016) + phase) * ampX;
-    const y = Math.cos(t * (0.12 + (index % 3) * 0.015) + phase) * ampY;
-    const rotate = Math.sin(t * 0.08 + phase) * 1.2;
+    const x = Math.sin(t * (0.14 + (index % 5) * 0.013) + phase) * ampX;
+    const y = Math.cos(t * (0.115 + (index % 4) * 0.012) + phase) * ampY;
+    const rotate = Math.sin(t * 0.075 + phase) * 1.35;
     el.style.setProperty("--decor-x", `${x.toFixed(2)}px`);
     el.style.setProperty("--decor-y", `${y.toFixed(2)}px`);
     el.style.setProperty("--decor-rotate", `${rotate.toFixed(2)}deg`);
