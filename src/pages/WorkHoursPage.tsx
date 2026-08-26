@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import * as api from "@/lib/api";
 import { attendanceStatusLabel } from "@/lib/attendance";
 import { formatHoursMinutes } from "@/lib/format";
@@ -10,11 +10,38 @@ const DAYS_BACK = 13; // 오늘 포함 최근 14일
 
 export function WorkHoursPage() {
   const [days, setDays] = useState<WorkHoursDay[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [showTable, setShowTable] = useState(false);
 
-  useEffect(() => {
-    api.getWorkHoursHistory(DAYS_BACK).then((res) => setDays(res.days));
+  const load = useCallback(async () => {
+    setDays(null);
+    setError(null);
+    try {
+      const res = await api.getWorkHoursHistory(DAYS_BACK);
+      setDays(res.days);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "근무 시간 정보를 불러오지 못했습니다.");
+    }
   }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  if (error) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-10 text-center">
+        <p className="text-sm text-red-600">근무 시간 정보를 불러오지 못했습니다.</p>
+        <button
+          type="button"
+          onClick={() => void load()}
+          className="mt-3 rounded-md border border-border px-3 py-1.5 text-sm text-foreground/70 hover:bg-black/[.03]"
+        >
+          다시 시도
+        </button>
+      </div>
+    );
+  }
 
   if (!days) {
     return <div className="mx-auto max-w-3xl px-4 py-10 text-sm text-foreground/50">불러오는 중...</div>;
