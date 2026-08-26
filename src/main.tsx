@@ -18,6 +18,7 @@ import "./intro-scroll-enhance.css";
 import "./intro-business-process-layout.css";
 import "./intro-game-process-layout.css";
 import "./intro-game-flutter.css";
+import "./intro-progress-mode.css";
 import "./intro-scroll-enhance";
 import "./intro-game-flutter";
 import "./intro-copy-polish";
