@@ -1,0 +1,24 @@
+/* Keep the mobile intro navbar in the same semantic order as desktop.
+   About/section links first, then 1-minute trial, then mode switch. */
+@media (max-width: 767px) {
+  .intro-page .intro-nav-inner > div:last-child {
+    flex-direction: row !important;
+  }
+
+  .intro-page .intro-nav-inner > div:last-child > div:first-child {
+    order: 1 !important;
+  }
+
+  .intro-page .intro-trial-btn {
+    order: 2 !important;
+  }
+
+  .intro-page .intro-mode-toggle {
+    order: 3 !important;
+  }
+
+  .intro-page .intro-login-btn,
+  .intro-page .intro-nav-inner > div:last-child > span {
+    order: 4 !important;
+  }
+}
