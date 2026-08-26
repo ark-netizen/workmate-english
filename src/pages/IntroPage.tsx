@@ -128,20 +128,31 @@ function ScenarioExample() {
 function NotificationExample() {
   return (
     <div className="rounded-2xl bg-white p-6 shadow-lg ring-1 ring-black/5">
-      {/* 실제 서비스에서 '지금 외근 중'은 답장 입력창에 있는 버튼이라, 알림 안에 버튼처럼 그리지 않는다.
-          알림은 "받는 것"만 보여주고, 미루기는 결과(30분 뒤 재알림)로만 표현한다. */}
+      {/* 실제 화면 그대로: 웹 푸시에는 '메시지 작성하기'·'외근 중(30분 후 재알림)' 액션이 붙어 있고,
+          카카오톡은 '나에게 보내기'라 발신자 이름 없이 나와의 채팅에 내 메시지로 도착한다. */}
       <div className="mb-1.5 flex items-center gap-1.5">
         <span className="rounded-full bg-accent/10 px-2 py-0.5 text-xs font-bold text-accent">웹 알림</span>
         <span className="text-xs text-foreground/40">새 업무 연락</span>
       </div>
-      <div className="flex items-start gap-3 rounded-xl border border-border p-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-foreground/10 text-base">🔔</span>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-baseline justify-between gap-2">
+      <div className="overflow-hidden rounded-xl border border-border bg-[#f7f7f8]">
+        <div className="flex items-center gap-1.5 px-3 pt-2.5 text-xs text-foreground/45">
+          <span className="h-3 w-3 shrink-0 rounded-full bg-accent/70" />
+          <span className="min-w-0 truncate">www.enmate.co.kr · 지금</span>
+          <span className="ml-auto shrink-0 tracking-widest text-foreground/30">⚙ ✕</span>
+        </div>
+        <div className="flex items-start gap-3 px-3 py-2">
+          <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold">Ellen · 상사</p>
-            <span className="shrink-0 text-xs text-foreground/40">오후 1:30</span>
+            <p className="mt-0.5 break-keep text-sm leading-snug text-foreground/60 [text-wrap:pretty]">
+              Could you please review this by 3pm today?
+            </p>
           </div>
-          <p className="mt-0.5 text-sm text-foreground/60">Could you please review this by 3pm today?</p>
+          <img src="/brand/logo-mark.png" alt="" className="mt-0.5 h-8 w-8 shrink-0 rounded-md object-contain" />
+        </div>
+        <div className="flex border-t border-border/70 text-xs font-medium text-accent">
+          <span className="flex-1 px-3 py-2 text-center">메시지 작성하기</span>
+          <span className="w-px bg-border/70" />
+          <span className="flex-1 px-3 py-2 text-center">외근 중 (30분 후 재알림)</span>
         </div>
       </div>
 
@@ -149,30 +160,15 @@ function NotificationExample() {
         <span className="rounded-full bg-[#FEE500] px-2 py-0.5 text-xs font-bold text-[#191919]">카카오톡</span>
         <span className="text-xs text-foreground/40">놓쳤을 때 리마인더</span>
       </div>
-      <div className="flex items-start gap-3 rounded-xl border border-[#f0e08a] bg-[#fef9e0] p-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-base">💬</span>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-baseline justify-between gap-2">
-            <p className="text-sm font-semibold text-[#191919]">부캐영어</p>
-            <span className="shrink-0 text-xs text-[#191919]/45">오후 2:30</span>
+      <div className="overflow-hidden rounded-xl border border-border bg-[#b2c7d9]">
+        <p className="px-3 pt-2 text-xs font-medium text-[#1c2b36]/70">나와의 채팅</p>
+        <div className="flex flex-col items-end gap-1 px-3 pb-3 pt-2">
+          <div className="max-w-[85%] rounded-xl rounded-tr-sm bg-[#FEE500] px-3 py-2">
+            <p className="break-keep text-sm leading-snug text-[#191919] [text-wrap:pretty]">
+              [부캐영어] 오늘도 1분이면 충분해요! 잠깐 출근해서 영어로 새 하루를 만나보세요 ✨
+            </p>
           </div>
-          <p className="mt-0.5 text-sm text-[#191919]/70">아직 답장 안 한 연락이 1건 있어요 📩</p>
-        </div>
-      </div>
-
-      <div className="mt-4 border-t border-border pt-4">
-        <p className="break-keep text-sm text-foreground/50 [text-wrap:pretty]">
-          답장 화면에서 <span className="font-medium text-foreground/70">‘지금 외근 중’</span>을 누르면
-        </p>
-        <div className="mt-2 flex items-start gap-3 rounded-xl bg-foreground/[.04] p-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-base">🔔</span>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-baseline justify-between gap-2">
-              <p className="text-sm font-semibold">Ellen · 상사</p>
-              <span className="shrink-0 text-xs font-medium text-accent">30분 뒤 다시 도착</span>
-            </div>
-            <p className="mt-0.5 truncate text-sm text-foreground/60">Could you please review this by 3pm today?</p>
-          </div>
+          <span className="text-xs text-[#1c2b36]/55">오후 6:30</span>
         </div>
       </div>
     </div>
