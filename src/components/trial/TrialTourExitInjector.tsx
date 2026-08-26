@@ -61,10 +61,7 @@ export function TrialTourExitInjector() {
     };
 
     inject();
-    const observer = new MutationObserver(() => {
-      cleanup();
-      inject();
-    });
+    const observer = new MutationObserver(() => inject());
     observer.observe(document.body, { childList: true, subtree: true });
 
     return () => {
