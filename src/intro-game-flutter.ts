@@ -7,79 +7,72 @@ type DecorType = "chat" | "mail" | "document" | "chart" | "leaf" | "cloud" | "sp
 type DecorSpec = readonly [DecorType, number, number, number, number, number, number];
 
 /*
- * Keep the moving UI motifs clearly visible in both side gutters.
- * Left anchors stay around 10~25%, right anchors around 75~90% so they do not get clipped off-screen.
- * Clouds intentionally have zero amplitude and remain static.
+ * Decorative UI lives in two explicit side rails.
+ * Left anchors stay at 5~10%, right anchors at 90~95%, so they remain outside the centered card column
+ * even on narrower desktop widths. Clouds stay static; every other item gets bubble-like JS motion.
  */
 const PROCESS_DECOR: readonly DecorSpec[] = [
-  ["cloud", 7, 4, 1.05, 0, 0, 0],
-  ["pixel", 22, 6, 0.76, 22, 18, 0.3],
-  ["document", 78, 7, 0.76, 24, 20, 1.2],
-  ["cloud", 92, 5, 0.96, 0, 0, 0],
+  ["cloud", 6, 3, 1.02, 0, 0, 0],
+  ["document", 93, 5, 0.82, 30, 22, 1.2],
+  ["cloud", 94, 9, 0.94, 0, 0, 0],
+  ["pixel", 8, 7, 0.8, 27, 20, 0.3],
 
-  ["chat", 11, 14, 0.9, 32, 24, 0.2],
-  ["mail", 25, 18, 0.7, 25, 21, 1.5],
-  ["chart", 76, 17, 0.78, 27, 22, 0.8],
-  ["spark", 89, 14, 0.58, 22, 18, 2.0],
+  ["chat", 7, 14, 0.96, 38, 30, 0.2],
+  ["chart", 92, 15, 0.9, 36, 29, 0.8],
+  ["mail", 9, 20, 0.76, 31, 25, 1.5],
+  ["spark", 95, 22, 0.66, 27, 22, 2.0],
 
-  ["pixel", 12, 25, 0.7, 24, 20, 2.5],
-  ["leaf", 24, 29, 0.66, 28, 23, 2.2],
-  ["chat", 77, 25, 0.8, 34, 26, 3.2],
-  ["grid", 89, 29, 0.7, 23, 19, 3.0],
+  ["pixel", 6, 27, 0.76, 29, 24, 2.5],
+  ["chat", 93, 28, 0.9, 40, 31, 3.2],
+  ["leaf", 9, 33, 0.72, 32, 27, 2.2],
+  ["grid", 91, 35, 0.76, 29, 23, 3.0],
 
-  ["mail", 10, 36, 0.7, 27, 22, 4.1],
-  ["spark", 24, 39, 0.54, 22, 18, 4.7],
-  ["document", 77, 38, 0.72, 26, 22, 3.6],
-  ["pixel", 89, 36, 0.66, 24, 20, 1.8],
+  ["mail", 7, 40, 0.8, 33, 27, 4.1],
+  ["document", 94, 41, 0.82, 34, 28, 3.6],
+  ["spark", 9, 46, 0.62, 27, 22, 4.7],
+  ["pixel", 91, 48, 0.72, 30, 25, 1.8],
 
-  ["chat", 12, 47, 0.8, 34, 27, 5.0],
-  ["leaf", 25, 50, 0.66, 29, 23, 5.6],
-  ["chart", 76, 49, 0.76, 28, 22, 4.0],
-  ["grid", 88, 47, 0.7, 24, 19, 0.7],
+  ["chat", 6, 54, 0.92, 40, 32, 5.0],
+  ["chart", 93, 55, 0.86, 37, 30, 4.0],
+  ["leaf", 10, 60, 0.72, 33, 27, 5.6],
+  ["grid", 91, 62, 0.74, 29, 24, 0.7],
 
-  ["pixel", 10, 58, 0.66, 24, 20, 2.0],
-  ["document", 24, 61, 0.7, 27, 22, 3.2],
-  ["chat", 77, 59, 0.78, 34, 27, 1.4],
-  ["spark", 90, 61, 0.54, 22, 18, 5.2],
+  ["pixel", 7, 68, 0.74, 30, 24, 2.0],
+  ["chat", 94, 69, 0.9, 40, 32, 1.4],
+  ["document", 9, 74, 0.78, 34, 28, 3.2],
+  ["spark", 91, 76, 0.62, 27, 22, 5.2],
 
-  ["mail", 12, 69, 0.72, 28, 22, 0.9],
-  ["grid", 25, 72, 0.68, 24, 19, 2.7],
-  ["leaf", 76, 71, 0.68, 29, 23, 5.3],
-  ["pixel", 88, 69, 0.7, 24, 20, 4.5],
+  ["mail", 6, 82, 0.8, 34, 27, 0.9],
+  ["leaf", 94, 83, 0.74, 33, 27, 5.3],
+  ["grid", 9, 88, 0.72, 29, 24, 2.7],
+  ["chart", 92, 90, 0.84, 37, 30, 4.3],
 
-  ["chat", 10, 80, 0.8, 34, 27, 3.7],
-  ["spark", 24, 83, 0.54, 22, 18, 1.2],
-  ["chart", 77, 82, 0.76, 28, 22, 4.3],
-  ["document", 90, 80, 0.7, 27, 22, 2.4],
-
-  ["leaf", 12, 90, 0.68, 29, 23, 1.7],
-  ["pixel", 25, 93, 0.68, 24, 20, 4.9],
-  ["chat", 76, 91, 0.78, 34, 27, 0.5],
-  ["spark", 88, 93, 0.54, 22, 18, 2.9],
-  ["cloud", 7, 97, 0.9, 0, 0, 0],
-  ["cloud", 92, 97, 0.95, 0, 0, 0],
+  ["cloud", 6, 97, 0.9, 0, 0, 0],
+  ["chat", 10, 95, 0.82, 38, 30, 3.7],
+  ["pixel", 95, 96, 0.72, 30, 24, 4.9],
+  ["cloud", 94, 98, 0.92, 0, 0, 0],
 ];
 
 const TRIAL_DECOR: readonly DecorSpec[] = [
-  ["cloud", 7, 8, 0.92, 0, 0, 0],
-  ["chat", 20, 15, 0.76, 30, 24, 0.4],
-  ["document", 79, 14, 0.7, 26, 21, 1.4],
-  ["cloud", 92, 9, 0.9, 0, 0, 0],
+  ["cloud", 6, 7, 0.9, 0, 0, 0],
+  ["chat", 8, 17, 0.86, 36, 29, 0.4],
+  ["document", 93, 15, 0.78, 33, 27, 1.4],
+  ["cloud", 94, 8, 0.88, 0, 0, 0],
 
-  ["mail", 11, 34, 0.7, 28, 22, 2.2],
-  ["pixel", 24, 41, 0.66, 24, 20, 3.1],
-  ["chart", 76, 38, 0.72, 28, 22, 4.0],
-  ["leaf", 89, 35, 0.64, 29, 23, 5.0],
+  ["mail", 6, 34, 0.78, 33, 27, 2.2],
+  ["chart", 94, 35, 0.82, 36, 29, 4.0],
+  ["pixel", 9, 47, 0.72, 29, 24, 3.1],
+  ["leaf", 91, 49, 0.72, 32, 27, 5.0],
 
-  ["spark", 12, 63, 0.54, 22, 18, 1.1],
-  ["grid", 25, 69, 0.66, 24, 19, 2.8],
-  ["chat", 76, 65, 0.74, 31, 24, 3.8],
-  ["pixel", 88, 69, 0.64, 24, 20, 4.7],
+  ["spark", 6, 64, 0.6, 27, 22, 1.1],
+  ["chat", 94, 65, 0.84, 37, 30, 3.8],
+  ["grid", 9, 75, 0.7, 29, 24, 2.8],
+  ["pixel", 91, 78, 0.7, 29, 24, 4.7],
 
-  ["cloud", 7, 92, 0.86, 0, 0, 0],
-  ["document", 21, 86, 0.66, 26, 21, 5.5],
-  ["mail", 79, 86, 0.66, 28, 22, 0.8],
-  ["cloud", 92, 92, 0.9, 0, 0, 0],
+  ["cloud", 6, 93, 0.84, 0, 0, 0],
+  ["document", 9, 88, 0.72, 33, 27, 5.5],
+  ["mail", 94, 87, 0.74, 34, 27, 0.8],
+  ["cloud", 94, 94, 0.86, 0, 0, 0],
 ];
 
 const layers = new Map<HTMLElement, HTMLDivElement>();
@@ -104,11 +97,13 @@ function iconMarkup(type: DecorType) {
 
 function createDecor([type, left, top, scale, ampX, ampY, phase]: DecorSpec) {
   const el = document.createElement("span");
-  el.className = `intro-game-process-decor is-${type}`;
+  const side = left >= 50 ? "right" : "left";
+  el.className = `intro-game-process-decor is-${type} is-${side}-rail`;
   el.style.left = `${left}%`;
   el.style.top = `${top}%`;
   el.style.setProperty("--decor-scale", String(scale));
   el.style.setProperty("--decor-pulse", "1");
+  el.dataset.side = side;
   el.dataset.ampX = String(ampX);
   el.dataset.ampY = String(ampY);
   el.dataset.phase = String(phase);
@@ -138,27 +133,28 @@ function animateDecor(time: number) {
     if (!visibleTargets.has(target)) return;
 
     layer.querySelectorAll<HTMLElement>(".intro-game-process-decor").forEach((el, index) => {
-      /* Clouds alone stay fixed. */
       if (el.classList.contains("is-cloud")) return;
 
       const ampX = Number(el.dataset.ampX ?? 0);
       const ampY = Number(el.dataset.ampY ?? 0);
       const phase = Number(el.dataset.phase ?? 0);
+      const side = el.dataset.side;
 
-      /*
-       * Layer two frequencies instead of a straight sine wave.
-       * The result is a loose oval / bubble drift that never reads as a rigid left-right line.
-       */
-      const speedA = 0.34 + (index % 5) * 0.025;
-      const speedB = 0.21 + (index % 4) * 0.019;
-      const x =
+      const speedA = 0.46 + (index % 5) * 0.032;
+      const speedB = 0.29 + (index % 4) * 0.025;
+      const rawX =
         Math.sin(t * speedA + phase) * ampX +
-        Math.cos(t * speedB * 1.37 + phase * 1.8) * ampX * 0.42;
+        Math.cos(t * speedB * 1.41 + phase * 1.8) * ampX * 0.46;
+
+      /* Edge rails mostly drift inward, so right-side items cannot disappear beyond the viewport. */
+      const edgeBias = Math.abs(rawX) * 0.72;
+      const smallOrbit = Math.sin(t * 0.63 + phase * 2.2) * ampX * 0.2;
+      const x = side === "right" ? -edgeBias + smallOrbit : edgeBias + smallOrbit;
       const y =
         Math.cos(t * speedB + phase) * ampY +
-        Math.sin(t * speedA * 0.71 + phase * 0.7) * ampY * 0.58;
-      const rotate = Math.sin(t * 0.24 + phase) * 4.5 + Math.cos(t * 0.13 + index) * 1.8;
-      const pulse = 1 + Math.sin(t * 0.46 + phase * 1.4) * 0.045;
+        Math.sin(t * speedA * 0.73 + phase * 0.7) * ampY * 0.64;
+      const rotate = Math.sin(t * 0.32 + phase) * 6 + Math.cos(t * 0.17 + index) * 2.4;
+      const pulse = 1 + Math.sin(t * 0.58 + phase * 1.4) * 0.065;
 
       el.style.setProperty("--decor-x", `${x.toFixed(2)}px`);
       el.style.setProperty("--decor-y", `${y.toFixed(2)}px`);
