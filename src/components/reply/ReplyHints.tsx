@@ -98,7 +98,9 @@ export function ReplyHints({
       {trialHighlight && (
         <span
           className={`absolute -top-7 left-0 z-10 rounded-full px-2.5 py-1 text-[10px] font-bold text-white ${
-            isGameMode ? "bg-[#2f795d] shadow-md" : "bg-[#1a56ff] shadow-md"
+            isGameMode
+              ? "bg-[#2f795d] shadow-[0_0_0_3px_rgba(47,121,93,0.22),0_0_18px_rgba(47,121,93,0.42)]"
+              : "bg-[#1a56ff] shadow-md"
           }`}
         >
           힌트는 여기에서 확인해요
@@ -119,7 +121,7 @@ export function ReplyHints({
               className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-[background-color,border-color,box-shadow,color] ${
                 trialKorean
                   ? isGameMode
-                    ? "border-[#2f795d] bg-[#eef7f2] text-[#2f795d] shadow-[0_0_0_2px_rgba(47,121,93,0.2)]"
+                    ? "border-[#2f795d] bg-[#eef7f2] text-[#2f795d] shadow-[0_0_0_3px_rgba(47,121,93,0.28),0_0_20px_rgba(47,121,93,0.42)]"
                     : "border-[#1a56ff] bg-[#eef4ff] text-[#1a56ff] shadow-[0_0_0_2px_rgba(26,86,255,0.18)]"
                   : locked
                     ? "cursor-not-allowed border-border text-foreground/30"
@@ -140,7 +142,7 @@ export function ReplyHints({
           className={`rounded-lg border p-3 transition-[background-color,border-color,box-shadow] ${
             trialHighlight
               ? isGameMode
-                ? "border-[#6aa58e] bg-[#f5faf7] shadow-[0_0_0_2px_rgba(47,121,93,0.14)]"
+                ? "border-[#6aa58e] bg-[#f5faf7] shadow-[0_0_0_3px_rgba(47,121,93,0.2),0_0_22px_rgba(47,121,93,0.34)]"
                 : "border-[#7ca2ff] bg-[#f5f8ff] shadow-[0_0_0_2px_rgba(26,86,255,0.1)]"
               : "border-border bg-black/[.02]"
           }`}
