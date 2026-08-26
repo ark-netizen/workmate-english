@@ -1,12 +1,13 @@
 const PAGE_SELECTOR = ".intro-page.intro-game";
 const START_SELECTOR = ".intro-game .intro-features-section";
-const END_SELECTOR = ".intro-game .intro-trial-showcase";
+const END_SELECTOR = ".intro-game .intro-reviews";
+const FALLBACK_END_SELECTOR = ".intro-game .intro-trial-showcase";
 
 type DecorType = "chat" | "mail" | "document" | "chart" | "leaf" | "cloud" | "spark" | "grid" | "pixel";
 type DecorSpec = readonly [DecorType, number, number, number, number, number, number];
 
 /*
- * One continuous decorative field from Work Process through the 1-minute trial.
+ * One continuous decorative field from Work Process through reviews.
  * Every vertical band deliberately contains visible weight on BOTH sides:
  *   - one large moving business icon on the left
  *   - one large moving business icon on the right
@@ -193,22 +194,15 @@ function stopMotion() {
 function bindVisibility() {
   visibilityObserver?.disconnect();
   visible = false;
-  if (!startSection || !endSection) return;
+  if (!layer) return;
 
-  const visibleSections = new Set<Element>();
-  visibilityObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) visibleSections.add(entry.target);
-      else visibleSections.delete(entry.target);
-    });
-
-    visible = visibleSections.size > 0;
+  visibilityObserver = new IntersectionObserver(([entry]) => {
+    visible = !!entry?.isIntersecting;
     if (visible) startMotion();
     else stopMotion();
   }, { rootMargin: "180px 0px" });
 
-  visibilityObserver.observe(startSection);
-  visibilityObserver.observe(endSection);
+  visibilityObserver.observe(layer);
 }
 
 function bindResize() {
@@ -239,7 +233,9 @@ function sync() {
   syncFrame = 0;
   const nextPage = document.querySelector<HTMLElement>(PAGE_SELECTOR);
   const nextStart = document.querySelector<HTMLElement>(START_SELECTOR);
-  const nextEnd = document.querySelector<HTMLElement>(END_SELECTOR);
+  const nextEnd =
+    document.querySelector<HTMLElement>(END_SELECTOR) ??
+    document.querySelector<HTMLElement>(FALLBACK_END_SELECTOR);
 
   if (!nextPage || !nextStart || !nextEnd) {
     if (layer) cleanup();
