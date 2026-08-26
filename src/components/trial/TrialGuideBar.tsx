@@ -18,13 +18,15 @@ function truncateKakaoText(value: string | undefined, max: number) {
 // 업무 3건 이후에는 "외근 중" 반복 → 바쁨 감지 → 동료의 선제 위로 메시지 → 리포트 → 카카오 알림까지
 // 실제 서비스의 연결 구조가 보이도록 체험 단계를 이어준다.
 export function TrialGuideBar() {
-  const { report, conversations, sendReply, finishWorkday, triggerTrialHint } = useWorkday();
+  const { report, conversations, sendReply, finishWorkday, goOnFieldWork, triggerTrialHint } = useWorkday();
   const { targets, doneCount, allDone, activeTarget } = useTrialTargets();
   const navigate = useNavigate();
   const location = useLocation();
   const [finishing, setFinishing] = useState(false);
   const [sending, setSending] = useState(false);
+  const [fieldWorkSimulating, setFieldWorkSimulating] = useState(false);
   const [finalStage, setFinalStage] = useState<FinalTrialStage>("fieldwork");
+  const [showFieldWorkPreview, setShowFieldWorkPreview] = useState(false);
   const [showKakaoPreview, setShowKakaoPreview] = useState(false);
   // 상사(매니저) 단계 한정 — "답변 모르겠으면 한국어 힌트부터" 시나리오의 진행 상태
   const [managerHintStage, setManagerHintStage] = useState<"ask" | "shown">("ask");
@@ -33,6 +35,12 @@ export function TrialGuideBar() {
   const onReportPage = location.pathname === "/reports";
   const onHomePage = location.pathname === "/";
   const colleagueTarget = targets.find((target) => target.role === "colleague");
+  const colleagueConversation = colleagueTarget
+    ? conversations.find((conversation) => conversation.id === colleagueTarget.id)
+    : undefined;
+  const fieldWorkPreviewBody =
+    [...(colleagueConversation?.messages ?? [])].reverse().find((message) => message.from === "contact")?.body ??
+    "Hey, can you take a look by 3? 🙏";
   const ventConversation = conversations.find((conversation) => conversation.kind === "vent");
   const onVentPage = !!ventConversation && location.pathname === `/messenger/${ventConversation.id}`;
   // "상사" 단계에서만 등장하는 "답변 모르겠으면 한국어 힌트부터 눌러보기" 시나리오
@@ -40,8 +48,8 @@ export function TrialGuideBar() {
   const showHintAsk = isManagerStep && managerHintStage === "ask";
 
   // 기본 업무 3건이 끝나면 바로 퇴근시키지 않는다.
-  // 먼저 동료 대화 화면에서 실제 "지금 외근 중" 버튼을 두 번 눌러 반복된 바쁨 감지 기능을 체험하고,
-  // 서버가 선제 위로 메시지를 생성해 고함항아리가 생기면 그 대화로 자동 이동한다.
+  // 체험판에서는 오른쪽 "다음" 버튼 한 번으로 실제 외근 이벤트 2회를 연속 기록해,
+  // 반복된 바쁨 감지 → 동료의 선제 위로 메시지 흐름까지 짧게 체험한다.
   useEffect(() => {
     if (!allDone || report) return;
 
@@ -78,16 +86,30 @@ export function TrialGuideBar() {
   };
 
   const handlePrimaryAction = async () => {
-    if (sending || finishing) return;
+    if (sending || finishing || fieldWorkSimulating) return;
 
     if (allDone) {
+      // 체험판에서는 실제 버튼을 두 번 찾아 누르게 하지 않고, "다음" 한 번으로 외근 이벤트 2회를 기록한다.
+      // goOnFieldWork()가 매번 refresh()까지 수행하므로 두 번째 호출 뒤 getTodaySnapshot의 기존
+      // comfort trigger가 그대로 작동해 고함항아리/선제 위로 대화가 생성된다.
+      if (!report && !ventConversation) {
+        if (colleagueTarget && location.pathname !== colleagueTarget.path) {
+          navigate(colleagueTarget.path);
+        }
+        setFieldWorkSimulating(true);
+        setShowFieldWorkPreview(true);
+        try {
+          await goOnFieldWork();
+          await goOnFieldWork();
+        } finally {
+          setFieldWorkSimulating(false);
+          window.setTimeout(() => setShowFieldWorkPreview(false), 3200);
+        }
+        return;
+      }
+
       // 반복된 외근 신호로 동료가 먼저 말을 걸어온 뒤, 그 메시지를 실제 화면에서 확인하고 나서 퇴근한다.
       if (!report) {
-        if (!ventConversation) {
-          if (colleagueTarget) navigate(colleagueTarget.path);
-          return;
-        }
-
         setFinishing(true);
         try {
           await finishWorkday();
@@ -112,7 +134,7 @@ export function TrialGuideBar() {
     }
 
     if (!activeTarget) return;
-    // "상사" 단계 — 아직 힌트를 안 보여줬으면, 이번 클릭은 전송이 아니라 단어 힌트를 대신 펼쳐 보여주는 동작
+    // "상사" 단계 — 아직 힌트를 안 보여줬으면, 이번 클릭은 전송이 아니라 한국어 힌트를 대신 펼쳐 보여주는 동작
     if (showHintAsk) {
       triggerTrialHint();
       setManagerHintStage("shown");
@@ -143,11 +165,15 @@ export function TrialGuideBar() {
 
   const primaryLabel = allDone
     ? !report
-      ? finalStage === "comfort" && ventConversation
-        ? finishing
-          ? "리포트 만드는 중..."
-          : "퇴근하고 리포트 보기"
-        : null
+      ? !ventConversation
+        ? fieldWorkSimulating
+          ? "외근 신호 처리 중..."
+          : "다음"
+        : finalStage === "comfort"
+          ? finishing
+            ? "리포트 만드는 중..."
+            : "퇴근하고 리포트 보기"
+          : null
       : finalStage === "report"
         ? onReportPage
           ? "카카오톡 알림 미리보기"
@@ -166,7 +192,7 @@ export function TrialGuideBar() {
   const message = allDone
     ? !report
       ? finalStage === "fieldwork"
-        ? "업무 연락은 모두 처리했어요. 이번엔 바쁨 감지 기능을 볼게요.\n아래 입력창의 ‘지금 외근 중’을 2번 눌러보세요. 반복된 바쁨을 감지하면 동료가 먼저 말을 걸어옵니다."
+        ? "실서비스에서는 ‘지금 외근 중’을 누르면 예정된 연락을 30분 뒤 다시 받을 수 있어요.\n체험판에서는 다음을 누르면 외근 신호 2회를 한 번에 재현해, 반복된 바쁨 감지까지 보여드릴게요."
         : onVentPage
           ? "외근 신호가 반복되자 동료가 먼저 말을 걸어왔어요. 이렇게 먼저 온 위로 메시지는 고함항아리에 모여요."
           : "반복된 바쁨을 감지했어요. 동료의 메시지로 이동하는 중이에요..."
@@ -204,6 +230,20 @@ export function TrialGuideBar() {
 
   return (
     <>
+      {showFieldWorkPreview && (
+        <div className="fixed left-1/2 top-16 z-40 w-[min(340px,calc(100vw-24px))] -translate-x-1/2 rounded-xl border border-[#c9d2dc] bg-white p-3 text-[#22303a] shadow-[0_14px_36px_rgba(31,45,61,0.22)] md:left-auto md:right-[23rem] md:top-20 md:translate-x-0">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[11px] font-semibold text-[#5e6d79]">웹 알림 예시</p>
+            <span className="rounded-full bg-[#eef4ff] px-2 py-0.5 text-[10px] font-semibold text-[#1a56ff]">30분 후</span>
+          </div>
+          <p className="mt-2 text-sm font-bold">Jake</p>
+          <p className="mt-1 text-xs leading-relaxed text-[#4a5965]">{fieldWorkPreviewBody}</p>
+          <p className="mt-2 border-t border-[#edf0f3] pt-2 text-[10px] leading-relaxed text-[#74818a]">
+            외근 중으로 미룬 연락은 같은 내용으로 다시 알려드려요.
+          </p>
+        </div>
+      )}
+
       {showKakaoPreview && report && (
         <div className="relative z-20 mx-3 my-2 overflow-hidden rounded-2xl border border-[#d9cf73] bg-[#fee500] shadow-xl md:fixed md:right-[23rem] md:top-1/2 md:mx-0 md:my-0 md:w-[340px] md:-translate-y-1/2">
           <div className="px-4 py-3">
@@ -230,7 +270,7 @@ export function TrialGuideBar() {
         dotsFilled={filledDots}
         primaryLabel={primaryLabel}
         onPrimary={primaryLabel ? handlePrimaryAction : undefined}
-        primaryDisabled={sending || finishing}
+        primaryDisabled={sending || finishing || fieldWorkSimulating}
         onEnd={handleEnd}
         endPrimary={finalStage === "kakao"}
         showEnd={finalStage === "kakao" && showKakaoPreview}
