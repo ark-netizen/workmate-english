@@ -1,36 +1,43 @@
-/* Game mode Work Process background only.
-   The existing site title/cards stay untouched; this layer reproduces only the pale sky + pixel UI motifs. */
-.intro-game .intro-game-features {
+/* Game mode Work Process: replace the section's original mint fill itself.
+   No inset background panel is drawn; the pale sky fills #features edge to edge. */
+.intro-game .intro-features-section {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background:
-    linear-gradient(180deg, #d8eef9 0%, #e4f3fa 46%, #edf8fb 100%);
+  background: linear-gradient(180deg, #d8eef9 0%, #e4f3fa 46%, #edf8fb 100%) !important;
 }
 
-.intro-game .intro-game-features::before,
-.intro-game .intro-game-features::after {
+.intro-game .intro-features-section::before,
+.intro-game .intro-features-section::after {
   content: "";
   position: absolute;
   inset-inline: 0;
   z-index: 0;
-  height: 120px;
+  height: 130px;
   pointer-events: none;
 }
 
-.intro-game .intro-game-features::before {
+.intro-game .intro-features-section::before {
   top: 0;
   background: linear-gradient(180deg, rgba(255,255,255,0.2), rgba(255,255,255,0));
 }
 
-.intro-game .intro-game-features::after {
+.intro-game .intro-features-section::after {
   bottom: 0;
-  background: linear-gradient(0deg, rgba(255,255,255,0.28), rgba(255,255,255,0));
+  background: linear-gradient(0deg, rgba(255,255,255,0.26), rgba(255,255,255,0));
 }
 
-.intro-game .intro-game-features > div:not(.intro-game-process-bg-layer) {
+/* Keep all real heading/card content above the decorative layer. */
+.intro-game .intro-features-section > .mx-auto {
   position: relative;
   z-index: 2;
+}
+
+/* The old inner Work Process container must stay transparent, otherwise it reads as a rectangle. */
+.intro-game .intro-game-features {
+  background: transparent !important;
+  isolation: auto;
+  overflow: visible;
 }
 
 .intro-game-process-bg-layer {
@@ -50,6 +57,7 @@
   color: rgba(72, 160, 218, 0.19);
   transform:
     translate(calc(-50% + var(--decor-x, 0px)), calc(-50% + var(--decor-y, 0px)))
+    rotate(var(--decor-rotate, 0deg))
     scale(var(--decor-scale, 1));
   transform-origin: center;
   will-change: transform;
@@ -71,12 +79,12 @@
 .intro-game-process-decor.is-mail,
 .intro-game-process-decor.is-document,
 .intro-game-process-decor.is-chart {
-  width: 66px;
-  height: 66px;
+  width: 68px;
+  height: 68px;
 }
 
 .intro-game-process-decor.is-chat {
-  color: rgba(63, 154, 216, 0.2);
+  color: rgba(63, 154, 216, 0.21);
 }
 
 .intro-game-process-decor.is-mail,
@@ -92,8 +100,8 @@
 }
 
 .intro-game-process-decor.is-cloud {
-  width: 100px;
-  height: 66px;
+  width: 104px;
+  height: 68px;
   color: rgba(255, 255, 255, 0.58);
 }
 
@@ -115,9 +123,16 @@
   color: rgba(73, 164, 219, 0.105);
 }
 
-.intro-game-process-decor.is-grid svg {
+.intro-game-process-decor.is-grid svg,
+.intro-game-process-decor.is-pixel svg {
   fill: currentColor;
   stroke: none;
+}
+
+.intro-game-process-decor.is-pixel {
+  width: 24px;
+  height: 24px;
+  color: rgba(75, 175, 218, 0.2);
 }
 
 @media (max-width: 900px) {
@@ -140,8 +155,8 @@
 }
 
 @media (max-width: 767px) {
-  .intro-game .intro-game-features {
-    background: linear-gradient(180deg, #dceff8 0%, #e8f5fa 52%, #f0f9fb 100%);
+  .intro-game .intro-features-section {
+    background: linear-gradient(180deg, #dceff8 0%, #e8f5fa 52%, #f0f9fb 100%) !important;
   }
 
   .intro-game-process-decor {
@@ -161,6 +176,11 @@
   .intro-game-process-decor.is-cloud {
     width: 70px;
     height: 46px;
+  }
+
+  .intro-game-process-decor.is-pixel {
+    width: 18px;
+    height: 18px;
   }
 
   .intro-game-process-decor.is-grid:nth-of-type(even),
