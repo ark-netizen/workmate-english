@@ -8,6 +8,12 @@ import { TrialActionBar } from "./TrialActionBar";
 
 type FinalTrialStage = "fieldwork" | "comfort" | "report" | "kakao";
 
+const KAKAO_TEXT_MAX = 190;
+function truncateKakaoText(value: string | undefined, max: number) {
+  if (!value) return value;
+  return value.length > max ? `${value.slice(0, max - 1)}…` : value;
+}
+
 // "1분 체험하기" 게스트 전용 — 실제 화면을 그대로 쓰되 하나의 안내 카드로 진행한다.
 // 업무 3건 이후에는 "외근 중" 반복 → 바쁨 감지 → 동료의 선제 위로 메시지 → 리포트 → 카카오 알림까지
 // 실제 서비스의 연결 구조가 보이도록 체험 단계를 이어준다.
@@ -181,48 +187,39 @@ export function TrialGuideBar() {
   const goodCount = report?.goodExpressions?.length ?? 0;
   const correctionCount = report?.improvementPoints?.length ?? 0;
   const memorizeCount = report?.keyPhrases?.length ?? 0;
-  const firstCorrection = report?.improvementPoints?.[0];
+  const firstGood = report?.goodExpressions?.[0];
   const firstMemorize = report?.keyPhrases?.[0];
+
+  // 서버의 buildKakaoReportText()와 같은 순서/길이 제한으로 구성한다.
+  // 실제 카카오 발송은 text 템플릿 한 덩어리 + 링크 버튼 하나이며, 별도 강조 카드 UI는 없다.
+  const kakaoPreviewLines = [
+    "[부캐영어] 오늘의 업무일지가 도착했어요 📋",
+    `잘한 표현 ${goodCount}건 · 교정 ${correctionCount}건 · 꼭 기억할 표현 ${memorizeCount}건`,
+    firstGood?.text ? `✅ \"${truncateKakaoText(firstGood.text, 40)}\"` : null,
+    firstMemorize?.en
+      ? `📌 ${truncateKakaoText(firstMemorize.en, 30)} (${truncateKakaoText(firstMemorize.ko, 20)})`
+      : null,
+  ].filter((line): line is string => Boolean(line));
+  const kakaoPreviewText = truncateKakaoText(kakaoPreviewLines.join("\n"), KAKAO_TEXT_MAX) ?? "";
 
   return (
     <>
       {showKakaoPreview && report && (
-        <div className="relative z-20 mx-3 my-2 overflow-hidden rounded-2xl border border-[#ded36b] bg-[#fee500] shadow-xl md:fixed md:right-[23rem] md:top-1/2 md:mx-0 md:my-0 md:w-[340px] md:-translate-y-1/2">
-          <div className="flex items-center justify-between px-4 py-3">
-            <div>
-              <p className="text-xs font-bold text-[#2d2926]">카카오톡 알림 미리보기</p>
-              <p className="mt-0.5 text-[10px] text-[#2d2926]/60">퇴근 후 업무일지 알림</p>
-            </div>
-            <span className="rounded-full bg-[#2d2926] px-2 py-1 text-[10px] font-bold text-white">부캐영어</span>
+        <div className="relative z-20 mx-3 my-2 overflow-hidden rounded-2xl border border-[#d9cf73] bg-[#fee500] shadow-xl md:fixed md:right-[23rem] md:top-1/2 md:mx-0 md:my-0 md:w-[340px] md:-translate-y-1/2">
+          <div className="px-4 py-3">
+            <p className="text-xs font-bold text-[#2d2926]">카카오톡 알림 미리보기</p>
+            <p className="mt-0.5 text-[10px] text-[#2d2926]/60">실제 ‘나에게 보내기’ text 템플릿 형식</p>
           </div>
+
           <div className="mx-3 mb-3 rounded-xl bg-white p-4 text-[#242424] shadow-sm">
-            <p className="text-sm font-bold">오늘의 업무일지가 도착했어요 📋</p>
-            <p className="mt-2 text-xs leading-relaxed text-[#666]">
-              잘한 표현 {goodCount}건 · 교정 {correctionCount}건 · 꼭 기억할 표현 {memorizeCount}건
-            </p>
-
-            {firstMemorize?.en && (
-              <div className="mt-3 rounded-lg bg-[#fff9d9] p-3">
-                <p className="text-[10px] font-bold text-[#7b6410]">📌 꼭 기억할 표현</p>
-                <p className="mt-1 text-xs font-semibold leading-relaxed text-[#2d2926]">{firstMemorize.en}</p>
-                {firstMemorize.ko && <p className="mt-0.5 text-[11px] text-[#665d42]">{firstMemorize.ko}</p>}
-              </div>
-            )}
-
-            {firstCorrection?.before && firstCorrection?.after && (
-              <div className="mt-2 rounded-lg bg-[#f6f7f9] p-3">
-                <p className="text-[10px] font-bold text-[#666]">✏️ 오늘의 교정 포인트</p>
-                <p className="mt-1 text-[11px] text-[#8a8a8a] line-through">{firstCorrection.before}</p>
-                <p className="mt-0.5 text-xs font-medium text-[#333]">→ {firstCorrection.after}</p>
-              </div>
-            )}
-
-            <div className="mt-4 rounded-lg bg-[#f2f2f2] px-3 py-2 text-center text-[11px] font-medium text-[#555]">
+            <p className="whitespace-pre-line text-[12px] leading-[1.65] text-[#242424]">{kakaoPreviewText}</p>
+            <div className="mt-4 border-t border-[#ededed] pt-3 text-center text-[11px] font-medium text-[#555]">
               전체 리포트 보기
             </div>
           </div>
+
           <p className="px-4 pb-3 text-[10px] leading-relaxed text-[#2d2926]/65">
-            체험판에서는 실제 카카오톡으로 발송하지 않고 수신 화면만 미리 보여드려요.
+            체험판에서는 실제 카카오톡으로 발송하지 않고, 실제 발송 payload와 같은 내용만 미리 보여드려요.
           </p>
         </div>
       )}
