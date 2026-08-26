@@ -37,8 +37,8 @@ export function ConversationView({ conversation }: { conversation: Conversation 
   const isHintGatedRole = isTrial && contact?.role === "manager";
   const hintRevealed = trialHintSignal > 0;
   const shouldPrefillTrial = !isHintGatedRole || hintRevealed;
-  // 체험판의 기본 업무 3건을 모두 처리한 뒤에는 실제 "외근 중" 버튼을 두 번 눌러
-  // 반복된 바쁨을 감지하고 고함항아리에서 동료가 먼저 말을 거는 기능을 보여준다.
+  // 체험판의 기본 업무 3건을 모두 처리한 뒤에도 실제 버튼은 평소와 같은 모습으로 둔다.
+  // 반복 외근 2회 시연은 우측 TrialGuideBar의 "다음" 버튼이 대신 처리한다.
   const allTrialTasksDone =
     isTrial && todayItems.length > 0 && todayItems.every((item) => item.status !== "pending");
 
@@ -138,7 +138,7 @@ export function ConversationView({ conversation }: { conversation: Conversation 
         setTrialFieldWorkClicks(nextCount);
         setFieldWorkMessage(
           nextCount < 2
-            ? "바쁨 신호가 1회 기록됐어요. 한 번 더 ‘지금 외근 중’을 눌러보세요."
+            ? "외근 신호가 기록됐어요. 체험판에서는 오른쪽 ‘다음’ 버튼으로 반복 감지를 한 번에 시연할 수 있어요."
             : "반복된 바쁨을 감지했어요. 동료가 먼저 말을 걸어오는 중이에요...",
         );
       } else {
@@ -154,8 +154,6 @@ export function ConversationView({ conversation }: { conversation: Conversation 
       setFieldWorkPending(false);
     }
   };
-
-  const emphasizeTrialFieldWork = allTrialTasksDone && !isVent && trialFieldWorkClicks < 2;
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col overflow-hidden">
@@ -255,25 +253,15 @@ export function ConversationView({ conversation }: { conversation: Conversation 
               <button
                 type="button"
                 onClick={handleFieldWork}
-                disabled={fieldWorkPending || (allTrialTasksDone && trialFieldWorkClicks >= 2)}
+                disabled={fieldWorkPending}
                 title={
-                  emphasizeTrialFieldWork
-                    ? "체험판: 두 번 누르면 반복된 바쁨을 감지해 동료가 먼저 말을 걸어옵니다."
+                  allTrialTasksDone
+                    ? "실서비스에서는 이 버튼을 눌러 외근 상태로 미룰 수 있어요. 체험판의 반복 감지 시연은 오른쪽 ‘다음’ 버튼으로 진행합니다."
                     : "지금 답장하기 어려우면 눌러보세요. 30분 뒤에 같은 연락이 다시 와요."
                 }
-                className={`shrink-0 rounded-full px-3 py-1 text-xs disabled:opacity-60 ${
-                  emphasizeTrialFieldWork
-                    ? "animate-pulse border-2 border-[#1a56ff] bg-[#eef4ff] font-semibold text-[#1a56ff] ring-2 ring-[#1a56ff]/15"
-                    : "border border-border text-foreground/60 hover:bg-black/[.03]"
-                }`}
+                className="shrink-0 rounded-full border border-border px-3 py-1 text-xs text-foreground/60 hover:bg-black/[.03] disabled:opacity-60"
               >
-                {allTrialTasksDone
-                  ? trialFieldWorkClicks >= 2
-                    ? "바쁨 감지됨"
-                    : trialFieldWorkClicks === 1
-                      ? "지금 외근 중 (1/2)"
-                      : "지금 외근 중 · 2번 눌러보기"
-                  : "지금 외근 중"}
+                지금 외근 중
               </button>
             )}
             <SpellFixButton text={text} onFixed={setText} />
