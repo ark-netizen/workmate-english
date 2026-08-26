@@ -33,17 +33,22 @@ self.addEventListener("push", (event) => {
   const title = payload.title || "부캐영어";
   const targetUrl = payload.url || "/";
   const conversationId = conversationIdFromUrl(targetUrl);
-  // 리포트/고함항아리/이미 보낸 답장의 회신 알림에는 "외근 중"이 의미가 없다.
+  const isReview = title.includes("복습");
+  // 리포트/고함항아리/복습/이미 보낸 답장의 회신 알림에는 "외근 중"이 의미가 없다.
   // 실제 업무 연락(메신저/이메일)에서만 30분 재알림 액션을 노출한다.
   const allowFieldWork =
     !!conversationId &&
+    !isReview &&
     title !== "고함항아리" &&
     !title.includes("회신했습니다") &&
     !title.includes("업무일지");
 
-  // 대화/이메일이 아닌 리포트·일반 시스템 알림에 "메시지 작성하기"가 붙으면
-  // 버튼 문구와 실제 이동 경로가 달라진다. 대화 target일 때만 reply 액션을 보여준다.
-  const actions = conversationId ? [{ action: "reply", title: "메시지 작성하기" }] : [];
+  // 대화/이메일이 아닌 리포트·일반 시스템 알림에 액션 버튼이 붙으면
+  // 버튼 문구와 실제 이동 경로가 달라진다. 대화 target일 때만 이동 액션을 보여준다.
+  // 복습 알림은 일반 업무 연락과 구분해서 목적이 바로 보이도록 "복습하기"로 표시한다.
+  const actions = conversationId
+    ? [{ action: "reply", title: isReview ? "복습하기" : "메시지 작성하기" }]
+    : [];
   if (allowFieldWork) {
     actions.push({ action: "field-work", title: "외근 중 (30분 후 재알림)" });
   }
