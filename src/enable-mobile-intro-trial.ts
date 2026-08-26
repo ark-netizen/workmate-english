@@ -138,8 +138,8 @@ const steps: PreviewStep[] = [
     title: "근무 기록이 쌓이면 출석·연차·마일스톤도 쌓여요",
     subtitle: "하루씩 출근한 기록을 캘린더로 보고, 연속 출근과 누적 출석을 게임처럼 이어갈 수 있어요.",
     points: [
-      "연속 출근 5일마다 적립연차가 +1 되고, 직급별 기본 연차도 따로 있어요(사원 2일 → 주임 3일 …).",
-      "빠진 날은 연차로 덮이고, 남은 연차가 없으면 연속 기록이 처음부터 다시 시작돼요.",
+      "연속 출근 5일마다 적립연차가 +1 되고, 직급 연차도 따로 있어요(사원 2개 → 주임 3개 …).",
+      "빠진 날은 직급 연차 → 적립 연차 순으로 덮이고, 둘 다 없으면 연속 기록이 0부터 다시 시작돼요.",
     ],
     screen: `
       <div class="mtp-appbar"><b>출석</b><span>2026년 8월</span></div>
@@ -164,10 +164,10 @@ const steps: PreviewStep[] = [
           <div class="mtp-calendar-head"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
           <div class="mtp-calendar">
             <span class="muted">26</span><span class="muted">27</span><span class="muted">28</span><span class="muted">29</span><span class="muted">30</span><span class="muted">31</span><span>1</span>
-            <span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span>
-            <span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span>
-            <span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span class="attended">22</span>
-            <span class="attended">23</span><span class="attended">24</span><span class="today attended">25</span><span>26</span><span>27</span><span>28</span><span>29</span>
+            <span>2</span><span class="attended">3</span><span class="attended">4</span><span class="attended">5</span><span class="attended">6</span><span class="attended">7</span><span>8</span>
+            <span>9</span><span class="attended">10</span><span class="attended">11</span><span class="attended">12</span><span class="attended">13</span><span class="attended">14</span><span>15</span>
+            <span>16</span><span class="attended">17</span><span class="attended">18</span><span class="attended">19</span><span class="attended">20</span><span class="attended">21</span><span>22</span>
+            <span>23</span><span class="attended">24</span><span class="today attended">25</span><span>26</span><span>27</span><span>28</span><span>29</span>
             <span>30</span><span>31</span><span class="muted">1</span><span class="muted">2</span><span class="muted">3</span><span class="muted">4</span><span class="muted">5</span>
           </div>
           <div class="mtp-calendar-legend"><span>◎ 출근</span><span>◉ 외근</span><span>◌ 휴가</span></div>
