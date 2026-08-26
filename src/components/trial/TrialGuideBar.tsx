@@ -22,6 +22,32 @@ function wait(ms: number) {
   return new Promise<void>((resolve) => window.setTimeout(resolve, ms));
 }
 
+// 체험판에서는 서버 푸시 구독을 별도로 저장하지 않는다. 대신 사용자가 외근 시연의 "다음"을 누른
+// 바로 그 사용자 액션에서 브라우저 알림 권한을 요청하고, 기존 서비스워커로 실제 Edge/브라우저
+// 시스템 알림을 띄워 실서비스 알림 위치와 함께 체험할 수 있게 한다.
+async function showTrialBrowserNotification(title: string, body: string, url: string) {
+  if (!("Notification" in window) || !("serviceWorker" in navigator)) return;
+
+  try {
+    let permission = Notification.permission;
+    if (permission === "default") {
+      permission = await Notification.requestPermission();
+    }
+    if (permission !== "granted") return;
+
+    await navigator.serviceWorker.register("/sw.js");
+    const registration = await navigator.serviceWorker.ready;
+    await registration.showNotification(title, {
+      body,
+      icon: "/brand/logo-mark.png",
+      tag: "trial-field-work-preview",
+      data: { url },
+    });
+  } catch {
+    // 알림 권한/브라우저 정책 문제로 실패해도 1분 체험 흐름 자체는 계속 진행한다.
+  }
+}
+
 // "1분 체험하기" 게스트 전용 — 실제 화면을 그대로 쓰되 하나의 안내 카드로 진행한다.
 // 업무 3건 이후에는 "외근 중" 반복 → 사이트 알림 → 바쁨 감지 → 동료의 선제 위로 메시지 → 리포트 → 카카오 알림까지
 // 실제 서비스의 연결 구조가 보이도록 체험 단계를 이어준다.
@@ -31,8 +57,8 @@ export function TrialGuideBar() {
   const { targets, doneCount, allDone, activeTarget } = useTrialTargets();
   const navigate = useNavigate();
   const location = useLocation();
-  // 현재 저장값은 businessMode=true가 비즈니스모드, false가 게임모드다.
-  const isGameMode = !businessMode;
+  // 이 프로젝트 관례상 businessMode=true가 실제 게임모드다.
+  const isGameMode = businessMode;
   const [finishing, setFinishing] = useState(false);
   const [sending, setSending] = useState(false);
   const [fieldWorkSimulating, setFieldWorkSimulating] = useState(false);
@@ -103,8 +129,12 @@ export function TrialGuideBar() {
     if (allDone) {
       // 체험판에서는 실제 버튼을 두 번 찾아 누르게 하지 않고, "다음" 한 번으로 외근 이벤트 2회를 기록한다.
       // 다만 외근 신호를 바로 처리해 위로 메시지가 먼저 나타나면 알림 UI를 볼 시간이 없으므로,
-      // 실제 사이트의 InAppBanner와 같은 우하단 위치/크기의 알림을 먼저 충분히 보여준 뒤 신호 2회를 처리한다.
+      // 우하단 인앱 알림과 실제 Edge/브라우저 알림을 먼저 보여준 뒤 신호 2회를 처리한다.
       if (!report && !ventConversation) {
+        const targetPath = colleagueTarget?.path ?? "/messenger";
+        // requestPermission이 브라우저의 사용자 액션으로 인정되도록 첫 await 전에 호출한다.
+        void showTrialBrowserNotification("Jake · 동료", fieldWorkPreviewBody, targetPath);
+
         if (colleagueTarget && location.pathname !== colleagueTarget.path) {
           navigate(colleagueTarget.path);
         }
@@ -207,7 +237,7 @@ export function TrialGuideBar() {
   const message = allDone
     ? !report
       ? finalStage === "fieldwork"
-        ? "실서비스에서는 ‘지금 외근 중’을 누르면 예정된 연락을 30분 뒤 다시 받을 수 있어요.\n다음을 누르면 우하단에 뜨는 웹 알림을 먼저 보여드린 뒤, 외근 신호 2회를 한 번에 재현할게요."
+        ? "실서비스에서는 ‘지금 외근 중’을 누르면 예정된 연락을 30분 뒤 다시 받을 수 있어요.\n다음을 누르면 우하단 웹 알림과 Edge/브라우저 알림을 먼저 보여드린 뒤, 외근 신호 2회를 한 번에 재현할게요."
         : onVentPage
           ? "외근 신호가 반복되자 동료가 먼저 말을 걸어왔어요. 이렇게 먼저 온 위로 메시지는 고함항아리에 모여요."
           : "반복된 바쁨을 감지했어요. 동료의 메시지로 이동하는 중이에요..."
