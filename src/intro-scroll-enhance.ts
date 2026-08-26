@@ -1,6 +1,6 @@
 const TARGET_SELECTOR = [
-  ".intro-game-features > div:first-child > div",
-  ".intro-business-features > div:first-child > div",
+  ".intro-game-features > div:not(.intro-game-flutter-layer):not(.fixed) > .snap-center",
+  ".intro-business-features > div:not(.fixed) > .snap-center",
   ".intro-trial-showcase",
   ".intro-reviews",
   ".intro-final-cta",
@@ -57,8 +57,14 @@ function setup(page: HTMLElement) {
   const scrollToTarget = (index: number) => {
     const target = targets[index];
     if (!target) return;
+
     const rect = target.getBoundingClientRect();
-    const destination = window.scrollY + rect.top - navHeight();
+    const topInset = navHeight();
+    const usableHeight = Math.max(1, window.innerHeight - topInset);
+    const targetCenter = window.scrollY + rect.top + rect.height / 2;
+    const viewportCenter = topInset + usableHeight / 2;
+    const destination = targetCenter - viewportCenter;
+
     window.scrollTo({ top: Math.max(0, destination), behavior: "smooth" });
   };
 
@@ -228,6 +234,9 @@ function setup(page: HTMLElement) {
       const button = document.createElement("button");
       button.type = "button";
       button.setAttribute("aria-label", targetLabel(target, index));
+      button.setAttribute("aria-posinset", String(index + 1));
+      button.setAttribute("aria-setsize", String(targets.length));
+      button.title = targetLabel(target, index);
       button.addEventListener("click", () => scrollToTarget(index));
       progress.appendChild(button);
       return button;
