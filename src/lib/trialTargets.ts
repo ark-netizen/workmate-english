@@ -1,5 +1,6 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useWorkday } from "@/context/useWorkday";
+import { useTrialSequence } from "@/lib/trialSequence";
 
 export type TrialRole = "colleague" | "manager" | "client";
 export const TRIAL_ROLE_ORDER: TrialRole[] = ["colleague", "manager", "client"];
@@ -16,12 +17,14 @@ export interface TrialTarget {
   messageId?: string;
 }
 
-// "1분 체험하기" 진행 상태(동료→상사→거래처 순서로 아직 답장 안 한 대상 찾기) — TrialGuideBar와
-// HomePage(SectionTourGuide의 "새 메시지" 단계)가 같은 기준으로 다음 대상을 알아야 해서 공유 훅으로 분리
+// 실제 대화/메일 데이터는 체험 단계 자체를 결정하지 않는다.
+// trialStep이 유일한 진행 상태이고, 여기서는 각 단계가 사용할 실제 target만 찾아준다.
+// 예외적으로 HOME_TOUR가 끝난 뒤 첫 연락이 실제로 배달된 순간만 감지해서 colleague 단계로 넘긴다.
 export function useTrialTargets() {
   const { contacts, conversations, emailThreads } = useWorkday();
+  const { step, setStep } = useTrialSequence();
 
-  const targets = useMemo<TrialTarget[]>(() => {
+  const actualTargets = useMemo<TrialTarget[]>(() => {
     return TRIAL_ROLE_ORDER.map((role): TrialTarget | null => {
       const contact = contacts.find((c) => c.role === role);
       if (!contact) return null;
@@ -54,11 +57,18 @@ export function useTrialTargets() {
     }).filter((t): t is TrialTarget => t !== null);
   }, [contacts, conversations, emailThreads]);
 
+  // 최초 홈 투어가 닫히면 HomePage가 첫 연락을 deliverNext()한다.
+  // 그 데이터가 실제로 도착한 순간만 HOME_TOUR → COLLEAGUE로 전환한다.
+  // 이후 단계는 모두 TrialGuideBar의 명시적 다음 액션으로만 바뀐다.
+  useEffect(() => {
+    if (step === "home-tour" && actualTargets.length > 0) {
+      setStep("colleague");
+    }
+  }, [step, actualTargets.length, setStep]);
+
+  // HOME_TOUR 동안에는 예약/선행 데이터가 있어도 홈 투어가 흔들리지 않도록 target을 노출하지 않는다.
+  const targets = step === "home-tour" ? [] : actualTargets;
   const doneCount = targets.filter((t) => t.done).length;
-  // 동료·상사·거래처 순서로 시차를 두고 도착하게 바뀌어서, 아직 배달 안 된 대상은 targets에
-  // 아예 안 잡힌다(예: 상사가 도착 전이면 targets.length===1) — targets.length만 보면 "1명뿐이니
-  // 다 끝났다"고 오판해서 아직 안 온 대상이 있는데도 조기 퇴근 처리가 됐었다. 반드시 3명 전원이
-  // 도착(targets에 다 잡힘)하고 전원 답장까지 마쳤을 때만 끝난 것으로 본다
   const allDone = targets.length === TRIAL_ROLE_ORDER.length && doneCount === TRIAL_ROLE_ORDER.length;
   const activeTarget = targets.find((t) => !t.done) ?? null;
 
