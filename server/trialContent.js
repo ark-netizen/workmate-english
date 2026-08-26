@@ -51,7 +51,7 @@ export const TRIAL_REPLY = {
   subject: null,
   reaction_type: 'positive',
   needs_followup: false,
-  korean_hint: '답장 고맙다는 뜻이에요. 체험은 여기까지 — 퇴근하고 리포트를 확인해보세요.',
+  korean_hint: '답장 고맙다는 뜻이에요. 다음 체험 안내에 따라 이어가보세요.',
   reply_hints: [],
   word_hints: [],
 }
