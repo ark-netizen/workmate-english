@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
@@ -19,6 +19,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const unreadCount =
     conversations.reduce((sum, conversation) => sum + conversation.unreadCount, 0) +
     emailThreads.reduce((sum, thread) => sum + thread.unreadCount, 0);
+
+  // 알림을 이미 허용해 둔 시연 브라우저는 설정의 "알림 켜기"를 다시 누르지 않을 수 있다.
+  // 앱에 들어올 때 현재 등록된 서비스워커의 새 버전을 조용히 확인해서, 푸시 액션/외근 재알림
+  // 수정사항이 오래된 sw.js 때문에 적용되지 않는 상황을 막는다. 권한 요청이나 신규 구독은 하지 않는다.
+  useEffect(() => {
+    if (!("serviceWorker" in navigator)) return;
+    navigator.serviceWorker
+      .getRegistration()
+      .then((registration) => registration?.update())
+      .catch(() => {});
+  }, []);
 
   const shellTheme = gameMode
     ? ({
