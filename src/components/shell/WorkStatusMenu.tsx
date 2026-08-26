@@ -32,19 +32,10 @@ export function WorkStatusMenu({ workStatus }: { workStatus: WorkStatus }) {
   const isLeave = workStatus === "leave";
   const isWorking = workStatus === "working";
 
-  const handleReturnToWork = async () => {
-    setOpen(false);
-    setBusy(true);
-    try {
-      await takeLeave("cancel");
-    } finally {
-      setBusy(false);
-    }
-  };
-
   const handleLeave = async () => {
     setPendingLeave(false);
     setBusy(true);
+    setLeaveError(null);
     try {
       const result = await takeLeave("annual");
       if (result.skipped) {
@@ -52,6 +43,8 @@ export function WorkStatusMenu({ workStatus }: { workStatus: WorkStatus }) {
           result.reason === "no-leave-balance" ? "사용 가능한 연차가 없어요." : "연차를 사용할 수 없어요.",
         );
       }
+    } catch (err) {
+      setLeaveError(err instanceof Error ? err.message : "연차 처리 중 문제가 발생했습니다.");
     } finally {
       setBusy(false);
     }
@@ -84,8 +77,9 @@ export function WorkStatusMenu({ workStatus }: { workStatus: WorkStatus }) {
         <div className="absolute left-0 top-full z-30 mt-2 w-44 overflow-hidden rounded-lg border border-border bg-surface py-1 shadow-lg">
           <button
             type="button"
-            onClick={isLeave ? handleReturnToWork : () => setOpen(false)}
-            disabled={isWorking || isOffWork}
+            onClick={() => setOpen(false)}
+            disabled={isWorking || isOffWork || isLeave}
+            title={isLeave ? "연차/반차 사용으로 오늘 근무가 마감되었습니다." : undefined}
             className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-foreground/80 hover:bg-black/[.03] disabled:cursor-default disabled:text-foreground/40 disabled:hover:bg-transparent"
           >
             근무 중
@@ -109,7 +103,8 @@ export function WorkStatusMenu({ workStatus }: { workStatus: WorkStatus }) {
               setOpen(false);
               setConfirmFinish(true);
             }}
-            disabled={isOffWork}
+            disabled={isOffWork || isLeave}
+            title={isLeave ? "연차/반차 사용으로 오늘 근무가 이미 마감되었습니다." : undefined}
             className="flex w-full items-center px-3 py-2 text-left text-sm text-foreground/80 hover:bg-black/[.03] disabled:cursor-default disabled:text-foreground/40 disabled:hover:bg-transparent"
           >
             퇴근 하기
@@ -129,7 +124,7 @@ export function WorkStatusMenu({ workStatus }: { workStatus: WorkStatus }) {
       <ConfirmDialog
         open={pendingLeave}
         title="연차를 사용하시겠어요?"
-        description="아직 도착하지 않은 오늘 남은 연락은 건너뛰고, 이미 답변한 대화는 그대로 남습니다."
+        description="연차를 사용하면 오늘 근무가 마감되고, 아직 도착하지 않은 연락은 건너뜁니다. 이미 답변한 대화는 그대로 남습니다."
         confirmLabel="연차 사용"
         onConfirm={handleLeave}
         onCancel={() => setPendingLeave(false)}
