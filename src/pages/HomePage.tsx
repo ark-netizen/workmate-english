@@ -605,8 +605,9 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* 홈 화면의 단계 안내·링 강조는 1분 무료체험 전용. 일반 로그인 계정에는 절대 마운트하지 않는다. */}
-      {isTrial === true && (
+      {/* 홈 화면의 단계 안내·링 강조는 1분 무료체험의 최초 홈 진입에서만 보여준다.
+          첫 연락이 도착한 뒤 다시 홈으로 돌아오는 퇴근 단계에서는 재마운트하지 않아 체험 안내끼리 겹치지 않는다. */}
+      {isTrial === true && todayItems.length === 0 && (
         <SectionTourGuide
           steps={tourSteps}
           persist={false}
