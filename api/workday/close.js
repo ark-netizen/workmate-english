@@ -11,23 +11,12 @@ import {
   resetAccountProgress,
 } from '../../server/workday.js'
 import { admin } from '../../server/db.js'
-import { getAdminRole } from '../../server/admin.js'
 import { withErrors } from '../../server/http.js'
 import { sendPushToUser } from '../../server/push.js'
 
 export default withErrors('POST', async (req, res) => {
   const userId = await requireUser(req)
   const { workdayId, reset, advanceDay, resetAccount, testKakaoInactive } = req.body || {}
-
-  // 아래 분기들은 실제 사용자 기능이 아니라 운영/시연용 데이터 조작 도구다.
-  // UI를 숨기는 것만으로는 직접 API 호출을 막을 수 없으므로 full 관리자만 실행할 수 있게 서버에서도 차단한다.
-  if (reset || advanceDay || resetAccount || testKakaoInactive) {
-    const role = await getAdminRole(userId)
-    if (role !== 'full') {
-      res.status(403).json({ error: 'QA 관리자 권한이 필요합니다' })
-      return
-    }
-  }
 
   if (testKakaoInactive) {
     const result = await devSendKakaoInactiveReminder(userId)
