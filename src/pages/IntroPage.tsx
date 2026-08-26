@@ -128,18 +128,42 @@ function ScenarioExample() {
 function NotificationExample() {
   return (
     <div className="rounded-2xl bg-white p-6 shadow-lg ring-1 ring-black/5">
+      <p className="mb-2 text-sm font-medium text-foreground/50">새 업무 연락 도착</p>
       <div className="flex items-start gap-3">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-foreground/10 text-xl">🔔</span>
         <div className="min-w-0 flex-1">
-          <p className="text-base font-semibold">Ellen · 상사</p>
+          <div className="flex items-baseline justify-between gap-2">
+            <p className="text-base font-semibold">Ellen · 상사</p>
+            <span className="shrink-0 text-sm text-foreground/40">오후 1:30</span>
+          </div>
           <p className="mt-0.5 text-base text-foreground/60">Could you please review this by 3pm today?</p>
         </div>
       </div>
-      <div className="mt-4 flex gap-2 border-t border-border pt-4">
-        <span className="flex-1 rounded-full bg-accent px-3 py-2.5 text-center text-base font-medium text-white">웹 알림</span>
-        <span className="flex-1 rounded-full bg-[#FEE500] px-3 py-2.5 text-center text-base font-medium text-[#191919]">카카오톡 알림</span>
+      <div className="mt-4 border-t border-border pt-4">
+        <p className="mb-2 text-sm font-medium text-foreground/50">받고 싶은 곳으로</p>
+        <div className="flex gap-2">
+          <span className="flex-1 rounded-full bg-accent px-3 py-2.5 text-center text-base font-medium text-white">웹 알림</span>
+          <span className="flex-1 rounded-full bg-[#FEE500] px-3 py-2.5 text-center text-base font-medium text-[#191919]">카카오톡 알림</span>
+        </div>
       </div>
-      <p className="mt-3 break-keep text-center text-sm text-foreground/50 [text-wrap:pretty]">바쁘면 외근 중으로 미루고 30분 뒤 다시 받아요.</p>
+      {/* 문구에만 있던 "30분 뒤 다시 알려드려요"를 실제 재알림 화면으로 보여준다 */}
+      <div className="mt-4 border-t border-border pt-4">
+        <p className="mb-2 text-sm font-medium text-foreground/50">바쁠 땐 미루기</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="rounded-full border border-border px-3 py-1.5 text-sm font-medium text-foreground/60">지금 외근 중</span>
+          <span className="text-sm text-foreground/40">→ 30분 뒤 다시 알림</span>
+        </div>
+        <div className="mt-3 flex items-start gap-3 rounded-xl bg-foreground/[.04] p-3">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-base">🔔</span>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-baseline justify-between gap-2">
+              <p className="text-sm font-semibold">Ellen · 상사</p>
+              <span className="shrink-0 text-xs font-medium text-accent">오후 2:00 · 재알림</span>
+            </div>
+            <p className="mt-0.5 truncate text-sm text-foreground/60">Could you please review this by 3pm today?</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -156,6 +180,26 @@ function ReportExample() {
         ))}
       </div>
       <p className="mt-4 break-keep text-base leading-relaxed text-foreground/60 [text-wrap:pretty]">"이번 주는 이메일 격식 표현이 눈에 띄게 자연스러워졌어요."</p>
+      {/* 문구의 "매주·매달 성장 흐름"이 그림엔 빠져 있어서, 주차별 추이를 함께 보여준다 */}
+      <div className="mt-4 border-t border-border pt-4">
+        <div className="flex items-baseline justify-between gap-2">
+          <p className="text-sm font-medium text-foreground/50">최근 4주 성장 흐름</p>
+          <span className="text-sm font-medium text-accent">↑ 꾸준히 상승</span>
+        </div>
+        <div className="mt-3 flex items-end gap-3">
+          {[{ label: "1주", pct: 42 }, { label: "2주", pct: 58 }, { label: "3주", pct: 74 }, { label: "4주", pct: 95 }].map((w, i, arr) => (
+            <div key={w.label} className="flex flex-1 flex-col items-center gap-2">
+              <div className="flex h-24 w-full items-end">
+                <div
+                  className={`w-full rounded-t-md ${i === arr.length - 1 ? "bg-accent" : "bg-accent/35"}`}
+                  style={{ height: `${w.pct}%` }}
+                />
+              </div>
+              <span className="text-xs text-foreground/40">{w.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

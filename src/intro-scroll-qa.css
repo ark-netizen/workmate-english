@@ -14,7 +14,15 @@
   .intro-business .intro-business-features > div:not(.fixed) > .snap-center {
     box-sizing: border-box !important;
     display: grid !important;
-    min-height: clamp(560px, 72dvh, 700px) !important;
+    /* 옆 카드가 화면에 안 들어오는 최소 높이 (intro-scroll-enhance.css와 같은 값 유지).
+       72dvh는 이 최소값보다 커서 짧은 카드일수록 위아래 공백이 그냥 버려졌다. */
+    min-height: clamp(580px, calc(50dvh + 214px), 780px) !important;
+  }
+
+  /* 게임 카드는 창 크롬(제목줄) 때문에 비즈니스보다 약 60px 크다.
+     같은 칸 높이를 쓰면 다음 카드가 화면 밑에 걸치므로 그만큼만 더 준다. */
+  .intro-game .intro-game-features > div:not(.intro-game-flutter-layer):not(.fixed) > .snap-center {
+    min-height: clamp(620px, calc(50dvh + 240px), 810px) !important;
     align-items: center !important;
     padding-block: clamp(26px, 3.5vh, 38px) !important;
     scroll-margin-top: var(--intro-nav-offset, 72px) !important;

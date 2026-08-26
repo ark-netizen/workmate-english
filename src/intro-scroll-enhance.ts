@@ -303,7 +303,9 @@ function setup(page: HTMLElement) {
     setActive(next);
     scrollToTarget(next);
     window.clearTimeout(unlockTimer);
-    unlockTimer = window.setTimeout(() => { wheelLocked = false; }, 720);
+    // 트랙패드 관성으로 여러 장이 한 번에 넘어가는 걸 막는 잠금이라 없앨 수는 없지만,
+    // 720ms는 다음 카드로 넘기려 할 때 입력이 씹히는 느낌이 커서 줄인다.
+    unlockTimer = window.setTimeout(() => { wheelLocked = false; }, 450);
   };
 
   const mutationObserver = new MutationObserver(refresh);
