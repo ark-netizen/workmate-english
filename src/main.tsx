@@ -28,6 +28,7 @@ import "./mobile-runtime-qa.css";
 import "./mobile-nav-order-fix.css";
 // 히어로 글자 확대는 index.html 인라인 규칙까지 덮어야 해서 CSS 중 가장 마지막에 둔다.
 import "./intro-hero-type-scale.css";
+import "./admin-layout-fix.css";
 import "./intro-scroll-enhance";
 import "./intro-game-flutter";
 import "./intro-copy-polish";
