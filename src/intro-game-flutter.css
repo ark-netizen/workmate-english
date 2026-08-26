@@ -1,5 +1,11 @@
-/* Game mode Work Process: full-bleed sky background.
-   Keep the top edge clean; fade to the next mint section only at the bottom. */
+/* Game mode Work Process + trial: one continuous sky background.
+   The hero ends in the same sky tone, Work Process stays flat sky, and the fade to mint happens only after the 1-minute trial. */
+
+/* Remove the mint band left by the original game hero gradient. */
+.intro-game .hero {
+  background: linear-gradient(180deg, #83cef1 0%, #cdeeff 72%, #dceff8 100%) !important;
+}
+
 .intro-game .intro-features-section {
   position: relative;
   isolation: isolate;
@@ -7,26 +13,13 @@
   background: #dceff8 !important;
 }
 
-/* Bottom-only transition into the following game-mode section (#eaf5dc). */
+/* Work Process itself has no end fade anymore. */
 .intro-game .intro-features-section::after {
-  content: "";
-  position: absolute;
-  z-index: 1;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 210px;
-  pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    rgba(220, 239, 248, 0) 0%,
-    rgba(226, 242, 239, 0.42) 42%,
-    rgba(234, 245, 220, 0.86) 78%,
-    #eaf5dc 100%
-  );
+  content: none !important;
+  display: none !important;
 }
 
-/* Keep all real heading/card content above the decorative layer and fade. */
+/* Keep all real heading/card content above the decorative layer. */
 .intro-game .intro-features-section > .mx-auto {
   position: relative;
   z-index: 3;
@@ -37,6 +30,39 @@
   background: transparent !important;
   isolation: auto;
   overflow: visible;
+}
+
+/* 1-minute trial continues the exact same sky and only then fades to the following mint section. */
+.intro-game .intro-trial-showcase {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding-bottom: 190px !important;
+  background: #dceff8 !important;
+}
+
+.intro-game .intro-trial-showcase::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 145px;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(220, 239, 248, 0) 0%,
+    rgba(226, 242, 239, 0.34) 38%,
+    rgba(234, 245, 220, 0.78) 76%,
+    #eaf5dc 100%
+  );
+}
+
+.intro-game .intro-trial-heading,
+.intro-game .intro-trial-frame {
+  position: relative;
+  z-index: 3;
 }
 
 .intro-game-process-bg-layer {
@@ -170,12 +196,21 @@
 }
 
 @media (max-width: 767px) {
-  .intro-game .intro-features-section {
+  .intro-game .hero {
+    background: linear-gradient(180deg, #9bd8f1 0%, #d3edf8 72%, #e2f2f9 100%) !important;
+  }
+
+  .intro-game .intro-features-section,
+  .intro-game .intro-trial-showcase {
     background: #e2f2f9 !important;
   }
 
-  .intro-game .intro-features-section::after {
-    height: 150px;
+  .intro-game .intro-trial-showcase {
+    padding-bottom: 150px !important;
+  }
+
+  .intro-game .intro-trial-showcase::after {
+    height: 115px;
     background: linear-gradient(180deg, rgba(226,242,249,0), #eaf5dc 100%);
   }
 
