@@ -32,6 +32,21 @@ const LIST_MARKER_CLASSES: Record<StatusTone, string> = {
   neutral: "text-foreground/40",
 };
 
+function InlineLoadError({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <div className="space-y-2 rounded-lg border border-red-200 bg-red-50/40 p-3">
+      <p className="text-sm text-red-600">{message}</p>
+      <button
+        type="button"
+        onClick={onRetry}
+        className="rounded-md border border-border bg-surface px-3 py-1.5 text-xs text-foreground/70 hover:bg-black/[.03]"
+      >
+        다시 시도
+      </button>
+    </div>
+  );
+}
+
 function ReportSection({
   index,
   title,
@@ -123,11 +138,26 @@ function KeyExpressionList({ items }: { items: KeyExpression[] }) {
 // 일간 리포트 상단에 "오늘 근무 시간 · 일간 평균 대비" 한 줄 요약 — Supabase에 실제 저장된 출퇴근 기록 기반
 function ReportWorkHoursLine() {
   const [days, setDays] = useState<WorkHoursDay[] | null>(null);
+  const [loadError, setLoadError] = useState(false);
 
-  useEffect(() => {
-    api.getWorkHoursHistory(30).then((res) => setDays(res.days));
+  const load = useCallback(async () => {
+    setLoadError(false);
+    try {
+      const res = await api.getWorkHoursHistory(30);
+      setDays(res.days);
+    } catch {
+      setDays(null);
+      setLoadError(true);
+    }
   }, []);
 
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  if (loadError) {
+    return <InlineLoadError message="근무 시간 요약을 불러오지 못했습니다." onRetry={() => void load()} />;
+  }
   if (!days) return null;
   const worked = days.filter((d) => d.minutes > 0);
   if (worked.length === 0) return null;
@@ -162,11 +192,23 @@ function ReportWorkHoursLine() {
 // 리포트를 보러 왔을 때 클릭 없이 바로 근무 시간이 보이도록 자동 로드(기존엔 "확인하기"를 눌러야만 나왔음)
 function WorkHoursSection() {
   const [days, setDays] = useState<WorkHoursDay[] | null>(null);
+  const [loadError, setLoadError] = useState(false);
   const [showChart, setShowChart] = useState(false);
 
-  useEffect(() => {
-    api.getWorkHoursHistory(14).then((res) => setDays(res.days));
+  const load = useCallback(async () => {
+    setLoadError(false);
+    try {
+      const res = await api.getWorkHoursHistory(14);
+      setDays(res.days);
+    } catch {
+      setDays(null);
+      setLoadError(true);
+    }
   }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   const workedDays = days?.filter((d) => d.minutes > 0) ?? [];
   const totalMinutes = workedDays.reduce((sum, d) => sum + d.minutes, 0);
@@ -190,6 +232,12 @@ function WorkHoursSection() {
           </button>
         )}
       </div>
+
+      {loadError && (
+        <div className="pt-4">
+          <InlineLoadError message="근무 시간 현황을 불러오지 못했습니다." onRetry={() => void load()} />
+        </div>
+      )}
 
       {days && (
         <div className="pt-4">
@@ -222,26 +270,34 @@ function WorkHoursSection() {
 function PeriodReportView({ range }: { range: PeriodRange }) {
   const [data, setData] = useState<PeriodReportResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [backfilling, setBackfilling] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
+    setLoadError(null);
+    setData(null);
     try {
       setData(await api.getPeriodReport(range));
+    } catch {
+      setLoadError("리포트를 불러오지 못했습니다.");
     } finally {
       setLoading(false);
     }
   }, [range]);
 
   useEffect(() => {
-    load();
+    void load();
   }, [load]);
 
   const handleBackfill = async () => {
     setBackfilling(true);
+    setLoadError(null);
     try {
       await api.devBackfillDay();
       await load();
+    } catch {
+      setLoadError("테스트 기록을 추가하지 못했습니다.");
     } finally {
       setBackfilling(false);
     }
@@ -272,14 +328,16 @@ function PeriodReportView({ range }: { range: PeriodRange }) {
       <div className="pt-5">
         {loading && <p className="text-sm text-foreground/50">불러오는 중...</p>}
 
-        {!loading && data && !data.available && (
+        {!loading && loadError && <InlineLoadError message={loadError} onRetry={() => void load()} />}
+
+        {!loading && !loadError && data && !data.available && (
           <div className="space-y-2">
             <p className="text-sm text-foreground/50">아직 {data.rangeLabel} 동안의 기록이 부족해요.</p>
             {backfillButton}
           </div>
         )}
 
-        {!loading && data?.available && (
+        {!loading && !loadError && data?.available && (
           <div className="space-y-5">
             <div>
               <p className="text-xs text-foreground/40">
@@ -311,10 +369,14 @@ function PeriodReportView({ range }: { range: PeriodRange }) {
   );
 }
 
+const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+
 function dateStringDaysAgo(n: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  return d.toISOString().slice(0, 10);
+  // 서버 리포트 날짜는 한국 업무일(Asia/Seoul) 기준이다. 브라우저 로컬 날짜를 만든 뒤
+  // toISOString()으로 UTC 변환하면 KST 00:00~08:59에 하루 전 날짜가 되어버리므로 KST 기준으로 직접 계산한다.
+  const kst = new Date(Date.now() + KST_OFFSET_MS);
+  kst.setUTCDate(kst.getUTCDate() - n);
+  return kst.toISOString().slice(0, 10);
 }
 
 const MAX_DAYS_BACK = 30;
@@ -325,24 +387,38 @@ function DailyReportView() {
   const [daysAgo, setDaysAgo] = useState(0);
   const [pastReport, setPastReport] = useState<WorkdayReport | null>(null);
   const [loadingPast, setLoadingPast] = useState(false);
+  const [pastError, setPastError] = useState<string | null>(null);
 
   // 퇴근 처리 후 "리포트 준비됨" 푸시를 눌러 들어오면, 앱이 이미 떠 있던 상태에서 받은
   // 스냅샷(아직 퇴근 전으로 캐싱된 상태)이 그대로 보여서 리포트가 안 뜨는 것처럼 보일 수 있다 —
   // 이 화면에 들어올 때마다 최신 상태를 강제로 한 번 더 받아온다
   useEffect(() => {
-    refresh();
+    refresh().catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    if (daysAgo === 0) return;
+    if (daysAgo === 0) {
+      setPastError(null);
+      return;
+    }
     let cancelled = false;
+    setPastReport(null);
+    setPastError(null);
     setLoadingPast(true);
-    api.getDailyReportForDate(dateStringDaysAgo(daysAgo)).then((res) => {
-      if (cancelled) return;
-      setPastReport(res.available && res.report ? res.report : null);
-      setLoadingPast(false);
-    });
+    api
+      .getDailyReportForDate(dateStringDaysAgo(daysAgo))
+      .then((res) => {
+        if (cancelled) return;
+        setPastReport(res.available && res.report ? res.report : null);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setPastError("이 날짜의 리포트를 불러오지 못했습니다.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingPast(false);
+      });
     return () => {
       cancelled = true;
     };
@@ -378,6 +454,15 @@ function DailyReportView() {
         <p className="rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm text-foreground/50">
           불러오는 중...
         </p>
+      </div>
+    );
+  }
+
+  if (daysAgo > 0 && pastError) {
+    return (
+      <div>
+        {dayNav}
+        <InlineLoadError message={pastError} onRetry={() => setDaysAgo((d) => d)} />
       </div>
     );
   }
