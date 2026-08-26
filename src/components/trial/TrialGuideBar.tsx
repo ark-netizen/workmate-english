@@ -6,11 +6,11 @@ import { TRIAL_REPLY_TEXT } from "@/lib/trialReplies";
 import { TRIAL_ROLE_LABEL, TRIAL_ROLE_ORDER, useTrialTargets } from "@/lib/trialTargets";
 import { TrialActionBar } from "./TrialActionBar";
 
-type FinalTrialStage = "vent" | "report" | "kakao";
+type FinalTrialStage = "fieldwork" | "comfort" | "report" | "kakao";
 
-// "1분 체험하기" 게스트 전용 — 실제 화면(메신저/이메일/리포트)은 그대로 두고 하나의 안내 카드로 진행한다.
-// 업무 3건을 마친 뒤에는 근무 중에만 가능한 고함항아리를 먼저 체험하고, 그 다음 퇴근 리포트와
-// 카카오톡 리포트 알림 미리보기까지 이어서 로그인 없이 핵심 기능을 한 번에 보여준다.
+// "1분 체험하기" 게스트 전용 — 실제 화면을 그대로 쓰되 하나의 안내 카드로 진행한다.
+// 업무 3건 이후에는 "외근 중" 반복 → 바쁨 감지 → 동료의 선제 위로 메시지 → 리포트 → 카카오 알림까지
+// 실제 서비스의 연결 구조가 보이도록 체험 단계를 이어준다.
 export function TrialGuideBar() {
   const { report, conversations, sendReply, finishWorkday, triggerTrialHint } = useWorkday();
   const { targets, doneCount, allDone, activeTarget } = useTrialTargets();
@@ -18,7 +18,7 @@ export function TrialGuideBar() {
   const location = useLocation();
   const [finishing, setFinishing] = useState(false);
   const [sending, setSending] = useState(false);
-  const [finalStage, setFinalStage] = useState<FinalTrialStage>("vent");
+  const [finalStage, setFinalStage] = useState<FinalTrialStage>("fieldwork");
   const [showKakaoPreview, setShowKakaoPreview] = useState(false);
   // 상사(매니저) 단계 한정 — "답변 모르겠으면 한국어 힌트부터" 시나리오의 진행 상태
   const [managerHintStage, setManagerHintStage] = useState<"ask" | "shown">("ask");
@@ -26,34 +26,31 @@ export function TrialGuideBar() {
   const onActivePage = !!activeTarget && location.pathname === activeTarget.path;
   const onReportPage = location.pathname === "/reports";
   const onHomePage = location.pathname === "/";
+  const colleagueTarget = targets.find((target) => target.role === "colleague");
   const ventConversation = conversations.find((conversation) => conversation.kind === "vent");
-  const onVentPage =
-    location.pathname === "/messenger/vent" ||
-    (!!ventConversation && location.pathname === `/messenger/${ventConversation.id}`);
+  const onVentPage = !!ventConversation && location.pathname === `/messenger/${ventConversation.id}`;
   // "상사" 단계에서만 등장하는 "답변 모르겠으면 한국어 힌트부터 눌러보기" 시나리오
   const isManagerStep = activeTarget?.role === "manager" && onActivePage;
   const showHintAsk = isManagerStep && managerHintStage === "ask";
 
-  // 기본 업무 3건을 다 끝냈으면 퇴근 전에 고함항아리를 먼저 보여준다.
-  // 고함항아리에 실제로 한 번 메시지를 보내서 vent 대화가 생성된 뒤에만 퇴근 처리한다.
+  // 기본 업무 3건이 끝나면 바로 퇴근시키지 않는다.
+  // 먼저 동료 대화 화면에서 실제 "지금 외근 중" 버튼을 두 번 눌러 반복된 바쁨 감지 기능을 체험하고,
+  // 서버가 선제 위로 메시지를 생성해 고함항아리가 생기면 그 대화로 자동 이동한다.
   useEffect(() => {
-    if (!allDone || report || finishing) return;
+    if (!allDone || report) return;
 
     if (!ventConversation) {
-      setFinalStage("vent");
-      if (location.pathname !== "/messenger/vent") navigate("/messenger/vent");
+      setFinalStage("fieldwork");
+      if (colleagueTarget && location.pathname !== colleagueTarget.path) {
+        navigate(colleagueTarget.path);
+      }
       return;
     }
 
-    setFinishing(true);
-    finishWorkday()
-      .then(() => {
-        setFinalStage("report");
-        navigate("/reports");
-      })
-      .catch(() => setFinishing(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allDone, report, finishing, ventConversation?.id]);
+    setFinalStage("comfort");
+    const ventPath = `/messenger/${ventConversation.id}`;
+    if (location.pathname !== ventPath) navigate(ventPath);
+  }, [allDone, report, ventConversation?.id, colleagueTarget?.path, location.pathname, navigate]);
 
   // "○○에게 가기" 버튼을 눌러야만 다음 대화로 이동하는 게 번거롭다는 피드백 — 새 대상이
   // 나타나면(직전 대상과 다르면) 자동으로 그 대화로 이동한다. 한 번 자동 이동한 대상으로는
@@ -75,12 +72,24 @@ export function TrialGuideBar() {
   };
 
   const handlePrimaryAction = async () => {
-    if (sending) return;
+    if (sending || finishing) return;
 
     if (allDone) {
-      // 고함항아리를 아직 안 보냈다면 해당 화면으로 이동만 한다. 실제 전송은 화면의 "말 걸기" 버튼으로 체험한다.
+      // 반복된 외근 신호로 동료가 먼저 말을 걸어온 뒤, 그 메시지를 실제 화면에서 확인하고 나서 퇴근한다.
       if (!report) {
-        if (!onVentPage) navigate("/messenger/vent");
+        if (!ventConversation) {
+          if (colleagueTarget) navigate(colleagueTarget.path);
+          return;
+        }
+
+        setFinishing(true);
+        try {
+          await finishWorkday();
+          setFinalStage("report");
+          navigate("/reports");
+        } finally {
+          setFinishing(false);
+        }
         return;
       }
 
@@ -118,7 +127,7 @@ export function TrialGuideBar() {
   // 홈 화면은 SectionTourGuide 쪽 "새 메시지" 단계가 대신 안내하므로 여기서는 표시하지 않는다
   if (onHomePage || targets.length === 0) return null;
 
-  // 답장 3개 + 고함항아리 + 리포트 + 카카오톡 알림 = 총 6단계.
+  // 답장 3개 + 스트레스 감지/선제 위로 + 리포트 + 카카오톡 알림 = 총 6단계.
   const progressDots = TRIAL_ROLE_ORDER.length + 3;
   const filledDots =
     doneCount +
@@ -128,14 +137,14 @@ export function TrialGuideBar() {
 
   const primaryLabel = allDone
     ? !report
-      ? ventConversation
-        ? null
-        : onVentPage
-          ? null
-          : "고함항아리로 가기"
+      ? finalStage === "comfort" && ventConversation
+        ? finishing
+          ? "리포트 만드는 중..."
+          : "퇴근하고 리포트 보기"
+        : null
       : finalStage === "report"
         ? onReportPage
-          ? "카카오톡 리포트 알림 보기"
+          ? "카카오톡 알림 미리보기"
           : "리포트 보러가기"
         : null
     : !activeTarget
@@ -150,16 +159,16 @@ export function TrialGuideBar() {
 
   const message = allDone
     ? !report
-      ? ventConversation
-        ? "고함항아리까지 확인했어요. 이제 퇴근 리포트를 만드는 중이에요..."
+      ? finalStage === "fieldwork"
+        ? "업무 연락은 모두 처리했어요. 이번엔 바쁨 감지 기능을 볼게요.\n아래 입력창의 ‘지금 외근 중’을 2번 눌러보세요. 반복된 바쁨을 감지하면 동료가 먼저 말을 걸어옵니다."
         : onVentPage
-          ? "업무 스트레스도 영어로 털어놓을 수 있어요. 미리 입력된 문장을 그대로 보내보세요."
-          : "마지막 업무를 마쳤어요. 퇴근 전에 고함항아리도 체험해볼게요."
+          ? "외근 신호가 반복되자 동료가 먼저 말을 걸어왔어요. 이렇게 먼저 온 위로 메시지는 고함항아리에 모여요."
+          : "반복된 바쁨을 감지했어요. 동료의 메시지로 이동하는 중이에요..."
       : finalStage === "report"
         ? onReportPage
-          ? "오늘의 업무 리포트를 확인해보세요. 실제 서비스에서는 퇴근 후 카카오톡으로도 리포트를 받을 수 있어요."
+          ? "오늘 대화를 바탕으로 잘한 표현, 교정 포인트, 꼭 기억할 표현이 업무일지에 정리돼요."
           : "리포트로 이동하는 중이에요..."
-        : "이런 식으로 오늘의 업무일지가 카카오톡으로 도착해요."
+        : "카카오톡으로 로그인 후 알림 설정에 동의하면 오늘의 업무일지를 카카오톡으로 확인해볼 수 있고, 2일 이상 결석했을 때 리마인드 알림도 받아볼 수 있어요!"
     : activeTarget
       ? showHintAsk
         ? "이건 답변을 모르겠다구요? 한국어 힌트를 눌러볼게요!"
@@ -172,7 +181,7 @@ export function TrialGuideBar() {
   const goodCount = report?.goodExpressions?.length ?? 0;
   const correctionCount = report?.improvementPoints?.length ?? 0;
   const memorizeCount = report?.keyPhrases?.length ?? 0;
-  const firstGood = report?.goodExpressions?.[0]?.text;
+  const firstCorrection = report?.improvementPoints?.[0];
   const firstMemorize = report?.keyPhrases?.[0];
 
   return (
@@ -182,24 +191,34 @@ export function TrialGuideBar() {
           <div className="flex items-center justify-between px-4 py-3">
             <div>
               <p className="text-xs font-bold text-[#2d2926]">카카오톡 알림 미리보기</p>
-              <p className="mt-0.5 text-[10px] text-[#2d2926]/60">퇴근 후 리포트 알림</p>
+              <p className="mt-0.5 text-[10px] text-[#2d2926]/60">퇴근 후 업무일지 알림</p>
             </div>
             <span className="rounded-full bg-[#2d2926] px-2 py-1 text-[10px] font-bold text-white">부캐영어</span>
           </div>
           <div className="mx-3 mb-3 rounded-xl bg-white p-4 text-[#242424] shadow-sm">
             <p className="text-sm font-bold">오늘의 업무일지가 도착했어요 📋</p>
-            <p className="mt-2 text-xs leading-relaxed text-[#555]">
+            <p className="mt-2 text-xs leading-relaxed text-[#666]">
               잘한 표현 {goodCount}건 · 교정 {correctionCount}건 · 꼭 기억할 표현 {memorizeCount}건
             </p>
-            {firstGood && <p className="mt-3 text-xs font-medium leading-relaxed">✅ “{firstGood}”</p>}
+
             {firstMemorize?.en && (
-              <p className="mt-2 text-xs leading-relaxed text-[#444]">
-                📌 {firstMemorize.en}
-                {firstMemorize.ko ? ` (${firstMemorize.ko})` : ""}
-              </p>
+              <div className="mt-3 rounded-lg bg-[#fff9d9] p-3">
+                <p className="text-[10px] font-bold text-[#7b6410]">📌 꼭 기억할 표현</p>
+                <p className="mt-1 text-xs font-semibold leading-relaxed text-[#2d2926]">{firstMemorize.en}</p>
+                {firstMemorize.ko && <p className="mt-0.5 text-[11px] text-[#665d42]">{firstMemorize.ko}</p>}
+              </div>
             )}
-            <div className="mt-4 rounded-lg bg-[#f5f5f5] px-3 py-2 text-center text-[11px] font-medium text-[#555]">
-              업무일지 보러가기
+
+            {firstCorrection?.before && firstCorrection?.after && (
+              <div className="mt-2 rounded-lg bg-[#f6f7f9] p-3">
+                <p className="text-[10px] font-bold text-[#666]">✏️ 오늘의 교정 포인트</p>
+                <p className="mt-1 text-[11px] text-[#8a8a8a] line-through">{firstCorrection.before}</p>
+                <p className="mt-0.5 text-xs font-medium text-[#333]">→ {firstCorrection.after}</p>
+              </div>
+            )}
+
+            <div className="mt-4 rounded-lg bg-[#f2f2f2] px-3 py-2 text-center text-[11px] font-medium text-[#555]">
+              전체 리포트 보기
             </div>
           </div>
           <p className="px-4 pb-3 text-[10px] leading-relaxed text-[#2d2926]/65">
@@ -214,9 +233,10 @@ export function TrialGuideBar() {
         dotsFilled={filledDots}
         primaryLabel={primaryLabel}
         onPrimary={primaryLabel ? handlePrimaryAction : undefined}
-        primaryDisabled={sending}
+        primaryDisabled={sending || finishing}
         onEnd={handleEnd}
         endPrimary={finalStage === "kakao"}
+        showEnd={finalStage === "kakao" && showKakaoPreview}
       />
     </>
   );
