@@ -109,7 +109,7 @@ Do not put colleague, manager, or client names in the event title, summary, goal
 Korean and English context fields must express exactly the same meaning.
 The home card only displays "stage" and, per character, "purpose" (title/summary/goal are internal only, used for generating messages, not shown to the user as-is) — keep every displayed field SHORT and scannable, like a task-list headline, never a full sentence:
 - stage_ko/stage_en: a 2-4 word status label (e.g. "최종 검토 중" / "Final review").
-- Each character's purpose_ko/purpose_en: a 2-5 word label naming ONLY that person's angle on today's shared event, not the event itself and not other people's parts (e.g. colleague "진행상황 파악" / "Checking progress", manager "마감 확인" / "Confirming the deadline", client "조건 확인" / "Confirming terms"). Never include a name inside purpose_ko/purpose_en — the name is shown separately next to it.
+- Each character's purpose_ko/purpose_en: a 2-5 word label naming ONLY that person's angle on today's shared event, not the event itself and not other people's parts. The following only show the LENGTH and SHAPE — they are deliberately generic and must NEVER be output verbatim: colleague "진행상황 파악" / "Checking progress", manager "마감 확인" / "Confirming the deadline", client "조건 확인" / "Confirming terms". Each purpose must name something concrete from TODAY's event, so that reading the three labels alone tells you what today is about — e.g. for a beta-build review: "빌드 확인 요청" / "Asking to check the build", "검토 마감 확인" / "Confirming the review deadline", "릴리스 승인 요청" / "Requesting release sign-off". If your three labels would fit any other workday equally well, they are too generic — rewrite them. Never include a name inside purpose_ko/purpose_en — the name is shown separately next to it.
 ${extraCount > 0 ? `
 This user also gets ${extraCount} extra follow-up check-in(s) later in the day, beyond the three main messages above. Unlike the three main messages (which all make the identical request), each follow-up must move the SAME shared event forward to a different, later stage or sub-task — e.g. a status update, a small new snag, a revised number, a confirmation that something is done, a next step now that the first ask was handled. Assign each one to whichever of colleague/manager/client would realistically send it (roles may repeat). These are casual/professional continuations, not a repeat of the original request.` : ''}
 
@@ -118,8 +118,8 @@ ${jsonInstruction(`{
   "title_ko": string,
   "summary_en": string,
   "summary_ko": string,
-  "goal_en": string,
-  "goal_ko": string,
+  "goal_en": string (what the USER has to get done today, stated as actual work — e.g. "Review the beta build and reply to all three with a status." NEVER describe the exercise itself: "practice replying in different registers" is about the training, not the job, and must not appear here),
+  "goal_ko": string (같은 내용을 한국어로 — 오늘 처리해야 하는 실제 업무. "다른 어조로 답변하는 연습" 처럼 학습 목적을 쓰면 안 됨),
   "stage_en": string,
   "stage_ko": string,
   "shared_request_en": string (the ONE complete request sentence all three make of the user, e.g. "Send the final visuals for 'Midnight Echo' so they can be uploaded today."),

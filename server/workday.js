@@ -450,8 +450,12 @@ export async function startWorkday(userId) {
       titleEn: gen.title_en,
       summaryKo: gen.summary_ko,
       summaryEn: gen.summary_en,
-      goalKo: gen.goal_ko,
-      goalEn: gen.goal_en,
+      // 홈 "오늘의 업무 상황" 카드에 그대로 뜨는 문장. goal_ko를 쓰면 LLM이 "같은 요청에 다른 어조로
+      // 답변하는 연습"처럼 학습 목적을 써버리는 일이 있어서, 사용자가 실제로 뭘 해야 하는지가 안 보였다.
+      // 오늘 세 명이 똑같이 요청하는 그 내용(shared_request)이 곧 "오늘의 업무"라 그걸 우선 쓰고,
+      // 비어 있을 때만 goal로 떨어진다 — 프롬프트 준수에 의존하지 않게 코드에서 확정한다.
+      goalKo: gen.shared_request_ko || gen.goal_ko,
+      goalEn: gen.shared_request_en || gen.goal_en,
       stageKo: gen.stage_ko,
       stageEn: gen.stage_en,
       // 세 역할 메시지는 발송 시점에 각각 따로 생성되므로, "오늘 세 명이 똑같이 하는 요청"을
