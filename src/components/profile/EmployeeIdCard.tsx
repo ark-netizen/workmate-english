@@ -145,7 +145,7 @@ export function EmployeeIdCard({
           <p className={gameCard ? "mb-2 text-[11px] text-[#6e756f]" : "mb-2 text-[11px] text-foreground/35"}>
             현재는 수달 캐릭터를 제공해요 · 인간 캐릭터 모드도 준비 중이에요
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-2">
+          <div className="flex flex-wrap items-center justify-center gap-3">
             {unlockedRanks.map((r) => (
               <button
                 key={r}
@@ -155,17 +155,17 @@ export function EmployeeIdCard({
                 aria-pressed={selectedRank === r}
                 className={
                   gameCard
-                    ? `border-2 bg-[#fff9e9] p-0.5 transition-all ${
+                    ? `inline-flex h-11 w-11 shrink-0 items-center justify-center border-2 bg-[#fff9e9] p-0 leading-none transition-all ${
                         selectedRank === r
                           ? "border-[#2f795d] shadow-[2px_2px_0_#28352f]"
                           : "border-transparent opacity-60 hover:opacity-100"
                       }`
-                    : `rounded-full transition-all ${
+                    : `inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full p-0 leading-none transition-all ${
                         selectedRank === r ? "ring-2 ring-accent ring-offset-2 ring-offset-surface" : "opacity-60 hover:opacity-100"
                       }`
                 }
               >
-                <RankAvatar rank={r} className={gameCard ? "h-10 w-10 rounded-none" : "h-10 w-10 rounded-full"} />
+                <RankAvatar rank={r} className={gameCard ? "h-full w-full rounded-none" : "h-full w-full rounded-full"} />
               </button>
             ))}
           </div>
