@@ -63,8 +63,23 @@ document.addEventListener(
     event.stopPropagation();
     event.stopImmediatePropagation();
 
+    // 알림 준비가 어떻게 끝나든 체험 자체는 반드시 열어준다.
+    // 체험 대화는 고정 콘텐츠라 푸시 없이도 전부 동작하고, 시스템 알림 대신 앱 안에서 보일 뿐이다.
+    // 예전에는 권한이 없으면 여기서 return으로 막아버려서, 알림 팝업에서 "차단"을 한 번 누른
+    // 사람이나 시크릿 창처럼 푸시가 제한된 환경에서는 제품을 아예 볼 수 없었다 — 잃는 건 연출
+    // 하나인데 막는 대가는 체험 자체라서 맞바꿀 값이 아니다.
+    const enterTrial = () => {
+      replayingTrialClick = true;
+      try {
+        button.click();
+      } finally {
+        replayingTrialClick = false;
+      }
+    };
+
     if (!("Notification" in window) || !("serviceWorker" in navigator)) {
-      window.alert("이 브라우저에서는 웹 알림을 사용할 수 없어요. Edge 또는 Chrome에서 다시 시도해주세요.");
+      window.alert("이 브라우저는 웹 알림을 지원하지 않아 연락이 앱 안에서만 표시돼요. 체험은 그대로 진행됩니다.");
+      enterTrial();
       return;
     }
 
@@ -74,23 +89,17 @@ document.addEventListener(
         permission = await Notification.requestPermission();
       }
 
-      if (permission !== "granted") {
-        window.alert(
-          "1분 체험의 알림 시연을 위해 사이트 알림 허용이 필요해요. 브라우저 주소창의 사이트 권한에서 알림을 허용한 뒤 다시 눌러주세요.",
-        );
-        return;
+      if (permission === "granted") {
+        // 체험 진입 전에 Service Worker까지 준비해 외근 단계에서 시스템 알림이 즉시 뜰 수 있게 한다.
+        await navigator.serviceWorker.register("/sw.js");
+        await navigator.serviceWorker.ready;
+      } else {
+        window.alert("알림을 허용하면 실제 푸시로 연락이 도착하는 걸 볼 수 있어요. 지금은 연락이 앱 안에서만 표시됩니다.");
       }
-
-      // 체험 진입 전에 Service Worker까지 준비해 외근 단계에서 시스템 알림이 즉시 뜰 수 있게 한다.
-      await navigator.serviceWorker.register("/sw.js");
-      await navigator.serviceWorker.ready;
-
-      replayingTrialClick = true;
-      button.click();
     } catch {
-      window.alert("웹 알림 준비에 실패했어요. 사이트 알림 권한을 확인한 뒤 다시 시도해주세요.");
+      // 시크릿 창의 푸시 제한 등으로 알림 준비가 실패해도 체험 진입은 막지 않는다
     } finally {
-      replayingTrialClick = false;
+      enterTrial();
     }
   },
   true,
