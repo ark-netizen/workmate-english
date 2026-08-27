@@ -139,13 +139,17 @@ export function AccountSection({
       } else {
         if (!canSubmitSignin) return;
         await signIn({ email: resolvedEmail, password });
-        // 지금까지는 온보딩 "시작하기"에서만 알림 권한을 물어봐서, 온보딩을 이미 끝낸 계정으로
-        // 다른 기기(예: 발표용 노트북)에 로그인하면 알림을 켤 방법이 설정 화면밖에 없었다.
-        // 로그인 클릭은 사용자 제스처라 이 자리에서 요청해야 브라우저가 권한창을 띄워준다.
-        // 이미 허용/차단을 고른 브라우저에서는 다시 묻지 않는다(default일 때만).
-        if (typeof Notification !== "undefined" && Notification.permission === "default") {
-          subscribePush().catch(() => {});
-        }
+      }
+      // 계정이 바뀌면 이 브라우저의 푸시 구독을 새 계정 앞으로 다시 등록해야 한다.
+      // push_tokens는 endpoint를 계정별로 들고 있어서, 재등록을 안 하면 구독이 이전 계정(주로
+      // 체험용 익명 계정)에 묶인 채 남고 새 계정에는 아예 행이 없어 알림이 한 통도 가지 않는다.
+      // 체험 → 회원가입/로그인은 가장 흔한 진입 경로라 여기서 반드시 걸려야 한다.
+      //
+      // 예전에는 permission === "default"일 때만 호출해서, 체험 중 이미 알림을 허용한(=granted)
+      // 사용자가 로그인하면 재등록이 통째로 건너뛰어졌다. granted면 requestPermission()이 권한창
+      // 없이 즉시 반환하므로 그대로 호출해도 안전하고, denied면 subscribePush 안에서 바로 빠진다.
+      if (typeof Notification !== "undefined" && Notification.permission !== "denied") {
+        subscribePush().catch(() => {});
       }
       // onAccountChanged가 다음 화면(오늘의 업무 불러오기 등)까지 끝내는 비동기 작업이라,
       // 이걸 기다리지 않고 submitting을 먼저 꺼버리면 버튼은 "로그인"으로 돌아왔는데 화면은

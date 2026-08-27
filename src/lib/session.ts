@@ -11,9 +11,26 @@ let authSyncStarted = false;
 function startAuthSync() {
   if (authSyncStarted || !supabaseReady || !supabase) return;
   authSyncStarted = true;
+  let lastPushUserId: string | null = null;
   supabase.auth.onAuthStateChange((_event, session) => {
     if (session?.access_token) setAccessToken(session.access_token);
     else clearAccessToken();
+
+    // 계정이 바뀌면 이 브라우저의 푸시 구독을 새 계정 앞으로 다시 등록한다.
+    // push_tokens는 endpoint를 계정별로 들고 있어서, 재등록하지 않으면 구독이 이전 계정(대개
+    // 체험용 익명 계정)에 묶인 채 남고 새 계정에는 행이 없어 알림이 한 통도 가지 않는다.
+    // 로그인 버튼 핸들러에도 같은 처리가 있지만, 카카오처럼 브라우저가 통째로 리다이렉트됐다
+    // 돌아오는 플로우는 그 핸들러를 아예 타지 않으므로 여기서 한 번 더 잡아준다.
+    //
+    // 이미 granted인 경우에만 실행한다 — 사용자 제스처가 없는 이 지점에서 권한을 새로 요청하면
+    // 브라우저가 그냥 거부해버릴 수 있고, 권한을 처음 묻는 일은 로그인/온보딩 버튼이 맡는다.
+    // (granted면 requestPermission()이 권한창 없이 즉시 반환하므로 안전하다.)
+    const userId = session?.user?.id ?? null;
+    if (!userId || userId === lastPushUserId) return;
+    lastPushUserId = userId;
+    if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
+    // 정적 import는 push → api → session 순환이 되므로 이 자리에서만 동적으로 불러온다
+    import("./push").then((m) => m.subscribePush()).catch(() => {});
   });
 }
 
