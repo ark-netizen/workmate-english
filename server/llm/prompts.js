@@ -89,7 +89,9 @@ ${buildCharacterPresetLines(profile, personaFeedback)}
 Create exactly ONE shared work event for today. The home context card and all three role messages must refer to this same event, deliverable, deadline, and stage.
 
 Relationship rules:
-First decide ONE specific, concrete request tied to the shared event — something the user can concretely act on today (e.g. "review the attached draft by 3pm", "confirm these numbers are correct", "check whether the build is ready"). ALL THREE people ask the user this SAME request today — the substance of the ask must be identical across all three, not three different tasks. Only the delivery differs by relationship:
+First decide ONE specific, concrete request tied to the shared event — something the user can concretely act on today (e.g. "review the attached draft by 3pm", "confirm these numbers are correct", "check whether the build is ready"). Write that request into "shared_request_en"/"shared_request_ko" and its due time into "shared_deadline" — these fields are what every role message is later generated from, so they must be a complete, self-contained sentence, not a label.
+DIRECTION (critical): the request always flows the SAME way — the three people ask the USER to do/deliver something, and the user is the one who acts. NEVER invert it for any role: a role must not supply the deliverable to the user and then ask the user to approve/review it, while the other roles ask the user to produce that same deliverable. That contradiction makes the user simultaneously the producer and the approver of one item, which is incoherent and breaks the whole exercise.
+ALL THREE people ask the user this SAME request today — the substance of the ask, the deliverable, the direction, and the deadline must be identical across all three, not three different tasks. Only the delivery differs by relationship:
 - colleague: casual messenger phrasing of that same request, framed as a coworker check-in
 - manager: clear, direct messenger phrasing of that same request, framed as a progress check or deadline reminder
 - client: polite, formal email phrasing of that same request, framed as a professional inquiry
@@ -120,6 +122,9 @@ ${jsonInstruction(`{
   "goal_ko": string,
   "stage_en": string,
   "stage_ko": string,
+  "shared_request_en": string (the ONE complete request sentence all three make of the user, e.g. "Send the final visuals for 'Midnight Echo' so they can be uploaded today."),
+  "shared_request_ko": string (같은 요청을 한국어로),
+  "shared_deadline": string (the single deadline shared by all three, e.g. "today 3 PM"),
   "topic_status": "active"|"completed"|"switched",
   "practice_areas": string[],
   "characters": [
@@ -187,7 +192,7 @@ function wordHintsInstruction(character) {
 }
 
 // ── 2. generateRoleMessage — 역할별 최초 메시지 (기획서 8-2) ──
-export function buildRoleMessagePrompt({ scenario, character, profile }) {
+export function buildRoleMessagePrompt({ scenario, character, profile, sharedRequest, sharedDeadline }) {
   const reg = REGISTERS[character.role]
   const system = `You are ${character.name}, the user's ${character.role} (${character.title}).
 ${reg.rules}
@@ -195,9 +200,22 @@ ${character.role === 'colleague' ? COLLEAGUE_OPENER_RULE : ''}
 ${character.register ? `Your personal tone/personality (make this ACTUALLY show, not just a label — if it's playful/joking, include an actual light joke or teasing line; if it's blunt, be noticeably terser than the base register; etc. Concretely change your word choice/behavior, don't just stay generic): ${character.register}` : ''}
 ${GENERATION_GUARDRAILS}`
 
+  // 세 역할 메시지는 각각 따로(발송 시점에) 생성되므로, 공유 요청을 문자열로 직접 넘겨주지 않으면
+  // 같은 요청으로 수렴할 근거가 없다. 실제로 이게 없던 동안 거래처만 "자료를 줄 테니 승인해달라"로
+  // 방향이 뒤집히고 마감도 달라지는 사고가 났다.
+  const sharedAsk = sharedRequest
+    ? `
+THE ONE REQUEST YOU ARE MAKING TODAY (identical for all three people, only the register differs):
+"${sharedRequest}"${sharedDeadline ? `
+Deadline: ${sharedDeadline}` : ''}
+Rephrase THIS request in your own register and channel. Do NOT change its substance, the deliverable, or the deadline, and do NOT replace it with a related-but-different task.
+DIRECTION: the USER is the one who does/delivers this — you are asking them for it. Never flip it around by supplying the deliverable to the user and asking the user to review or approve it instead.
+`
+    : ''
+
   const user = `Today's work event: ${scenario.title}
 ${scenario.summary}
-Your goal today: ${character.goal}
+${sharedAsk}Your goal today: ${character.goal}
 You know: ${character.known_info}
 You do NOT yet know: ${character.unknown_info}
 User's English level: ${profile.english_level}. ${LEVEL_HINT[profile.english_level] || ''}
@@ -282,7 +300,16 @@ Write the report, following the language rule above strictly.
 - A line marked "[SUGGESTED_SENTENCE_COPIED_VERBATIM]" means the user copied our own suggested sentence hint exactly, word-for-word — it is NOT something the user composed themselves, and it means they found that exchange hard enough to need the hint. NEVER put a marked sentence in "corrections" (correcting the user for using our own suggestion is unfair and confusing). This marker is INTERNAL bookkeeping — NEVER print the literal string "[SUGGESTED_SENTENCE_COPIED_VERBATIM]" or any similar bracket-tag anywhere in your output; the user must never see raw system markers. A marked sentence MAY appear in "good_expressions" if it's genuinely a good phrase to remember, but the note must be honest about it being a hint they leaned on — e.g. "이 표현은 제시된 힌트를 그대로 활용하신 거예요 — 다음엔 스스로 이 상황을 표현해보는 연습을 해보세요", never a grammar-praise note like "완벽합니다" as if the user composed it themselves (a copied hint being "grammatically perfect" is not an achievement, it's just our own text). Prefer sentences the user actually wrote on their own when available, and only include a copied one when there's a genuinely useful lesson to point out about why they needed it.
 - Coverage (important): good_expressions + corrections together should account for EVERY distinct sentence the user personally composed today (across all conversations, excluding marked hint-copies) — each such sentence belongs in exactly one of the two lists, NEVER both, never dropped silently. This is a hard rule: the exact same sentence text must never appear as a good_expressions "text" AND also as a corrections "before" — pick ONE list per sentence and put it there only. Decision rule: if the sentence has ANY real issue at all (even a single typo or one subject-verb mismatch), it goes ONLY in corrections, not also in good_expressions — do not praise a sentence in good_expressions and then separately list the same sentence's mistake in corrections; that is a contradiction and is wrong. A short single-sentence reply with one typo is still just ONE correction entry, not a correction plus a "good_expressions" entry that admits the same typo. Do not silently skip a self-written sentence just because it's short or unremarkable — if it's fully clean with zero issues, it goes in good_expressions with a brief note; if it has any real issue, it goes in corrections only. There is no fixed cap — if the user wrote 7 sentences today, aim for 7 entries total between the two lists (not "up to 4").
 - good_expressions: sentences the user wrote well. "text" = the exact English sentence. "note" = 한국어로 왜 잘 썼는지(문법/뉘앙스 포인트) 설명, 한 줄로 간결하게.
-- corrections: every self-written sentence that has a genuine issue (drawn ONLY from sentences the user actually composed themselves, never a marked verbatim-copied line). If the user's reply was short and already natural, or every sentence was a copied suggestion, it is completely fine to return 0 corrections — do NOT invent, split, or manufacture extra corrections just to fill a quota, but do NOT skip a sentence that genuinely has an issue just to keep the list short either. Only change what is ACTUALLY wrong (spelling, grammar, or genuinely unnatural phrasing) — do NOT swap a grammatically correct expression for a different-but-also-correct one just for style (e.g. "am/are going to" is a correct, natural way to state a plan — leave it as-is unless it's actually wrong). Worked example — user wrote "we are going to share the final metadate until tomorrow": the ONLY real errors are "metadate" (typo for "metadata") and "until" (wrong preposition — "until" means a continuous state stops at that point, but sharing a file is a one-time completed action, so "by" is correct). The correct minimal fix is "we are going to share the final metadata by tomorrow" — "are going to" must NOT be changed to "will", that part was never wrong. The "after" version MUST express the exact same content/intent as "before" — you are fixing HOW they said it, never WHAT they said. Never turn a statement into a question, add a new request, or change the substance — that is not a correction, it's a different sentence. If the actual problem is that the reply doesn't fully address what the other person asked, that belongs in register_feedback or recurring_issues instead, not in "corrections". Shorthand/notation used INSTEAD OF real sentences (arrows like "->", slashes as "and/or" substitutes, note-to-self fragments like "before X after Y" with no verb or explanation) is itself a correctable issue, not just a tone problem — a business email/message must read as real sentences a recipient can understand on their own. Reconstruct the clearest full sentence that matches what the shorthand most likely meant, and the note must say plainly that notation/fragments were used in place of an actual explanation and that the reader would not be able to follow it as written (this is a bigger problem than mere formality, and register_feedback should not be the only place this gets mentioned). If you change multiple things within one sentence (e.g. fixing a typo AND a preposition), the note MUST explain every single change you made, not just one of them — never leave a changed word unexplained. "before"/"after" = exact English (what they wrote vs. the natural version). "note" = 한국어로 어떤 문법/표현 규칙 때문에 고쳐야 하는지 교사처럼 설명.
+- corrections: every self-written sentence that has a genuine issue (drawn ONLY from sentences the user actually composed themselves, never a marked verbatim-copied line). Returning 0 corrections is completely fine when every reply was already natural or every sentence was a copied suggestion. These five rules are absolute — check the list against them before you output:
+  C1. FIX ONLY WHAT IS ACTUALLY WRONG — spelling, grammar, or genuinely unnatural phrasing. The following are NOT errors and must never be "corrected", nor mentioned in the note as if they were:
+      · a grammatically correct expression swapped for a different-but-also-correct one purely for style ("am/are going to" is a correct, natural way to state a plan; "I would like to" is correct)
+      · contractions in a casual register (I've, don't, I'm) — expanding these is wrong advice, not a fix
+      · capitalization or formatting conventions ("3 pm" vs "3 PM", "email" vs "e-mail") — these are house style, not English errors
+  C2. NEVER CHANGE THE MEANING — "after" must express the exact same content/intent as "before". You are fixing HOW they said it, never WHAT they said. Never add a fact, deadline, deliverable, or request the user did not write, never turn a statement into a question. If the real problem is that the reply doesn't fully address what the other person asked, that belongs in register_feedback or recurring_issues — NOT here. (Bad: "I will check the visuals and send email." → "…and send the approval status by Friday." That invents a commitment the user never made; the only correctable part is "send email" → "send an email".)
+  C3. THE NOTE MUST DESCRIBE THE EDIT YOU ACTUALLY MADE — every changed word gets explained, and never explain a change you did not make. (Bad: writing "'finish'는 'complete'로 바꿨습니다" when your "after" actually used "ready".) Re-read your own "before"/"after" pair and write the note from that diff, not from your first impression of the sentence.
+  C4. MINIMAL FIX — change the fewest words that remove the error. Worked example: user wrote "we are going to share the final metadate until tomorrow". The ONLY errors are "metadate" (typo for "metadata") and "until" (wrong preposition — "until" means a continuous state stops at that point, but sharing a file is a one-time completed action, so "by"). Correct fix: "we are going to share the final metadata by tomorrow". "are going to" must NOT become "will" — that part was never wrong.
+  C5. SHORTHAND IS AN ERROR — notation used INSTEAD OF real sentences (arrows like "->", slashes as "and/or", verbless note-to-self fragments) is correctable, not merely a tone issue, because the recipient cannot follow it. Reconstruct the clearest full sentence matching the likely intent, and say plainly in the note that notation replaced an actual explanation.
+  Fields: "before"/"after" = exact English (what they wrote vs. the natural version). "after_ko" = "after" 문장의 한국어 뜻 한 줄(교정 사유가 아니라 뜻만 — 이 문장은 "필수 암기 사항"에도 그대로 쓰인다). "note" = 한국어로 어떤 문법/표현 규칙 때문에 고쳐야 하는지 교사처럼 설명.
 - register_feedback: an array with ONE entry per relationship (colleague/manager/client) the user actually replied to today — skip a role entirely if the user never replied to it, do not pad with empty entries. Each entry is a compact "conversation replay" card, NOT prose, and must never repeat what workday_summary already says — say something NEW and SPECIFIC to that one exchange:
   - "role": "colleague" | "manager" | "client"
   - "their_quote": the exact English sentence(s) that person actually sent (must be from a line labeled by their role, never "User:") — the specific request/question, not a generic paraphrase.
@@ -301,7 +328,7 @@ Write the report, following the language rule above strictly.
 ${jsonInstruction(`{
   "workday_summary": string (한국어),
   "good_expressions": [{ "text": string (English), "note": string (한국어) }],
-  "corrections": [{ "before": string (English), "after": string (English), "note": string (한국어) }],
+  "corrections": [{ "before": string (English), "after": string (English), "after_ko": string (한국어, "after" 문장의 뜻), "note": string (한국어) }],
   "register_feedback": [{ "role": "colleague"|"manager"|"client", "their_quote": string (English), "their_quote_ko": string (한국어), "user_quote": string (English), "note": string (한국어) }],
   "recurring_issues": string[] (한국어),
   "recommended_expressions": [{ "en": string (English), "ko": string (한국어), "note": string (한국어) }],

@@ -12,6 +12,14 @@ export const ScenarioSchema = z.object({
   goal_ko: z.string(),
   stage_en: z.string(),
   stage_ko: z.string(),
+  // 세 관계(동료/상사/거래처)가 오늘 똑같이 요청하는 "그 하나의 요청"과 마감.
+  // 이 서비스의 핵심은 같은 요청을 세 가지 격식으로 답해보는 것인데, 예전에는 이 요청이 어디에도
+  // 필드로 남지 않고 각 캐릭터의 goal 문장 안에만 암묵적으로 있었다. 그래서 역할 메시지를 생성할
+  // 때(발송 시점, 시나리오를 DB에서 다시 읽어옴) 같은 요청으로 되돌릴 근거가 없었고, 실제로
+  // 거래처만 "자료를 줄 테니 승인해달라"로 방향이 뒤집히고 마감도 달라지는 사고가 났다.
+  shared_request_en: z.string().default(''),
+  shared_request_ko: z.string().default(''),
+  shared_deadline: z.string().default(''),
   topic_status: z.enum(['active', 'completed', 'switched']).default('active'),
   practice_areas: z.array(z.string()).default([]),
   characters: z
@@ -70,8 +78,11 @@ export const ResponseSchema = z.object({
 export const DailyReportSchema = z.object({
   workday_summary: z.string(),
   good_expressions: z.array(z.object({ text: z.string(), note: z.string() })).default([]),
+  // after_ko는 고친 문장의 한국어 뜻 — "필수 암기 사항"에 교정문을 넣을 때 뜻을 같이 보여주기 위해
+  // 필요하다. 이게 없으면 교정 사유를 그대로 재탕하게 되고, 사용자는 교정 항목에서 이미 읽은 설명을
+  // 암기 항목에서 또 읽게 된다.
   corrections: z
-    .array(z.object({ before: z.string(), after: z.string(), note: z.string() }))
+    .array(z.object({ before: z.string(), after: z.string(), after_ko: z.string().default(''), note: z.string() }))
     .default([]),
   register_feedback: z
     .array(

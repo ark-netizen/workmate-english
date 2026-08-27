@@ -452,6 +452,13 @@ export async function startWorkday(userId) {
       goalEn: gen.goal_en,
       stageKo: gen.stage_ko,
       stageEn: gen.stage_en,
+      // 세 역할 메시지는 발송 시점에 각각 따로 생성되므로, "오늘 세 명이 똑같이 하는 요청"을
+      // 여기 저장해두지 않으면 나중에 같은 요청으로 수렴시킬 근거가 사라진다(거래처만 다른 요청을
+      // 하거나 방향이 뒤집히는 사고의 원인이었다). scenarios 테이블에 컬럼을 추가하지 않아도 되게
+      // 기존 work context 블롭에 같이 넣는다.
+      sharedRequestEn: gen.shared_request_en,
+      sharedRequestKo: gen.shared_request_ko,
+      sharedDeadline: gen.shared_deadline,
       topicStatus: gen.topic_status,
       roles: gen.characters.map((c) => ({
         role: c.role,
@@ -747,9 +754,18 @@ export async function deliverConversation(conversationId) {
   if (!claimed?.length) return { skipped: true, reason: 'already-claimed' }
 
   try {
+    // 세 역할 메시지는 각각 이 시점에 따로 생성되므로, 출근 때 정해둔 "오늘 세 명이 똑같이 하는
+    // 요청"을 여기서 다시 꺼내 넘겨야 세 메시지가 같은 요청으로 수렴한다
+    const workContext = decodeWorkContext(scenario)
     const msg = character.role === 'hr'
       ? await generateOjtWelcomeEmail({ profile })
-      : await generateRoleMessage({ scenario, character, profile })
+      : await generateRoleMessage({
+          scenario,
+          character,
+          profile,
+          sharedRequest: workContext?.sharedRequestEn || '',
+          sharedDeadline: workContext?.sharedDeadline || '',
+        })
 
     unwrap(
       await sb.from('messages').insert({
@@ -1327,27 +1343,40 @@ const ITEM_STATUS = { scheduled: 'pending', awaiting: 'pending', replied: 'answe
 // 형식 검증(schemas.js)으로는 못 잡는 내용 규칙이라, 읽는 시점에 코드로 보정한다.
 // 저장된 리포트를 읽을 때마다 적용되므로 이미 생성된 과거 리포트도 새로고침만 하면 반영된다.
 function withCorrectionsLinked(corrections, recommended) {
-  const list = Array.isArray(recommended) ? [...recommended] : []
   const items = Array.isArray(corrections) ? corrections : []
-  // 같은 문장이 이미 들어 있으면 중복으로 넣지 않는다(대소문자·구두점·공백 차이는 무시)
   const normalize = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
-  const present = new Set(list.map((e) => normalize(e?.en)))
 
-  const missing = []
+  const fromCorrections = []
+  const seen = []
   for (const c of items) {
     const after = String(c?.after || '').trim()
-    if (!after) continue
     const key = normalize(after)
-    if (!key || present.has(key)) continue
-    present.add(key)
-    missing.push({
+    if (!key || seen.some((k) => k === key)) continue
+    seen.push(key)
+    fromCorrections.push({
       en: after,
-      ko: '오늘 이 표현 대신 이렇게 써보세요',
-      note: c?.before ? `오늘은 "${String(c.before).trim()}" 라고 쓰셨어요. ${c?.note || ''}`.trim() : c?.note || '',
+      // 뜻은 LLM이 준 after_ko를 쓴다. 여기에 교정 사유를 다시 넣으면 사용자가 "교정 내용"에서
+      // 이미 읽은 설명을 "필수 암기"에서 또 읽게 된다 — 암기 항목엔 뜻과 쓰임만 있으면 된다.
+      // after_ko 도입 전에 저장된 리포트는 이 값이 없으므로, 뜻 자리가 빈 줄로 남지 않게 대체한다.
+      ko: String(c?.after_ko || '').trim() || '오늘 교정한 문장',
+      note: '다음엔 이렇게 써보세요.',
     })
   }
+
+  // LLM이 추천한 표현 중 교정문과 겹치는 건 버린다. 예전엔 문장 전체가 똑같을 때만 걸러서,
+  // LLM이 교정문의 뒷부분만 잘라 추천하면("I will let you know once they're ready") 같은 문장이
+  // 두 번 보였다 — 어느 쪽이 다른 쪽을 포함하면 중복으로 본다.
+  const overlaps = (a, b) => a === b || a.includes(b) || b.includes(a)
+  const rest = (Array.isArray(recommended) ? recommended : []).filter((e) => {
+    const key = normalize(e?.en)
+    if (!key) return false
+    if (seen.some((k) => overlaps(k, key))) return false
+    seen.push(key)
+    return true
+  })
+
   // 오늘 실제로 틀린 문장이 맨 앞에 오도록 앞쪽에 붙인다
-  return missing.length ? [...missing, ...list] : list
+  return [...fromCorrections, ...rest]
 }
 
 // ── 프론트 홈/메신저/이메일/리포트 화면용 오늘의 스냅샷 ──
