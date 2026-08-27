@@ -34,6 +34,7 @@ import "./intro-game-flutter";
 import "./intro-copy-polish";
 import "./foldable-login-guard";
 import "./enable-mobile-intro-trial";
+import "./qa-field-reminder-button";
 
 // 1분 체험은 외근 단계에서 실제 브라우저/OS 알림을 시연하므로,
 // 체험을 시작하는 최초 사용자 클릭에서 권한을 먼저 확보한다.
