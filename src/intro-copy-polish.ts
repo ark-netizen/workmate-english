@@ -129,13 +129,31 @@ function polishIntroCopy() {
 
   polishIntroAboutLink(page);
 
+  // 비즈니스 모드의 모바일 히어로만 문장을 짧게 잘라 의도한 줄바꿈을 고정한다.
+  // 데스크톱과 게임 모드는 기존 문구/레이아웃을 그대로 유지한다.
+  const isBusinessMobile = page.classList.contains("intro-business") && window.innerWidth < 768;
+  const heroTitle = page.querySelector<HTMLElement>(".hero .copy > h1");
+  const heroTitleVariant = isBusinessMobile ? "business-mobile" : "default";
+  if (heroTitle && heroTitle.dataset.copyVariant !== heroTitleVariant) {
+    heroTitle.dataset.copyVariant = heroTitleVariant;
+    heroTitle.innerHTML = isBusinessMobile
+      ? '영어 공부 대신,<br/><em><span class="headline-wiggle">영어로 출근해 보세요.</span></em>'
+      : '영어를 배우는 대신,<br/><em><span class="headline-wiggle">영어로 출근</span></em>해 보세요.';
+  }
+
   const heroCopy = page.querySelector<HTMLElement>(".hero .copy > p");
-  if (heroCopy && heroCopy.dataset.copyPolished !== "true") {
-    heroCopy.dataset.copyPolished = "true";
-    heroCopy.innerHTML = [
-      '<span class="intro-hero-copy-block">메신저와 이메일로 실제 업무를 처리하면, <mark class="solar-mark">Solar</mark>가 관계별 표현과 문법을 첨삭하고 하루의 성장을 업무 리포트로 남겨요.</span>',
-      '<span class="intro-hero-copy-block intro-hero-copy-secondary">동료·상사·거래처마다 달라지는 말투까지 익히고, 잘한 표현과<br/>교정 포인트는 퇴근 후 다시 복습할 수 있어요.</span>',
-    ].join("");
+  const heroCopyVariant = isBusinessMobile ? "business-mobile" : "default";
+  if (heroCopy && heroCopy.dataset.copyPolished !== heroCopyVariant) {
+    heroCopy.dataset.copyPolished = heroCopyVariant;
+    heroCopy.innerHTML = isBusinessMobile
+      ? [
+          '<span class="intro-hero-copy-block">메신저와 이메일로 실제 업무를 처리하면,<br/><mark class="solar-mark">Solar</mark>가 관계별 표현과 문법을 첨삭해요.</span>',
+          '<span class="intro-hero-copy-block intro-hero-copy-secondary">잘한 표현과 교정 포인트는<br/>퇴근 리포트에서 다시 복습할 수 있어요.</span>',
+        ].join("")
+      : [
+          '<span class="intro-hero-copy-block">메신저와 이메일로 실제 업무를 처리하면, <mark class="solar-mark">Solar</mark>가 관계별 표현과 문법을 첨삭하고 하루의 성장을 업무 리포트로 남겨요.</span>',
+          '<span class="intro-hero-copy-block intro-hero-copy-secondary">동료·상사·거래처마다 달라지는 말투까지 익히고, 잘한 표현과<br/>교정 포인트는 퇴근 후 다시 복습할 수 있어요.</span>',
+        ].join("");
   }
 
   polishProcessCopy(page);
@@ -147,7 +165,7 @@ function polishIntroCopy() {
     finalHeading.textContent = "실무 영어, 오늘 한 건부터 시작해 보세요.";
   }
 
-  const finalCopy = page.querySelector<HTMLElement>(".intro-final-copy");
+  const finalCopy = document.querySelector<HTMLElement>(".intro-final-copy");
   if (finalCopy && finalCopy.dataset.copyPolished !== "true") {
     finalCopy.dataset.copyPolished = "true";
     finalCopy.textContent = "메신저와 이메일을 주고받으며 자연스럽게 업무 영어를 쌓아가세요.";
