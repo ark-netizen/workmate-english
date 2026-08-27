@@ -1320,6 +1320,36 @@ const WORK_STATUS = {
 }
 const ITEM_STATUS = { scheduled: 'pending', awaiting: 'pending', replied: 'answered', done: 'resolved' }
 
+// ── 리포트 "필수 암기 사항"에 오늘 교정된 문장을 반드시 끼워넣는다 ──
+// 프롬프트에서 "corrections의 after를 recommended_expressions에 우선 포함시켜라"라고 지시하지만
+// LLM이 이걸 무시하고 오늘 대화와 무관한 표현만 채워 넣는 경우가 실제로 있었다. 그러면 사용자
+// 입장에선 "틀렸다"고만 하고 정작 외울 문장은 자기가 틀린 것과 연결이 안 된다.
+// 형식 검증(schemas.js)으로는 못 잡는 내용 규칙이라, 읽는 시점에 코드로 보정한다.
+// 저장된 리포트를 읽을 때마다 적용되므로 이미 생성된 과거 리포트도 새로고침만 하면 반영된다.
+function withCorrectionsLinked(corrections, recommended) {
+  const list = Array.isArray(recommended) ? [...recommended] : []
+  const items = Array.isArray(corrections) ? corrections : []
+  // 같은 문장이 이미 들어 있으면 중복으로 넣지 않는다(대소문자·구두점·공백 차이는 무시)
+  const normalize = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+  const present = new Set(list.map((e) => normalize(e?.en)))
+
+  const missing = []
+  for (const c of items) {
+    const after = String(c?.after || '').trim()
+    if (!after) continue
+    const key = normalize(after)
+    if (!key || present.has(key)) continue
+    present.add(key)
+    missing.push({
+      en: after,
+      ko: '오늘 이 표현 대신 이렇게 써보세요',
+      note: c?.before ? `오늘은 "${String(c.before).trim()}" 라고 쓰셨어요. ${c?.note || ''}`.trim() : c?.note || '',
+    })
+  }
+  // 오늘 실제로 틀린 문장이 맨 앞에 오도록 앞쪽에 붙인다
+  return missing.length ? [...missing, ...list] : list
+}
+
 // ── 프론트 홈/메신저/이메일/리포트 화면용 오늘의 스냅샷 ──
 // 프로필 없으면 온보딩 필요 신호만 주고 끝, 있으면 오늘 workday를 (없으면 자동 생성해서) 반환
 export async function getTodaySnapshot(userId) {
@@ -1503,7 +1533,7 @@ export async function getTodaySnapshot(userId) {
         summary: r.workday_summary,
         goodExpressions: r.good_expressions || [],
         improvementPoints: r.corrections || [],
-        keyPhrases: r.recommended_expressions || [],
+        keyPhrases: withCorrectionsLinked(r.corrections, r.recommended_expressions),
         nextPreview: r.next_day_context,
         difficultExpressions: r.difficult_expressions || [],
         registerFeedback: r.register_feedback || null,
@@ -1645,7 +1675,7 @@ export async function getDailyReportForDate(userId, workDate) {
       summary: r.workday_summary,
       goodExpressions: r.good_expressions || [],
       improvementPoints: r.corrections || [],
-      keyPhrases: r.recommended_expressions || [],
+      keyPhrases: withCorrectionsLinked(r.corrections, r.recommended_expressions),
       nextPreview: r.next_day_context,
       difficultExpressions: r.difficult_expressions || [],
       registerFeedback: r.register_feedback || null,
