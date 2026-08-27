@@ -335,12 +335,6 @@ export function EmailView({ thread }: { thread: EmailThread }) {
               setText(e.target.value);
             }}
           />
-          <VoiceInputButton
-            onTranscript={(spoken) => {
-              textIsDefaultRef.current = false;
-              setText((prev) => (prev.trim() ? `${prev.trim()} ${spoken}` : spoken));
-            }}
-          />
         </div>
       </div>
 
@@ -348,7 +342,15 @@ export function EmailView({ thread }: { thread: EmailThread }) {
         실명·연락처 등 개인정보나 실제 회사 기밀은 입력하지 마세요.
       </p>
 
+      {/* 음성 입력은 메신저(ConversationView)와 같은 자리 — 버튼 줄 맨 왼쪽 — 에 둔다.
+          예전엔 이메일만 입력창 옆에 떠 있어서 두 화면의 마이크 위치가 서로 달랐다. */}
       <div className="flex items-center justify-end gap-2 rounded-b-xl border-t border-border px-4 py-3">
+        <VoiceInputButton
+          onTranscript={(spoken) => {
+            textIsDefaultRef.current = false;
+            setText((prev) => (prev.trim() ? `${prev.trim()} ${spoken}` : spoken));
+          }}
+        />
         <button
           type="button"
           onClick={handleFieldWork}

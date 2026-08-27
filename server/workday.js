@@ -740,6 +740,13 @@ export async function deliverConversation(conversationId) {
     const firstMsg = existing[0]
     const label = convo.kind === 'review' ? '복습' : roleLabel(character.role)
     unwrap(await sb.from('conversations').update({ status: 'awaiting' }).eq('id', convo.id))
+    // messages.sent_at은 default now()라 insert 시점이 박힌다. 고정 콘텐츠는 세 통을 출근할 때
+    // 한꺼번에 넣어두므로, 갱신하지 않으면 세 대화의 sent_at이 거의 같아서 "방금 도착한 연락"이
+    // 채팅방/메일함 목록 맨 위로 올라오지 않는다(목록 정렬 기준이 마지막 메시지 시각이다).
+    // 실제로 도착한 지금 시각으로 맞춰준다 — 유저가 쓴 답장은 건드리지 않는다.
+    if (firstMsg?.id) {
+      unwrap(await sb.from('messages').update({ sent_at: new Date().toISOString() }).eq('id', firstMsg.id))
+    }
     unwrap(
       await sb.from('notification_schedules').update({ status: 'sent', sent_at: new Date().toISOString(), preview: preview(firstMsg?.body) }).eq('conversation_id', convo.id),
     )
