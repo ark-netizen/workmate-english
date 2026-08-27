@@ -16,8 +16,19 @@ function configure() {
 // 로그인 토큰이 없다 — 구독 endpoint 자체를 식별자로 써서 사용자를 역추적한다
 export async function getUserIdByEndpoint(endpoint) {
   const sb = admin()
-  const row = unwrap(await sb.from('push_tokens').select('user_id').eq('endpoint', endpoint).maybeSingle())
-  return row?.user_id || null
+  // push_tokens의 유니크 제약은 (user_id, endpoint)라서 endpoint 하나에 행이 여러 개 있을 수 있다 —
+  // 같은 브라우저로 여러 계정(체험/실계정/시연용)에 로그인하면 그때마다 같은 endpoint로 행이 쌓인다.
+  // 예전에는 여기서 maybeSingle()을 써서, 그런 브라우저의 알림 액션 버튼(외근중 등)이 항상 500으로
+  // 실패했다. endpoint는 "브라우저 하나"를 뜻하므로 가장 최근에 구독한 계정을 그 브라우저의 주인으로 본다.
+  const rows = unwrap(
+    await sb
+      .from('push_tokens')
+      .select('user_id')
+      .eq('endpoint', endpoint)
+      .order('created_at', { ascending: false })
+      .limit(1),
+  )
+  return rows?.[0]?.user_id || null
 }
 
 // 구독 해제 — 사용자가 "알림 완전히 끄기"를 눌렀을 때. 브라우저 권한 차단과 달리
@@ -42,6 +53,9 @@ export async function saveSubscription(userId, subscription, userAgent) {
       { onConflict: 'user_id,endpoint' },
     ),
   )
+  // 같은 브라우저(endpoint)가 다른 계정으로 다시 구독하면 이전 계정의 행은 죽은 매핑이다. 남겨두면
+  // 알림 액션 버튼이 어느 계정 것인지 모호해지므로, 이 endpoint의 다른 계정 행은 정리한다.
+  unwrap(await sb.from('push_tokens').delete().eq('endpoint', subscription.endpoint).neq('user_id', userId))
 }
 
 // 사용자의 모든 기기로 발송. payload = { title, body, url }

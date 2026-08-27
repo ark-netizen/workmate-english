@@ -89,11 +89,27 @@ function focusOrOpen(url) {
 
 // 앱을 열지 않고도 "외근중"을 처리 — 로그인 세션이 없으므로 이 기기의 구독 endpoint로 사용자를 식별.
 // 알림 data에 conversationId도 같이 넣어 "그 알림"을 정확히 30분 뒤 다시 보낸다.
+// 실패 원인별 안내 문구 — 예전에는 어떤 실패든 "네트워크 문제"라고만 띄워서, 실제로는 이 기기의
+// 구독이 만료(404)됐거나 서버가 500을 낸 경우에도 사용자가 네트워크를 의심하며 계속 재시도하게 됐다.
+// 원인이 다르면 사용자가 할 수 있는 조치도 다르므로 구분해서 알려준다.
+function fieldWorkFailureBody(reason) {
+  if (reason === "no-subscription" || reason === 404) {
+    return "이 기기의 알림 구독이 만료됐어요. 앱에서 알림을 껐다 다시 켜주세요.";
+  }
+  if (typeof reason === "number" && reason >= 500) {
+    return `서버 오류로 처리가 안 됐어요 (${reason}). 앱에서 다시 시도해주세요.`;
+  }
+  if (typeof reason === "number") {
+    return `처리가 안 됐어요 (${reason}). 앱에서 다시 시도해주세요.`;
+  }
+  return "네트워크 문제로 처리가 안 됐어요. 앱에서 다시 시도해주세요.";
+}
+
 function handleFieldWorkAction(conversationId) {
   return self.registration.pushManager
     .getSubscription()
     .then((subscription) => {
-      if (!subscription) return Promise.reject(new Error("구독 정보 없음"));
+      if (!subscription) return Promise.reject(Object.assign(new Error("구독 정보 없음"), { reason: "no-subscription" }));
       return fetch(`${API_BASE_URL}/api/push`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -101,7 +117,9 @@ function handleFieldWorkAction(conversationId) {
       });
     })
     .then((response) => {
-      if (!response.ok) throw new Error(`외근 처리 실패: ${response.status}`);
+      if (!response.ok) {
+        throw Object.assign(new Error(`외근 처리 실패: ${response.status}`), { reason: response.status });
+      }
       return response.json().catch(() => ({}));
     })
     .then((result) =>
@@ -113,9 +131,9 @@ function handleFieldWorkAction(conversationId) {
         tag: "field-work-ack",
       }),
     )
-    .catch(() =>
+    .catch((err) =>
       self.registration.showNotification("외근 처리 실패", {
-        body: "네트워크 문제로 처리가 안 됐어요. 앱에서 다시 시도해주세요.",
+        body: fieldWorkFailureBody(err?.reason),
         icon: "/brand/logo-mark.png",
         tag: "field-work-ack",
       }),
