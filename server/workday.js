@@ -1348,6 +1348,21 @@ const ITEM_STATUS = { scheduled: 'pending', awaiting: 'pending', replied: 'answe
 // 입장에선 "틀렸다"고만 하고 정작 외울 문장은 자기가 틀린 것과 연결이 안 된다.
 // 형식 검증(schemas.js)으로는 못 잡는 내용 규칙이라, 읽는 시점에 코드로 보정한다.
 // 저장된 리포트를 읽을 때마다 적용되므로 이미 생성된 과거 리포트도 새로고침만 하면 반영된다.
+// 같은 문장에 대한 교정이 두 번 실려 오는 일이 있다(LLM이 같은 before/after를 중복 출력).
+// 사용자에겐 "교정 5건" 중 두 건이 글자 하나 다르지 않은 같은 항목으로 보여서 신뢰가 깎이므로,
+// 형식 검증으로는 못 잡는 이 중복을 읽는 시점에 제거한다.
+function dedupeCorrections(corrections) {
+  if (!Array.isArray(corrections)) return []
+  const normalize = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+  const seen = new Set()
+  return corrections.filter((c) => {
+    const key = `${normalize(c?.before)}→${normalize(c?.after)}`
+    if (key === '→' || seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
 function withCorrectionsLinked(corrections, recommended) {
   const items = Array.isArray(corrections) ? corrections : []
   const normalize = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
@@ -1567,8 +1582,8 @@ export async function getTodaySnapshot(userId) {
         date: workday.work_date,
         summary: r.workday_summary,
         goodExpressions: r.good_expressions || [],
-        improvementPoints: r.corrections || [],
-        keyPhrases: withCorrectionsLinked(r.corrections, r.recommended_expressions),
+        improvementPoints: dedupeCorrections(r.corrections),
+        keyPhrases: withCorrectionsLinked(dedupeCorrections(r.corrections), r.recommended_expressions),
         nextPreview: r.next_day_context,
         difficultExpressions: r.difficult_expressions || [],
         registerFeedback: r.register_feedback || null,
@@ -1709,8 +1724,8 @@ export async function getDailyReportForDate(userId, workDate) {
       date: workday.work_date,
       summary: r.workday_summary,
       goodExpressions: r.good_expressions || [],
-      improvementPoints: r.corrections || [],
-      keyPhrases: withCorrectionsLinked(r.corrections, r.recommended_expressions),
+      improvementPoints: dedupeCorrections(r.corrections),
+      keyPhrases: withCorrectionsLinked(dedupeCorrections(r.corrections), r.recommended_expressions),
       nextPreview: r.next_day_context,
       difficultExpressions: r.difficult_expressions || [],
       registerFeedback: r.register_feedback || null,
