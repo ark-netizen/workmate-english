@@ -22,9 +22,10 @@ Instead of opening a separate study session, users start a virtual workday, rece
 - Vite 6
 - Tailwind CSS 4
 - Supabase Auth and PostgreSQL
-- Upstage Solar LLM
-- Vercel Serverless Functions
-- GitHub Actions deployment workflow
+- Upstage Solar LLM (solar-pro2)
+- Supabase Edge Functions (Deno) for the backend API
+- Service Worker and Web Push (VAPID)
+- GitHub Pages hosting with a GitHub Actions deployment workflow
 
 ## Getting Started
 
@@ -33,25 +34,32 @@ npm install
 npm run dev
 ```
 
-The local development server runs through Vite.
+The frontend runs on Vite. The backend API is a Supabase Edge Function, so serve it
+separately and point `VITE_API_BASE_URL` at it (see `docs/run-backend-local.md`).
 
 ## Environment Variables
 
-Create a local `.env` file based on `.env.example`.
+Create a local `.env.local` file based on `.env.example`.
 
-Required values include Supabase and AI provider settings used by the serverless API.
+Browser-facing values use the `VITE_` prefix. Server-only values (Supabase service role
+key, Solar API key, VAPID private key, cron secret) are never bundled into the frontend —
+they are registered as Supabase Edge Function secrets.
 
 ## Deployment
 
-The repository includes a GitHub Actions workflow for Vercel deployment.
+Live service: https://www.enmate.co.kr
 
-To enable automatic deployment, configure these repository secrets:
+`.github/workflows/deploy.yml` runs on every push to `main` and deploys both halves:
 
-- `VERCEL_TOKEN`
-- `VERCEL_ORG_ID`
-- `VERCEL_PROJECT_ID`
+- **Frontend** — `vite build` output published to GitHub Pages (custom domain `www.enmate.co.kr`)
+- **Backend** — `supabase functions deploy api` for the Edge Function in `supabase/functions/api`
 
-If the secrets are not configured, the workflow skips deployment safely.
+Scheduled notification dispatch (`/api/cron/dispatch`) runs daily through Supabase `pg_cron`.
+
+The build and deploy steps read their configuration from repository secrets; see
+`.github/workflows/deploy.yml` for the exact set. If the Supabase deployment secrets are
+not configured, the workflow skips the Edge Function deployment and still publishes the
+frontend.
 
 ## License
 

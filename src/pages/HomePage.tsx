@@ -18,9 +18,10 @@ import { navItems } from "@/components/shell/nav-items";
 import { useBusinessMode } from "@/context/useBusinessMode";
 import { useTrialTargets } from "@/lib/trialTargets";
 
-// 심사 기간 등 외부에 라이브 사이트를 공개하는 동안은, 데이터를 실제로 지우거나 조작하는
-// 위험한 QA 버튼(초기화/승급 게이트 채우기 등)은 숨긴다 — 실수로 눌러도 안전한 "연락 바로
-// 받기" 계열만 남겨서 기능 시연은 여전히 가능하게 함. 기간이 끝나면 true로 되돌리면 됨.
+// 데이터를 실제로 지우거나 조작하는 QA 버튼(초기화/승급 게이트 채우기 등)을 노출할지.
+// 심사 기간에는 심사자가 승급·초기화까지 직접 눌러볼 수 있게 의도적으로 켜 둔다 — 서버도
+// api/workday/close.js의 ALLOW_QA_ACTIONS_FOR_ALL이 함께 켜져 있어야 403이 안 난다.
+// 심사가 끝나면 양쪽 다 false로 되돌려 일반 사용자에게는 숨긴다.
 const SHOW_DESTRUCTIVE_QA_TOOLS = true;
 
 // 직급별 승급에 필요한 "연속 출근일수" — server/promotion.js의 DAYS_PER_STEP(30)와 반드시 같은 값이어야 함

@@ -1,9 +1,0 @@
-{
-  "framework": "vite",
-  "rewrites": [
-    { "source": "/((?!api/|@vite/|@react-refresh|@fs/|src/|node_modules/).*)", "destination": "/index.html" }
-  ],
-  "crons": [
-    { "path": "/api/cron/dispatch", "schedule": "0 0 * * *" }
-  ]
-}

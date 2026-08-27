@@ -1535,19 +1535,23 @@ export async function getTodaySnapshot(userId) {
 
 // ── 근무 시간 현황(리포트) — 최근 N일의 실제 출퇴근(started_at/ended_at) 기반 근무 시간 이력 ──
 function workHoursStatus(dateStr, workday, today) {
-  const date = new Date(`${dateStr}T00:00:00`)
+  // 날짜 문자열은 항상 UTC 자정으로 고정해서 다룬다(뒤의 Z). 타임존 접미사를 빼면 실행 환경의
+  // 로컬 타임존으로 파싱돼서, 서버(UTC)와 로컬 개발 머신(KST)에서 결과가 달라진다.
+  const date = new Date(`${dateStr}T00:00:00Z`)
   if (date > today) return 'future'
   if (workday?.state === 'HALF_DAY' || workday?.state === 'ON_LEAVE') return 'leave'
   if (workday) return 'present'
-  const day = date.getDay()
+  const day = date.getUTCDay()
   if (day === 0 || day === 6) return 'weekend'
   return 'absent'
 }
 
 export async function getWorkHoursHistory(userId, daysBack = 14) {
   const sb = admin()
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  // new Date()+setHours(0,0,0,0)로 "오늘 자정"을 잡으면 서버(UTC) 기준이라, 한국시간 자정~오전 9시
+  // 사이엔 하루 전이 오늘이 되어 목록에서 오늘이 통째로 빠지고 날짜가 밀린다.
+  // 한국 기준 오늘 날짜를 UTC 자정에 앵커링해두면 이후의 하루 단위 뺄셈도, 요일 판정도 정확해진다.
+  const today = new Date(`${todayDateKST()}T00:00:00Z`)
   const since = new Date(today.getTime() - daysBack * 86400000).toISOString().slice(0, 10)
 
   const workdays = unwrap(
@@ -1575,20 +1579,21 @@ export async function getWorkHoursHistory(userId, daysBack = 14) {
 // ── 출석 캘린더(AttendancePage) — 실제 workdays·field_work_events 기반 근태 이력 ──
 // present/field-work/leave/absent/weekend/future 여섯 상태로 구분(외근은 그날 field_work_events가 1건이라도 있으면)
 function attendanceStatusFor(dateStr, workday, hadFieldWork, today) {
-  const date = new Date(`${dateStr}T00:00:00`)
+  // workHoursStatus와 같은 이유로 UTC 자정 고정(위 주석 참고)
+  const date = new Date(`${dateStr}T00:00:00Z`)
   if (date > today) return 'future'
   if (workday?.state === 'HALF_DAY' || workday?.state === 'ON_LEAVE') return 'leave'
   if (hadFieldWork) return 'field-work'
   if (workday) return 'present'
-  const day = date.getDay()
+  const day = date.getUTCDay()
   if (day === 0 || day === 6) return 'weekend'
   return 'absent'
 }
 
 export async function getAttendanceHistory(userId, daysBack = 119) {
   const sb = admin()
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  // getWorkHoursHistory와 같은 이유로 한국 기준 오늘 날짜를 UTC 자정에 앵커링한다(위 주석 참고)
+  const today = new Date(`${todayDateKST()}T00:00:00Z`)
   const since = new Date(today.getTime() - daysBack * 86400000).toISOString().slice(0, 10)
 
   // 가입(첫 출근) 이전 날짜까지 "결근"으로 찍히면 안 되므로, 실제 첫 출근일을 따로 조회해 그 이전은 제외
@@ -1658,7 +1663,10 @@ export async function getPeriodReport(userId, range) {
   }
   const rangeLabel = PERIOD_RANGE_LABEL[range]
   const sb = admin()
-  const since = new Date(Date.now() - PERIOD_RANGE_DAYS[range] * 86400000).toISOString().slice(0, 10)
+  // 주간/월간 범위의 시작일도 한국 기준 오늘에서 역산한다(UTC 기준으로 잡으면 한국시간 오전 9시
+  // 이전에 범위가 하루씩 밀려서, 오늘 쓴 리포트가 주간 집계에서 빠질 수 있음)
+  const todayKST = new Date(`${todayDateKST()}T00:00:00Z`)
+  const since = new Date(todayKST.getTime() - PERIOD_RANGE_DAYS[range] * 86400000).toISOString().slice(0, 10)
 
   const workdays = unwrap(
     await sb.from('workdays').select('id, work_date').eq('user_id', userId).gte('work_date', since).order('work_date'),

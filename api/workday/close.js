@@ -20,8 +20,12 @@ export default withErrors('POST', async (req, res) => {
   const { workdayId, reset, advanceDay, resetAccount, testKakaoInactive } = req.body || {}
 
   // 운영 서비스에 QA용 파괴적 액션이 그대로 열려 있으면 일반 로그인 사용자도 자기 계정 데이터를
-  // 초기화/임의 진행할 수 있다. 프론트 /qa 차단과 별개로 서버에서도 full 관리자 권한을 한 번 더 검증한다.
-  if (testKakaoInactive || reset || resetAccount || advanceDay) {
+  // 초기화/임의 진행할 수 있어서, 원래는 서버에서도 full 관리자 권한을 한 번 더 검증한다.
+  // ⚠️ 심사 기간 한정: 홈의 QA 패널을 심사자에게도 열어두기로 해서 이 검증을 일시적으로 끈다.
+  // 아래 액션은 전부 requireUser로 받은 "본인 계정"에만 적용되는 self-scoped 동작이라 다른 계정
+  // 데이터에는 영향이 없다. 심사가 끝나면 이 상수를 false로 되돌릴 것.
+  const ALLOW_QA_ACTIONS_FOR_ALL = true
+  if (!ALLOW_QA_ACTIONS_FOR_ALL && (testKakaoInactive || reset || resetAccount || advanceDay)) {
     const role = await getAdminRole(userId)
     if (role !== 'full') {
       res.status(403).json({ error: 'QA 관리자 권한이 없습니다' })

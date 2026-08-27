@@ -1,5 +1,5 @@
-// Vercel 서버리스 함수(api/*.js) 전부를 하나의 Supabase Edge Function으로 라우팅한다.
-// 프론트는 여전히 `${VITE_API_BASE_URL}/api/워크데이/today` 같은 경로로 호출하고,
+// api/*.js 핸들러 전부를 하나의 Supabase Edge Function으로 라우팅한다.
+// 프론트는 `${VITE_API_BASE_URL}/api/workday/today` 같은 경로로 호출하고,
 // 여기서 "/api" 접두어를 떼고 남은 경로로 기존 핸들러 파일에 그대로 넘긴다.
 // deno-lint-ignore-file no-explicit-any
 import "../_shared/env.ts";
