@@ -164,7 +164,10 @@ export function TrialOnboardingReveal({
                       {rank}
                     </span>
                   </div>
-                  <p className={`mt-2 text-sm ${gameMode ? "text-[#45584f]" : "text-[#64748b]"}`}>
+                  {/* 업종·직무를 이어 붙이면 한 줄에 안 들어가는 조합이 많은데, break-keep이 없으면
+                      한국어 단어 중간("담당자" → "담당"/"자")에서 끊긴다. 단어 경계에서만 줄바꿈되게 하고,
+                      길면 " · " 자리에서 자연스럽게 두 줄로 넘어가도록 둔다. */}
+                  <p className={`mt-2 break-keep text-sm ${gameMode ? "text-[#45584f]" : "text-[#64748b]"}`}>
                     {[profile.industry, profile.job_role].filter(Boolean).join(" · ")}
                   </p>
                   <p className={`mt-1 text-xs ${gameMode ? "text-[#7d877f]" : "text-[#94a3b8]"}`}>사번 {employeeId}</p>
