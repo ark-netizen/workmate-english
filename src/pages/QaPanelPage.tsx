@@ -3,12 +3,13 @@
 // HomePage.tsx의 QaControlPanel과 같은 기능이지만, WorkdayContext 없이 api를 직접 호출하고
 // notifyQaAction()으로 메인 창에 "새로고침해" 신호만 보낸다(폴링 45초를 안 기다리게).
 import { useState } from "react";
-import { Navigate } from "react-router-dom";
 import * as api from "@/lib/api";
 import { notifyQaAction, isAutoAdvanceEnabled, setAutoAdvance } from "@/lib/qaAutoAdvance";
 import { RANKS } from "@/components/promotion/rankArt";
+import { supabase, supabaseReady } from "@/lib/supabaseClient.js";
 
 const SHOW_DESTRUCTIVE_QA_TOOLS = true;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 
 const RANK_DAYS_PER_STEP = 30;
 const RANK_STEPS = RANKS.slice(0, -1).map((from, i) => ({
@@ -18,6 +19,7 @@ const RANK_STEPS = RANKS.slice(0, -1).map((from, i) => ({
 }));
 
 type DeliverFilterKey = "any" | "colleague" | "manager" | "client" | "review";
+type QaReminderResult = { sent?: boolean; reason?: string; remaining?: number };
 
 const DELIVER_BUTTONS: { key: DeliverFilterKey; label: string; filter?: { role?: "colleague" | "manager" | "client"; kind?: "review" } }[] = [
   { key: "any", label: "연락 바로 받기 (다음 순서)" },
@@ -27,16 +29,49 @@ const DELIVER_BUTTONS: { key: DeliverFilterKey; label: string; filter?: { role?:
   { key: "review", label: "복습 연락 받기", filter: { kind: "review" } },
 ];
 
+function reminderReason(reason?: string) {
+  if (reason === "no-workday") return "오늘 근무 기록이 없어요.";
+  if (reason === "workday-closed") return "이미 마감된 근무일이라 재알림을 보낼 수 없어요.";
+  if (reason === "no-awaiting-conversation") return "현재 답장을 기다리는 연락이 없어요.";
+  if (reason === "no-field-work-reminder") return "예약된 외근 재알림이 없어요. 먼저 연락에서 ‘외근 중’을 눌러주세요.";
+  if (reason === "no-push-subscription") return "이 계정의 Web Push 구독이 없어요. 알림을 다시 켜주세요.";
+  if (reason === "push-delivery-failed") return "Web Push 전송에 실패했어요. 구독 상태를 확인해주세요.";
+  return `재알림을 보내지 못했어요${reason ? ` (${reason})` : ""}.`;
+}
+
+async function forceFieldWorkReminder(): Promise<QaReminderResult> {
+  if (!supabaseReady || !supabase) throw new Error("Supabase 세션을 사용할 수 없어요.");
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  if (!token) throw new Error("로그인 세션이 없어요.");
+
+  const res = await fetch(`${API_BASE_URL}/api/workday/field-work`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ qaDeliverReminder: true }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(body || `재알림 QA 요청 실패 (${res.status})`);
+  }
+  return res.json();
+}
+
 export function QaPanelPage() {
-  // QA 전용 페이지는 개발 빌드에서만 사용할 수 있게 한다. 운영 URL에서 /qa를 직접 입력해도
-  // 내부 도구가 렌더되지 않고 서비스 홈으로 돌아간다.
-  if (import.meta.env.PROD) return <Navigate to="/" replace />;
+  // 발표/심사 중 메인 창을 채팅 화면에 그대로 둔 채 다음 연락을 강제 발송하려면
+  // 운영 배포에서도 이 분리 창이 필요하다. 서버의 QA API는 현재 심사 기간 동안만 열려 있다.
   return <QaPanelDev />;
 }
 
 function QaPanelDev() {
   const [autoAdvance, setAutoAdvanceState] = useState(() => isAutoAdvanceEnabled());
   const [deliveringKey, setDeliveringKey] = useState<DeliverFilterKey | null>(null);
+  const [forcingFieldReminder, setForcingFieldReminder] = useState(false);
+  const [fieldReminderResult, setFieldReminderResult] = useState<string | null>(null);
   const [triggeringVent, setTriggeringVent] = useState(false);
   const [resettingToday, setResettingToday] = useState(false);
   const [backfillingDays, setBackfillingDays] = useState<number | null>(null);
@@ -53,6 +88,25 @@ function QaPanelDev() {
       notifyQaAction();
     } finally {
       setDeliveringKey(null);
+    }
+  };
+
+  const handleForceFieldReminder = async () => {
+    if (forcingFieldReminder) return;
+    setForcingFieldReminder(true);
+    setFieldReminderResult(null);
+    try {
+      const result = await forceFieldWorkReminder();
+      if (result.sent) {
+        setFieldReminderResult(result.remaining ? `발송됨 · ${result.remaining}건 남음` : "발송됨");
+        notifyQaAction();
+      } else {
+        setFieldReminderResult(reminderReason(result.reason));
+      }
+    } catch (err) {
+      setFieldReminderResult(err instanceof Error ? err.message : "외근 재알림 QA 요청에 실패했어요.");
+    } finally {
+      setForcingFieldReminder(false);
     }
   };
 
@@ -175,6 +229,16 @@ function QaPanelDev() {
             {deliveringKey === b.key ? "받는 중..." : b.label}
           </button>
         ))}
+        <button
+          type="button"
+          onClick={handleForceFieldReminder}
+          disabled={forcingFieldReminder}
+          title="실제 30분을 기다리지 않고 예약된 외근 재알림 1건을 즉시 Web Push로 보냅니다"
+          className="w-full rounded-md border border-dashed border-orange-300 px-2.5 py-1.5 text-left text-xs font-medium text-orange-600 hover:bg-orange-50 disabled:opacity-50"
+        >
+          {forcingFieldReminder ? "재알림 보내는 중..." : "외근 재알림 바로 받기"}
+        </button>
+        {fieldReminderResult && <p className="px-0.5 text-[10px] text-foreground/50">→ {fieldReminderResult}</p>}
         <button
           type="button"
           onClick={handleTriggerVent}
