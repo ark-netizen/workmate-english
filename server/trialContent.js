@@ -1,10 +1,13 @@
 // "1분 체험하기(로그인 불필요)" 게스트 전용 고정 콘텐츠 — LLM 호출 없이 항상 동일한 내용을 보여준다.
 // 목적: (1) 첫인상을 예측 가능하고 안정적으로 통제 (2) 회원가입 여부가 불확실한 익명 세션에 LLM 비용을 쓰지 않음
+// 시나리오 문구는 아래 TRIAL_CHARACTERS의 고정 첫 메시지와 반드시 같은 사건이어야 한다 —
+// 세 메시지가 전부 "오후 3시까지 검토"를 요청하므로 시나리오도 "배송 지연 대응"이 아니라
+// "배송 전 최종 검토"다. (예전에는 지연 대응으로 적혀 있어서 화면 설명과 실제 대화가 어긋났다.)
 export const TRIAL_SCENARIO = {
-  title: '고객사 DVD 배송 지연 대응',
-  summary: '거래처로 나가는 배송이 하루 지연되면서, 동료·상사·거래처에게 각각 다른 톤으로 상황을 전달해야 하는 하루.',
+  title: '고객사 DVD 배송 검토',
+  summary: '고객사 DVD 배송 전 최종 내용을 오후 3시까지 검토하고, 동료·상사·거래처의 요청에 관계별 톤으로 답변해야 하는 하루.',
   project: 'DVD 배송 프로젝트',
-  goal: '지연 상황을 팀 내부에는 캐주얼하게, 상사에게는 정중하게, 거래처에는 격식 있게 전달하기',
+  goal: '같은 검토 요청에 동료에게는 캐주얼하게, 상사에게는 명확하게, 거래처에는 격식 있게 답변하기',
   practice_areas: ['정중한 요청 표현', '상황 보고', '격식 있는 이메일 어투'],
 }
 
@@ -17,8 +20,8 @@ export const TRIAL_CHARACTERS = [
     register: '캐주얼, 이모지 자주 사용',
     color: '#1a56ff',
     firstMessage: 'Hey, can you take a look by 3? 🙏',
-    purposeKo: '지연 상황 공유',
-    purposeEn: 'Sharing the delay',
+    purposeKo: '검토 상황 확인',
+    purposeEn: 'Checking review progress',
   },
   {
     role: 'manager',

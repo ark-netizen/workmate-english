@@ -312,13 +312,15 @@ export async function startWorkday(userId) {
         summary: TRIAL_SCENARIO.summary,
         project: encodeWorkContext({
           titleKo: TRIAL_SCENARIO.title,
-          titleEn: 'Responding to a Client DVD Shipment Delay',
+          titleEn: 'Reviewing a Client DVD Shipment',
           summaryKo: TRIAL_SCENARIO.summary,
-          summaryEn: 'A client shipment is delayed by one day, and the same issue must be coordinated with a colleague, a manager, and the client in different registers.',
-          goalKo: TRIAL_SCENARIO.goal,
-          goalEn: 'Explain the delay internally, report it clearly to the manager, and coordinate politely with the client.',
-          stageKo: '지연 안내 및 일정 조율',
-          stageEn: 'Delay Notice and Schedule Coordination',
+          summaryEn: 'The final DVD shipment details need review by 3 PM, and a colleague, a manager, and the client each ask for that same review in a different register.',
+          // 홈의 "오늘의 업무 상황" 카드에 실제로 보이는 문장이라, TRIAL_SCENARIO.goal(내부 학습 목표)과
+          // 달리 사용자에게 무엇을 해야 하는지 그대로 설명하는 문장을 쓴다
+          goalKo: 'DVD 배송 전 최종 검토가 필요합니다. 오후 3시까지 내용을 확인하고 각 관계에 맞는 톤으로 답변하세요.',
+          goalEn: 'Review the DVD shipment details by 3 PM and respond appropriately to each relationship.',
+          stageKo: '오후 3시 최종 검토',
+          stageEn: 'Final review by 3 PM',
           topicStatus: 'active',
           roles: TRIAL_CHARACTERS.map((c) => ({
             role: c.role,
