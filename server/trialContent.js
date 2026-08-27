@@ -63,7 +63,7 @@ export const TRIAL_REPLY = {
 // 있도록, 세 명 모두와의 대화를 반영한 예시 내용으로 채운다(실제 서비스는 매일 다른 상황·문장으로 생성됨)
 export const TRIAL_DAILY_REPORT = {
   workday_summary:
-    '오늘은 Jake(동료)·Ellen(상사)·Liam Carter(거래처) 모두에게 DVD 배송 지연 상황을 전달했어요. 상대에 따라 캐주얼·격식체·비즈니스 격식으로 톤을 구분해서 답장했고, 전반적으로 자연스러웠어요. 실제 서비스에서는 매일 다른 업무 상황으로 이런 리포트가 쌓여가요.',
+    '오늘은 Jake(동료)·Ellen(상사)·Liam Carter(거래처)의 DVD 배송 검토 요청에 답장했어요. 상대에 따라 캐주얼·격식체·비즈니스 격식으로 톤을 구분해서 답장했고, 전반적으로 자연스러웠어요. 실제 서비스에서는 매일 다른 업무 상황으로 이런 리포트가 쌓여가요.',
   good_expressions: [
     { text: 'Sure, I can check it by 3!', note: 'Jake(동료)에게 캐주얼하게 응답 — 짧고 친근한 톤을 잘 살렸어요.' },
     { text: "Of course, I'll have it reviewed by 3pm.", note: 'Ellen(상사)에게는 격식체로 전환해서 정중하게 답변했어요.' },
@@ -107,9 +107,9 @@ export const TRIAL_DAILY_REPORT = {
   ],
   recommended_expressions: [
     { en: 'I will have it ready by 3 p.m.', ko: '오후 3시까지 준비해두겠습니다.', note: '상사·거래처에게 시간 약속을 명확히 전달할 때 유용해요.' },
-    { en: 'Thank you for your patience.', ko: '기다려주셔서 감사합니다.', note: '지연 상황을 전달할 때 상대를 배려하는 느낌을 더해줘요.' },
+    { en: 'Thank you for your patience.', ko: '기다려주셔서 감사합니다.', note: '검토를 기다리게 할 때 상대를 배려하는 느낌을 더해줘요.' },
     { en: "I'll keep you posted.", ko: '진행 상황 계속 알려드릴게요.', note: '동료 사이의 캐주얼한 후속 안내 표현이에요.' },
   ],
   next_day_context:
-    "내일은 오늘 교정한 ‘I will have it ready by 3 p.m.’과 ‘Thank you for your patience.’를 다른 업무 상황에서 다시 써보며, 상사·거래처에게 마감 시간과 지연 상황을 정중하게 전달하는 표현을 연습해요.",
+    "내일은 오늘 교정한 ‘I will have it ready by 3 p.m.’과 ‘Thank you for your patience.’를 다른 업무 상황에서 다시 써보며, 상사·거래처에게 마감 시간과 검토 진행 상황을 정중하게 전달하는 표현을 연습해요.",
 }
