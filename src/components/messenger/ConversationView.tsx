@@ -235,10 +235,10 @@ export function ConversationView({ conversation }: { conversation: Conversation 
               onLevelChange={setHintLevel}
             />
           )}
-          <div className="flex items-end gap-2 rounded-2xl border border-border bg-surface px-4 py-2">
+          <div className="rounded-2xl border border-border bg-surface px-4 py-2">
             <textarea
               style={{ height: inputHeight }}
-              className={`flex-1 resize-none bg-transparent py-1 text-sm outline-none placeholder:text-foreground/40 ${
+              className={`w-full resize-none bg-transparent py-1 text-sm outline-none placeholder:text-foreground/40 ${
                 isLockedTrialReply ? "cursor-default" : ""
               }`}
               placeholder="메시지를 입력하세요 (Shift+Enter로 줄바꿈)"
@@ -255,33 +255,38 @@ export function ConversationView({ conversation }: { conversation: Conversation 
                 }
               }}
             />
-            <VoiceInputButton
-              onTranscript={(spoken) => setText((prev) => (prev.trim() ? `${prev.trim()} ${spoken}` : spoken))}
-            />
-            {!isVent && (
+            {/* 버튼 줄을 입력창과 구분선으로 분리한다 — 예전엔 입력창과 같은 줄에 있어서 마이크만
+                텍스트 옆에 툭 튀어나와 보였다. 이메일 화면(EmailView)의 "입력창 / 선 / 버튼 줄"
+                구조와 같게 맞춰서 두 화면의 마이크 자리도 통일된다. */}
+            <div className="-mx-4 mt-2 flex items-center justify-end gap-2 border-t border-border px-4 pt-2">
+              <VoiceInputButton
+                onTranscript={(spoken) => setText((prev) => (prev.trim() ? `${prev.trim()} ${spoken}` : spoken))}
+              />
+              {!isVent && (
+                <button
+                  type="button"
+                  onClick={handleFieldWork}
+                  disabled={fieldWorkPending}
+                  title={
+                    allTrialTasksDone
+                      ? "실서비스에서는 이 버튼을 눌러 외근 상태로 미룰 수 있어요. 체험판의 반복 감지 시연은 오른쪽 ‘다음’ 버튼으로 진행합니다."
+                      : "지금 답장하기 어려우면 눌러보세요. 30분 뒤에 같은 연락이 다시 와요."
+                  }
+                  className="shrink-0 rounded-full border border-border px-3 py-1 text-xs text-foreground/60 hover:bg-black/[.03] disabled:opacity-60"
+                >
+                  지금 외근 중
+                </button>
+              )}
+              <SpellFixButton text={text} onFixed={setText} />
               <button
                 type="button"
-                onClick={handleFieldWork}
-                disabled={fieldWorkPending}
-                title={
-                  allTrialTasksDone
-                    ? "실서비스에서는 이 버튼을 눌러 외근 상태로 미룰 수 있어요. 체험판의 반복 감지 시연은 오른쪽 ‘다음’ 버튼으로 진행합니다."
-                    : "지금 답장하기 어려우면 눌러보세요. 30분 뒤에 같은 연락이 다시 와요."
-                }
-                className="shrink-0 rounded-full border border-border px-3 py-1 text-xs text-foreground/60 hover:bg-black/[.03] disabled:opacity-60"
+                onClick={handleSend}
+                disabled={showSending || !text.trim()}
+                className="shrink-0 rounded-full bg-accent px-3 py-1 text-xs font-medium text-white disabled:opacity-50"
               >
-                지금 외근 중
+                보내기
               </button>
-            )}
-            <SpellFixButton text={text} onFixed={setText} />
-            <button
-              type="button"
-              onClick={handleSend}
-              disabled={showSending || !text.trim()}
-              className="shrink-0 rounded-full bg-accent px-3 py-1 text-xs font-medium text-white disabled:opacity-50"
-            >
-              보내기
-            </button>
+            </div>
           </div>
         </div>
         <p className="shrink-0 px-4 py-2 text-[11px] text-foreground/35">
