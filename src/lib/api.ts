@@ -1,4 +1,4 @@
-import { getAccessToken } from "./authToken";
+import { getAccessToken, setAccessToken, clearAccessToken } from "./authToken";
 import { supabase, supabaseReady } from "./supabaseClient.js";
 import type {
   AdminDashboardResponse,
@@ -38,7 +38,48 @@ async function resolveAccessToken(): Promise<string | null> {
   return getAccessToken();
 }
 
-async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
+// 서버가 401을 낸 뒤의 복구 — "로컬에는 유효기간이 남아 있는데 서버에서는 이미 무효인 토큰"을 다룬다.
+// 계정이 삭제되거나 다른 곳에서 로그아웃되면 이 상태가 되는데, ensureSession()은 세션이 없거나
+// 만료 임박일 때만 손대기 때문에 이 경우를 못 잡는다. 그러면 토큰이 자연 만료될 때까지(최대 1시간)
+// 모든 요청이 401로 막혀서, 새로고침해도 안 풀리는 "서비스가 죽은 것처럼 보이는" 상태가 된다.
+//
+// 실계정 사용자를 조용히 익명 세션으로 갈아치우면 "내 데이터가 다 사라졌다"로 보이므로,
+// 익명 세션을 새로 만드는 건 원래도 익명(1분 체험)이었거나 아예 세션이 없던 경우로 한정한다.
+// 실계정이 복구 불가면 죽은 세션만 정리하고 false를 반환한다 — 그 뒤 401이 그대로 올라가고,
+// 세션이 비워졌으니 다음 렌더/새로고침에서 로그인 화면으로 돌아간다.
+async function recoverFromDeadSession(): Promise<boolean> {
+  if (!supabaseReady || !supabase) return false;
+
+  // 죽은 세션을 지우기 전에 "원래 익명이었는지"를 먼저 확인해둔다
+  const { data: before } = await supabase.auth.getSession();
+  const wasAnonymous = Boolean(before.session?.user?.is_anonymous);
+  const hadSession = Boolean(before.session);
+
+  // 1) 리프레시 토큰이 아직 살아있으면 이것만으로 복구된다
+  const refreshed = await supabase.auth.refreshSession().catch(() => null);
+  const refreshedToken = refreshed?.data?.session?.access_token;
+  if (refreshedToken) {
+    setAccessToken(refreshedToken);
+    return true;
+  }
+
+  // 2) 리프레시도 실패 → 로컬에 남은 죽은 세션을 정리한다
+  await supabase.auth.signOut({ scope: "local" }).catch(() => {});
+  clearAccessToken();
+
+  // 3) 원래 익명(체험)이었거나 세션이 없었으면 새 익명 세션으로 이어준다
+  if (wasAnonymous || !hadSession) {
+    const { data, error } = await supabase.auth.signInAnonymously();
+    if (!error && data.session?.access_token) {
+      setAccessToken(data.session.access_token);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+async function apiFetch<T>(path: string, options: RequestInit = {}, isRetry = false): Promise<T> {
   const token = await resolveAccessToken();
 
   const res = await fetch(`${API_BASE_URL}${path}`, {
@@ -49,6 +90,12 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
       ...options.headers,
     },
   });
+
+  // 서버가 토큰을 거부했으면 딱 한 번만 세션을 복구하고 같은 요청을 다시 보낸다(재귀는 1회로 제한)
+  if (res.status === 401 && !isRetry) {
+    const recovered = await recoverFromDeadSession();
+    if (recovered) return apiFetch<T>(path, options, true);
+  }
 
   if (!res.ok) {
     const body = await res.text().catch(() => "");
