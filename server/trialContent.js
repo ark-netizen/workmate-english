@@ -64,9 +64,12 @@ export const TRIAL_REPLY = {
 export const TRIAL_DAILY_REPORT = {
   workday_summary:
     '오늘은 Jake(동료)·Ellen(상사)·Liam Carter(거래처)의 DVD 배송 검토 요청에 답장했어요. 상대에 따라 캐주얼·격식체·비즈니스 격식으로 톤을 구분해서 답장했고, 전반적으로 자연스러웠어요. 실제 서비스에서는 매일 다른 업무 상황으로 이런 리포트가 쌓여가요.',
+  // 한 문장은 good_expressions와 corrections 중 정확히 한쪽에만 들어가야 한다 — 칭찬해놓고 같은
+  // 문장을 교정하면 모순이고, 실제 리포트 프롬프트도 이를 명시적으로 금지한다.
+  // 교정 예시는 반드시 "진짜 오류"여야 한다. 축약형(I'll)이나 시간 표기(3pm/3 p.m.)는 오류가 아니라
+  // 캐주얼/표기 관례라, 그걸 고치라고 하면 체험판이 실제 리포트와 정반대의 영어를 가르치게 된다.
   good_expressions: [
     { text: 'Sure, I can check it by 3!', note: 'Jake(동료)에게 캐주얼하게 응답 — 짧고 친근한 톤을 잘 살렸어요.' },
-    { text: "Of course, I'll have it reviewed by 3pm.", note: 'Ellen(상사)에게는 격식체로 전환해서 정중하게 답변했어요.' },
     {
       text: 'Thank you for reaching out. We will complete the review by 3:00 PM.',
       note: 'Liam Carter(거래처)에게는 가장 격식 있는 표현을 사용해 신뢰감을 줬어요.',
@@ -74,9 +77,10 @@ export const TRIAL_DAILY_REPORT = {
   ],
   corrections: [
     {
-      before: "Of course, I'll have it reviewed by 3pm.",
-      after: 'Of course, I will have it reviewed by 3 p.m.',
-      note: "구어체 축약형(I'll)보다 상사에게는 완전한 형태(I will)가 더 격식 있게 느껴져요. 시간 표기도 'pm' 대신 'p.m.'으로 쓰면 더 정중한 톤이 돼요.",
+      before: "Of course, I'll have it reviewed until 3pm.",
+      after: "Of course, I'll have it reviewed by 3pm.",
+      after_ko: '물론이죠, 3시까지 검토해두겠습니다.',
+      note: "마감 시각을 말할 땐 'until'이 아니라 'by'예요. 'until 3pm'은 3시까지 그 상태가 계속되다 끝난다는 뜻이라, 검토처럼 한 번에 끝나는 일에는 맞지 않아요. 축약형(I'll)은 그대로 두셔도 좋아요 — 상사에게 쓰기에 충분히 자연스럽습니다.",
     },
   ],
   register_feedback: [
@@ -91,8 +95,8 @@ export const TRIAL_DAILY_REPORT = {
       role: 'manager',
       their_quote: 'Could you please review this by 3pm today?',
       their_quote_ko: '오늘 3시까지 검토해주실 수 있을까요?',
-      user_quote: "Of course, I'll have it reviewed by 3pm.",
-      note: '상사의 정중한 요청에는 "Of course" 정도로 응답하면 예의 바르면서도 자연스러워요.',
+      user_quote: "Of course, I'll have it reviewed until 3pm.",
+      note: '상사의 정중한 요청에는 "Of course" 정도로 응답하면 예의 바르면서도 자연스러워요. 다만 마감 시각은 \'until\'이 아니라 \'by\'로 써야 해요(교정 내용 참고).',
     },
     {
       role: 'client',
@@ -103,7 +107,7 @@ export const TRIAL_DAILY_REPORT = {
     },
   ],
   recurring_issues: [
-    "축약형(I'll, We're 등)은 캐주얼한 대화엔 자연스럽지만, 상사·거래처 대상 격식체에서는 완전한 형태로 풀어 쓰는 연습이 필요해요.",
+    "마감을 말할 때 'until'과 'by'를 헷갈리는 경우가 있어요. 'by 3pm'은 3시까지 끝내는 것, 'until 3pm'은 3시까지 계속하는 것이라 뜻이 달라져요.",
   ],
   recommended_expressions: [
     { en: 'I will have it ready by 3 p.m.', ko: '오후 3시까지 준비해두겠습니다.', note: '상사·거래처에게 시간 약속을 명확히 전달할 때 유용해요.' },
@@ -111,5 +115,5 @@ export const TRIAL_DAILY_REPORT = {
     { en: "I'll keep you posted.", ko: '진행 상황 계속 알려드릴게요.', note: '동료 사이의 캐주얼한 후속 안내 표현이에요.' },
   ],
   next_day_context:
-    "내일은 오늘 교정한 ‘I will have it ready by 3 p.m.’과 ‘Thank you for your patience.’를 다른 업무 상황에서 다시 써보며, 상사·거래처에게 마감 시간과 검토 진행 상황을 정중하게 전달하는 표현을 연습해요.",
+    "내일은 오늘 교정한 ‘I’ll have it reviewed by 3pm.’과 ‘Thank you for your patience.’를 다른 업무 상황에서 다시 써보며, 상사·거래처에게 마감 시간과 검토 진행 상황을 정중하게 전달하는 표현을 연습해요.",
 }
