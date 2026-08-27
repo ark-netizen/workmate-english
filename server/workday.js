@@ -142,7 +142,9 @@ const routeFor = (channel, conversationId) =>
 // 고정 콘텐츠(체험판/시연 계정)로 하루치 시나리오·캐릭터·대화·첫 메시지를 한 번에 만들어 둔다.
 // LLM을 전혀 호출하지 않으므로 출근이 즉시 끝나고, 첫 메시지가 미리 저장돼 있어서 배달 시점에도
 // 재생성 없이 그대로 노출된다(deliverConversation의 고정 콘텐츠 분기 참고).
-async function createFixedScenarioDay(sb, { workday, scenarioContent, characters: chars, titleEn, summaryEn, goalEn, stageKo, stageEn, staggerMs }) {
+// goalKo/goalEn은 홈 "오늘의 업무 상황" 카드에 그대로 뜨는 문장이라, scenarioContent.goal(내부
+// 학습 목표)과 분리해서 받는다 — 학습 목표를 그대로 띄우면 사용자가 오늘 뭘 해야 하는지 알 수 없다.
+async function createFixedScenarioDay(sb, { workday, scenarioContent, characters: chars, titleEn, summaryEn, goalKo, goalEn, stageKo, stageEn, staggerMs }) {
   const scenario = unwrap(
     await sb.from('scenarios').insert({
       workday_id: workday.id,
@@ -153,7 +155,7 @@ async function createFixedScenarioDay(sb, { workday, scenarioContent, characters
         titleEn,
         summaryKo: scenarioContent.summary,
         summaryEn,
-        goalKo: scenarioContent.goal,
+        goalKo: goalKo || scenarioContent.goal,
         goalEn,
         stageKo,
         stageEn,
@@ -294,7 +296,8 @@ export async function startWorkday(userId) {
       characters: DEMO_CHARACTERS,
       titleEn: 'Confirming the Final Main Promotion Image',
       summaryEn: 'The team needs to confirm whether the main promotion image for the new single is final, asked by a colleague, a manager, and a client in different registers.',
-      goalEn: 'Share the image status casually with a colleague, politely with the manager, and formally with the client.',
+      goalKo: '신곡 프로모션 메인 이미지가 확정됐는지 확인해야 합니다. 동료·팀장·거래처의 문의에 각 관계에 맞는 톤으로 답변하세요.',
+      goalEn: 'Confirm whether the main promotion image is final, and reply to each contact in the tone that fits them.',
       stageKo: '이미지 확정 확인',
       stageEn: 'Confirming the final image',
       staggerMs: { colleague: 0, manager: 90_000, client: 180_000 },
