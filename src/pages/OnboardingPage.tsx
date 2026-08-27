@@ -9,12 +9,15 @@ import { EmployeeIdCard } from "@/components/profile/EmployeeIdCard";
 import { TrialOnboardingReveal } from "@/components/onboarding/TrialOnboardingReveal";
 import type { EnglishLevel, ProfileResponse } from "@/types/api";
 
-// "1분 체험하기" 게스트는 직접 입력하지 않아도 바로 다음으로 넘어갈 수 있도록 미리 채워두는 값
+// "1분 체험하기" 게스트는 직접 입력하지 않아도 바로 다음으로 넘어갈 수 있도록 미리 채워두는 값.
+// 체험은 LLM 없이 고정 대화(server/trialContent.js — 거래처 DVD 배송 건 최종 검토)를 쓰므로,
+// 여기 값도 그 대화와 같은 업무여야 한다. 예전엔 IT/서비스 기획자로 채워져 있어서, 온보딩에서
+// "이렇게 선택했다"고 보여준 직무와 실제로 도착하는 대화가 서로 다른 일이었다.
 const TRIAL_DEFAULTS = {
   displayName: "체험 사용자",
-  industry: "IT/소프트웨어",
-  jobRole: "서비스 기획자",
-  mainTasks: "신규 기능 기획, 유관부서 커뮤니케이션",
+  industry: "무역/유통·이커머스",
+  jobRole: "유통/납품 담당자",
+  mainTasks: "납품 일정 관리, 거래처 배송 커뮤니케이션",
   contacts: "동료, 팀장, 거래처 담당자",
 };
 

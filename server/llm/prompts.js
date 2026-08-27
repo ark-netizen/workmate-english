@@ -405,7 +405,7 @@ ${GENERATION_GUARDRAILS}`
 - English level: ${profile.english_level}. ${LEVEL_HINT[profile.english_level] || ''}
 ${nameLine(profile)}
 
-Write the welcome email for their very first day at "Global Office" (this kicks off their OJT — on-the-job-training — week).
+Write the welcome email for their very first day at "WorkMate English" (this kicks off their OJT — on-the-job-training — week).
 Cover briefly, in this order: (1) a warm welcome to the team, (2) their internal company mail and chat accounts are now set up and ready to use, (3) a reminder that when they finish work each day they should press the "clock out" button, (4) they can also manage their annual leave through the system, (5) end with warm encouragement (fighting spirit / good luck) and ask them to simply reply with a short greeting to confirm they've seen this email. Do NOT invent unrelated agenda items like a specific lunch meeting time, unconnected training sessions, or an obscure internal acronym — everything mentioned should be something this app actually has.
 End by asking for a simple reply, not a task list.
 Formatting: write natural flowing paragraphs, NOT one blank line between every single sentence. Group related points into 2-3 short paragraphs (e.g. greeting in one; the practical items together in one or two; the closing/encouragement in one) — a real email does not isolate each sentence on its own line.

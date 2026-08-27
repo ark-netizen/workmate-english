@@ -112,7 +112,7 @@ export function EmployeeIdCard({
                 : "text-xs font-medium uppercase tracking-wide text-foreground/40"
             }
           >
-            Global Office
+            WorkMate English
           </p>
           <div className={horizontal ? "flex items-center gap-2" : "flex items-center justify-center gap-2"}>
             <p className={gameCard ? "truncate text-lg font-black text-[#18251f]" : "truncate text-lg font-semibold"}>{name}</p>

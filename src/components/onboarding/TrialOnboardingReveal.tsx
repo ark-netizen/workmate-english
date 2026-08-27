@@ -138,7 +138,7 @@ export function TrialOnboardingReveal({
             <aside className="space-y-4">
               <div className={`p-5 ${panelClass}`}>
                 <p className={`text-center text-[11px] font-black uppercase tracking-[.12em] ${gameMode ? "text-[#2f795d]" : "text-[#1a56ff]"}`}>
-                  Global Office
+                  WorkMate English
                 </p>
                 <div className="mt-4 flex flex-col items-center text-center">
                   <div
@@ -264,7 +264,7 @@ export function TrialOnboardingReveal({
                       직무
                       <Lock className="size-3 opacity-45" strokeWidth={2.5} />
                     </p>
-                    <div className={`px-3 py-2 text-sm ${fieldClass}`}>{profile.job_role || "서비스 기획자"}</div>
+                    <div className={`px-3 py-2 text-sm ${fieldClass}`}>{profile.job_role || "유통/납품 담당자"}</div>
                   </div>
                 </div>
 
