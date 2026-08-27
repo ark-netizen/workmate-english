@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import * as api from "@/lib/api";
 import { useWorkday } from "@/context/useWorkday";
+import { useBusinessMode } from "@/context/useBusinessMode";
 import { industries } from "@/lib/industries";
 import { subscribePush } from "@/lib/push";
 import { isAnonymousSession, endGuestTrial } from "@/lib/session";
@@ -29,6 +30,11 @@ const englishLevels: { value: EnglishLevel; label: string }[] = [
 
 export function OnboardingPage() {
   const { refresh } = useWorkday();
+  // businessMode=true가 실제로는 "게임 모드"다(game-mode-workspace.css 주석 참고).
+  // 게임 모드에선 인트로·체험 온보딩과 같은 민트로 끝나는 배경을 쓴다 — 실계정 온보딩만 게임 모드를
+  // 몰라서 흰 배경으로 떨어져 있었다. 비즈니스 모드는 기존 배경(bg-background) 그대로 둔다.
+  const { businessMode: gameMode } = useBusinessMode();
+  const pageBgClass = gameMode ? "bg-[linear-gradient(180deg,#83cef1_0%,#cdeeff_62%,#eaf5dc_100%)]" : "";
   const [displayName, setDisplayName] = useState("");
   const [industry, setIndustry] = useState("");
   const [customIndustry, setCustomIndustry] = useState("");
@@ -156,6 +162,7 @@ export function OnboardingPage() {
 
   if (completedProfile) {
     return (
+      <div className={`min-h-screen w-full ${pageBgClass}`}>
       <div className="mx-auto flex min-h-screen max-w-sm flex-col items-center justify-center gap-6 px-4 py-10 text-center">
         <div>
           <h1 className="text-lg font-semibold">사원증이 발급됐어요</h1>
@@ -175,6 +182,7 @@ export function OnboardingPage() {
         >
           {advancing ? "불러오는 중..." : "시작하기"}
         </button>
+      </div>
       </div>
     );
   }
@@ -333,9 +341,20 @@ export function OnboardingPage() {
         >
           시작하기
         </button>
+
+        {/* 온보딩은 프로필이 없으면 반드시 거치는 화면이라 나갈 문이 없다 — 여기서 막힌 것처럼
+            보이지 않게, 지금 채운 값을 나중에 바꿀 수 있다는 걸 알려서 빠르게 통과하게 한다 */}
+        <p className="text-center text-xs text-foreground/45">
+          지금 입력한 내용은 나중에 <span className="font-medium text-foreground/60">설정</span>에서 언제든 바꿀 수 있어요.
+        </p>
       </div>
     </div>
   );
 
-  return <div className="mx-auto flex min-h-screen max-w-xl flex-col justify-center">{form}</div>;
+  // 배경은 화면 전체를 덮어야 하므로, 가운데 정렬된 컬럼(max-w-xl)을 바깥 래퍼로 한 겹 감싼다
+  return (
+    <div className={`min-h-screen w-full ${pageBgClass}`}>
+      <div className="mx-auto flex min-h-screen max-w-xl flex-col justify-center">{form}</div>
+    </div>
+  );
 }
