@@ -148,32 +148,27 @@ function AppRoutes() {
     return false;
   };
 
-  // 1분 체험은 외근 단계에서 브라우저 시스템 알림을 실제로 보여주는 것이 핵심 시연 요소다.
-  // 새 PC에서도 체험 도중 뒤늦게 권한을 묻지 않도록, 사용자가 체험 버튼을 누른 그 제스처에서
-  // 먼저 알림 권한과 Service Worker를 준비한다. 차단/미지원 상태면 체험 진입 자체를 막아서
-  // 대회 시연 중 "될 때도 있고 안 될 때도 있는" 상태를 만들지 않는다.
+  // 1분 체험은 외근 단계에서 브라우저 시스템 알림을 실제로 보여주는 것이 핵심 시연 요소라,
+  // 사용자가 체험 버튼을 누른 그 제스처에서 미리 권한과 Service Worker를 준비해둔다.
+  // 단, 준비에 실패해도 체험 진입은 막지 않는다 — 체험 대화는 고정 콘텐츠라 푸시 없이도 전부
+  // 동작하고, 알림이 없으면 연락이 앱 안에서만 보일 뿐이다. 예전에는 여기서 throw로 막아서
+  // 알림을 한 번 "차단"한 사람이나 푸시가 제한된 창에서는 제품을 아예 볼 수 없었고, 되돌리려면
+  // 주소창 사이트 권한을 직접 고쳐야 했다 — 연출 하나 때문에 체험 자체를 잠글 값이 아니다.
+  // 안내 문구는 체험 버튼 클릭을 가로채는 main.tsx 쪽에서 이미 한 번 보여주므로 여기선 조용히 넘어간다.
   const prepareTrialNotifications = async () => {
-    if (!("Notification" in window) || !("serviceWorker" in navigator)) {
-      window.alert("이 브라우저에서는 웹 알림을 사용할 수 없어요. 알림을 지원하는 최신 브라우저에서 다시 시도해주세요.");
-      throw new Error("trial notification unsupported");
-    }
-
-    let permission = Notification.permission;
-    if (permission === "default") {
-      permission = await Notification.requestPermission();
-    }
-
-    if (permission !== "granted") {
-      window.alert("1분 체험을 위해 웹 알림 권한이 필요해요. 주소창의 사이트 권한에서 알림을 '허용'으로 바꾼 뒤 다시 1분 체험하기를 눌러주세요.");
-      throw new Error("trial notification permission required");
-    }
+    if (!("Notification" in window) || !("serviceWorker" in navigator)) return;
 
     try {
+      let permission = Notification.permission;
+      if (permission === "default") {
+        permission = await Notification.requestPermission();
+      }
+      if (permission !== "granted") return;
+
       await navigator.serviceWorker.register("/sw.js");
       await navigator.serviceWorker.ready;
     } catch {
-      window.alert("웹 알림 준비에 실패했어요. 페이지를 새로고침한 뒤 다시 1분 체험하기를 눌러주세요.");
-      throw new Error("trial notification service worker unavailable");
+      // 시크릿 창의 푸시 제한 등으로 준비가 실패해도 체험은 그대로 진행한다
     }
   };
 
