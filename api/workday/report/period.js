@@ -8,6 +8,18 @@ import { requireUser } from '../../../server/auth.js'
 import { getPeriodReport, getDailyReportForDate, devBackfillPastDay, devBackfillPastDays, getWorkHoursHistory, getAttendanceHistory } from '../../../server/workday.js'
 import { withErrors } from '../../../server/http.js'
 
+const SPELLING_ISSUE_PATTERN = /(오타|철자|스펠링|맞춤법|typo|spelling|misspell(?:ed|ing)?)/i
+const isSpellingIssue = (value) => SPELLING_ISSUE_PATTERN.test(String(value || ''))
+
+function hideSpellingIssues(report) {
+  if (!report) return report
+  return {
+    ...report,
+    corrections: (report.corrections || []).filter((item) => !isSpellingIssue(item?.note)),
+    recurring_issues: (report.recurring_issues || []).filter((item) => !isSpellingIssue(item)),
+  }
+}
+
 export default withErrors(null, async (req, res) => {
   const userId = await requireUser(req)
 
@@ -39,6 +51,7 @@ export default withErrors(null, async (req, res) => {
         return
       }
       const result = await getDailyReportForDate(userId, date)
+      if (result?.report) result.report = hideSpellingIssues(result.report)
       res.status(200).json(result)
       return
     }
