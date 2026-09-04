@@ -128,6 +128,71 @@ function withRoleContinuityGuard(args) {
   }
 }
 
+// 리포트의 "필수 암기"는 특정 문장을 통째로 외우게 하지 않고, 다음 업무에도 바꿔 쓸 수 있는
+// 문장 틀로 만든다. 실제 답장 힌트도 함께 주면 사용자가 답을 망쳤거나 힌트를 보지 않았던 날에도
+// 그날 상황에서 원래 쓸 수 있었던 모범답안을 학습 재료로 삼을 수 있다.
+function collectModelReplyHints(conversations) {
+  const rows = []
+  for (const conversation of conversations || []) {
+    for (const message of conversation?.messages || []) {
+      if (message?.sender === 'user' || !Array.isArray(message?.reply_hints)) continue
+      for (const hint of message.reply_hints) {
+        const text = String(hint || '').trim()
+        if (text) rows.push(`${conversation.role}: ${text}`)
+      }
+    }
+  }
+  return [...new Set(rows)].slice(0, 12)
+}
+
+function buildDailyReportWithTransferPatterns(args) {
+  const built = buildDailyReportPrompt(args)
+  const hints = collectModelReplyHints(args?.conversations)
+  const extraSources = hints.length
+    ? `\n\nMODEL REPLY HINTS FROM TODAY (learning-source only; these are NOT user quotes and must never be attributed to the user):\n${hints.map((item) => `- ${item}`).join('\n')}`
+    : ''
+
+  const transferRule = `\n\nTRANSFER-PATTERN OVERRIDE FOR recommended_expressions (this rule takes priority over any earlier wording about that field):
+- Return 3-5 items every normal workday. This section is not limited to sentences the learner successfully wrote: when their own reply is weak, use today's model reply hints and the ideal way to answer today's request as learning material.
+- recommended_expressions[].en MUST be a REUSABLE SENTENCE PATTERN with replaceable square-bracket slots, not a one-off sentence to memorize verbatim. Example: "I'll [verb] [deliverable] by [time]." or "Could you please confirm [detail]?".
+- recommended_expressions[].ko MUST translate the PATTERN, keeping the replaceable parts visibly replaceable in Korean too.
+- recommended_expressions[].note MUST contain two things in concise Korean: (1) one concrete "오늘 예문: ..." that fits today's actual situation/model answer, and (2) when to reuse this pattern. The concrete example may contain today's nouns/deadline, but the en field itself must stay reusable.
+- Source priority: a verified correction.after that teaches a reusable structure > today's model reply hint > a useful structure from today's counterpart/request that can be adapted into the learner's reply. Never invent an unrelated textbook phrase merely to fill the list.
+- Prefer patterns the learner can actually use in an OUTGOING reply tomorrow: committing to a deadline, giving status, confirming details, listing priorities, asking for clarification, acknowledging a request, etc.
+- Do not create separate patterns whose only difference is contraction vs. non-contraction (I'll/I will, I'm/I am, etc.).
+- Make the 3-5 patterns meaningfully different from each other and useful for transfer to a similar-but-not-identical task tomorrow.`
+
+  return {
+    ...built,
+    system: `${built.system}${transferRule}`,
+    user: `${built.user}${extraSources}`,
+  }
+}
+
+// 전날 리포트에서 확정된 패턴을 다음날 실제 업무 상황 안에서 다시 꺼내 쓰게 한다.
+// "같은 문장 받아쓰기"가 아니라 명사/마감/대상을 바꾼 전이 연습이어야 하므로 시나리오 단계에서
+// 요청 자체를 그렇게 설계하고, 정답 문장을 먼저 노출하지 않는다.
+function buildScenarioWithPatternTransfer(args) {
+  const built = buildScenarioPrompt(args)
+  const patterns = Array.isArray(args?.previousMemory?.practice_patterns)
+    ? args.previousMemory.practice_patterns.filter((item) => item?.pattern).slice(0, 5)
+    : []
+  if (!patterns.length) return built
+
+  const transferRule = `\n\nNEXT-DAY TRANSFER PRACTICE (important):
+Yesterday's verified report saved reusable sentence patterns for active recall today. Design TODAY'S one shared work request so the learner gets a natural chance to use 1-2 of those patterns in their reply.
+- Do NOT repeat yesterday's exact sentence or exact nouns/numbers. Change the deliverable, detail, quantity, deadline, or stage so the learner must transfer the structure to new content.
+- Prefer a pattern that fits a normal reply to the shared request. If one saved pattern does not fit the continuing business event naturally, choose another saved pattern instead of distorting the scenario.
+- Do NOT reveal or quote the target pattern in the incoming request itself. The learner should have to recall it. A reply hint may still help later if they choose to open hints.
+- Keep all existing continuity and same-request-across-three-relationships rules. Learning practice must stay invisible inside a believable workday, not turn into a quiz.`
+
+  return {
+    ...built,
+    system: `${built.system}${transferRule}`,
+    user: `${built.user}\n\nYesterday's reusable patterns available for transfer practice:\n${JSON.stringify(patterns, null, 2)}`,
+  }
+}
+
 // 사용자 메시지는 LLM 호출보다 먼저 DB에 저장된다. 그래서 Solar가 순간적으로 실패했을 때 예외를 그대로
 // 던지면 "내 답장은 저장됐는데 상대는 답을 안 하고 대화 상태만 replied"로 굳을 수 있다.
 // 후속 회신에 한해서는 역할별 짧은 안전 응답으로 닫아 대화/리포트 데이터가 끊기지 않게 한다.
@@ -168,7 +233,7 @@ function fallbackRoleResponse(args) {
 }
 
 // ── 고수준 생성 함수 (기획서 17장 기능 단위) ─────────
-export const generateScenario = (args) => generate(buildScenarioPrompt, ScenarioSchema, args)
+export const generateScenario = (args) => generate(buildScenarioWithPatternTransfer, ScenarioSchema, args)
 export const generateRoleMessage = (args) => generate(buildRoleMessagePrompt, MessageSchema, args)
 export const generateRoleResponse = async (args) => {
   try {
@@ -178,7 +243,7 @@ export const generateRoleResponse = async (args) => {
     return fallbackRoleResponse(args)
   }
 }
-export const generateDailyReport = (args) => generate(buildDailyReportPrompt, DailyReportSchema, args)
+export const generateDailyReport = (args) => generate(buildDailyReportWithTransferPatterns, DailyReportSchema, args)
 export const generatePeriodReport = (args) => generate(buildPeriodReportPrompt, PeriodReportSchema, args)
 export const createWorkdayMemory = (args) => generate(buildWorkdayMemoryPrompt, WorkdayMemorySchema, args)
 export const generateOjtWelcomeEmail = (args) => generate(buildOjtWelcomePrompt, MessageSchema, args)
