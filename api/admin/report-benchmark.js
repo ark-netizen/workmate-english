@@ -90,23 +90,31 @@ export default withErrors('POST', async (req, res) => {
     return
   }
 
-  const workday = unwrap(
+  const recentWorkdays = unwrap(
     await sb
       .from('workdays')
       .select('id, work_date, state')
       .eq('user_id', target.id)
       .order('work_date', { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-  )
-  if (!workday) {
+      .limit(10),
+  ) || []
+  if (!recentWorkdays.length) {
     res.status(404).json({ error: 'benchmark workday not found' })
     return
   }
 
-  const input = await loadBenchmarkInput(sb, target.id, workday.id, workday.work_date)
-  if (!input.conversations.length) {
-    res.status(409).json({ error: 'benchmark workday has no user replies' })
+  let workday = null
+  let input = null
+  for (const candidate of recentWorkdays) {
+    const candidateInput = await loadBenchmarkInput(sb, target.id, candidate.id, candidate.work_date)
+    if (candidateInput.conversations.length) {
+      workday = candidate
+      input = candidateInput
+      break
+    }
+  }
+  if (!workday || !input) {
+    res.status(409).json({ error: 'no recent workday with user replies' })
     return
   }
 
