@@ -107,10 +107,19 @@ jobs:
           printf '%s' "$REPORT_PUBLIC_KEY_B64" | base64 -d > public.pem
           openssl enc -aes-256-cbc -K "$AES_KEY" -iv "$IV" -in report.json -out report.enc
           printf '%s' "$AES_KEY" | openssl pkeyutl -encrypt -pubin -inkey public.pem -pkeyopt rsa_padding_mode:oaep -out key.enc
+          printf '%s' "$IV" > iv.txt
+          rm -f report.json public.pem
 
-          echo "REPORT_COMPARE_KEY=$(base64 -w0 key.enc)"
-          echo "REPORT_COMPARE_IV=$IV"
-          echo "REPORT_COMPARE_DATA=$(base64 -w0 report.enc)"
+      - name: Upload encrypted comparison artifact
+        if: steps.secrets.outputs.ready == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: report-comparison-encrypted
+          path: |
+            report.enc
+            key.enc
+            iv.txt
+          retention-days: 1
 
       - name: Disable one-time private comparison
         if: always() && steps.secrets.outputs.ready == 'true'
