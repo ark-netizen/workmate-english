@@ -6,6 +6,7 @@ import { getProfile } from './profile.js'
 import { DailyReportSchema } from './llm/schemas.js'
 
 const SOLAR_MODEL = process.env.SOLAR_MODEL || 'solar-pro2'
+const NON_LEARNING_ISSUE_PATTERN = /(오타|철자|스펠링|맞춤법|축약|줄임말|typo|spelling|contraction)/i
 
 function parseJson(text) {
   let t = String(text || '').trim()
@@ -170,7 +171,9 @@ async function loadSourceMaterial(userId, workdayId) {
       await sb.from('daily_reports').select('recurring_issues').in('workday_id', previousWorkdays.map((item) => item.id)),
     ) || []
     previousIssues = dedupeBy(
-      previousReports.flatMap((item) => item.recurring_issues || []),
+      previousReports
+        .flatMap((item) => item.recurring_issues || [])
+        .filter((item) => !NON_LEARNING_ISSUE_PATTERN.test(String(item || ''))),
       (item) => normalize(item),
     ).slice(0, 8)
   }
@@ -192,20 +195,14 @@ function buildTranscript(conversations) {
 }
 
 function sanitizeVerifiedReport(report, conversations) {
-  const userText = new Set(
-    conversations.flatMap((conversation) =>
-      conversation.messages
-        .filter((message) => message.sender === 'user')
-        .map((message) => normalize(message.body)),
-    ),
+  const userBodies = conversations.flatMap((conversation) =>
+    conversation.messages.filter((message) => message.sender === 'user').map((message) => message.body),
   )
-  const characterText = new Set(
-    conversations.flatMap((conversation) =>
-      conversation.messages
-        .filter((message) => message.sender !== 'user')
-        .map((message) => normalize(message.body)),
-    ),
+  const characterBodies = conversations.flatMap((conversation) =>
+    conversation.messages.filter((message) => message.sender !== 'user').map((message) => message.body),
   )
+  const userCorpus = normalize(userBodies.join(' § '))
+  const characterCorpus = normalize(characterBodies.join(' § '))
   const hintCopiedText = new Set(
     conversations.flatMap((conversation) =>
       conversation.messages
@@ -213,11 +210,19 @@ function sanitizeVerifiedReport(report, conversations) {
         .map((message) => normalize(message.body)),
     ),
   )
+  const isGroundedInUser = (value) => {
+    const key = normalize(value)
+    return !!key && userCorpus.includes(key)
+  }
+  const isGroundedInCharacter = (value) => {
+    const key = normalize(value)
+    return !!key && characterCorpus.includes(key)
+  }
 
   const corrections = dedupeBy(
     (report.corrections || []).filter((item) => {
       const before = normalize(item?.before)
-      if (!before || !userText.has(before) || hintCopiedText.has(before)) return false
+      if (!before || !isGroundedInUser(item?.before) || hintCopiedText.has(before)) return false
       if (differsOnlyByContraction(item?.before, item?.after)) return false
       return true
     }),
@@ -228,14 +233,14 @@ function sanitizeVerifiedReport(report, conversations) {
   const goodExpressions = dedupeBy(
     (report.good_expressions || []).filter((item) => {
       const text = normalize(item?.text)
-      return text && userText.has(text) && !correctedBefore.has(text)
+      return text && isGroundedInUser(item?.text) && !correctedBefore.has(text)
     }),
     (item) => normalize(item?.text),
   )
 
   const registerFeedback = dedupeBy(
     (report.register_feedback || []).filter((item) => {
-      return userText.has(normalize(item?.user_quote)) && characterText.has(normalize(item?.their_quote))
+      return isGroundedInUser(item?.user_quote) && isGroundedInCharacter(item?.their_quote)
     }),
     (item) => String(item?.role || ''),
   )
@@ -245,7 +250,10 @@ function sanitizeVerifiedReport(report, conversations) {
     good_expressions: goodExpressions,
     corrections,
     register_feedback: registerFeedback,
-    recurring_issues: dedupeBy(report.recurring_issues, (item) => normalize(item)),
+    recurring_issues: dedupeBy(
+      (report.recurring_issues || []).filter((item) => !NON_LEARNING_ISSUE_PATTERN.test(String(item || ''))),
+      (item) => normalize(item),
+    ),
     recommended_expressions: dedupeBy(report.recommended_expressions, (item) => normalize(item?.en)),
   }
 }
