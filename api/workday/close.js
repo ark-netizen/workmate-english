@@ -14,6 +14,7 @@ import {
 import { admin } from '../../server/db.js'
 import { withErrors } from '../../server/http.js'
 import { sendPushToUser } from '../../server/push.js'
+import { verifyDailyReport } from '../../server/dailyReportVerifier.js'
 
 const normalizeSentence = (value) =>
   String(value || '')
@@ -83,10 +84,8 @@ async function seedPreviousReportIssues(userId, workdayId, workDate) {
   if (seedResult.error) throw seedResult.error
 }
 
-// LLM 프롬프트가 지켜야 하는 내용 규칙 중 스키마 검증만으로 잡히지 않는 모순은 저장 직후 한 번 더 정리한다.
-// 같은 교정이 중복되거나, 같은 사용자 문장이 "잘한 표현"과 "교정 내용"에 동시에 들어가는 경우를 제거한다.
-// 입력창의 "오타 교정"이 철자 문제를 전송 전에 처리하므로 일일 리포트에서는 철자/오타를 다시 평가하지 않는다.
-// 리포트는 문법·자연스러움·관계별 톤처럼 학습 가치가 남는 교정에만 집중한다.
+// LLM 프롬프트가 지켜야 하는 내용 규칙 중 스키마 검증만으로 잡히지 않는 모순은 최종 저장 전에 한 번 더 정리한다.
+// 2차 교차검증을 통과한 리포트에도 결정론적으로 잡을 수 있는 중복/오타 피드백은 코드에서 제거한다.
 async function cleanGeneratedDailyReport(workdayId, report) {
   if (!report) return report
 
@@ -118,19 +117,22 @@ async function cleanGeneratedDailyReport(workdayId, report) {
     recurring_issues: recurringIssues,
   }
 
+  // 2차 검증은 배열만 고치는 게 아니라 요약/익일 맥락까지 다시 검토하므로 최종본 전체 필드를 DB에 반영한다.
   const updateResult = await admin()
     .from('daily_reports')
     .update({
+      workday_summary: cleaned.workday_summary,
       good_expressions: cleaned.good_expressions,
       corrections: cleaned.corrections,
       recommended_expressions: cleaned.recommended_expressions,
       register_feedback: cleaned.register_feedback,
       recurring_issues: cleaned.recurring_issues,
+      next_day_context: cleaned.next_day_context,
     })
     .eq('workday_id', workdayId)
 
   // 퇴근 자체는 이미 성공한 뒤이므로 정리 실패 때문에 사용자 퇴근 요청까지 500으로 뒤집지는 않는다.
-  if (updateResult.error) console.error('[daily-report] 저장 후 정리 실패:', updateResult.error)
+  if (updateResult.error) console.error('[daily-report] 최종 리포트 저장 실패:', updateResult.error)
 
   return cleaned
 }
@@ -192,7 +194,11 @@ export default withErrors('POST', async (req, res) => {
   })
 
   const result = await closeWorkday(workdayId)
-  if (result?.report) result.report = await cleanGeneratedDailyReport(workdayId, result.report)
+  if (result?.report) {
+    // 1차 리포트 전체를 원문 대화와 다시 대조해 교정/톤/암기 추천/반복 이슈/요약을 최종 검수한다.
+    const verified = await verifyDailyReport({ userId, workdayId, draftReport: result.report })
+    result.report = await cleanGeneratedDailyReport(workdayId, verified)
+  }
 
   res.status(200).json(result)
   // 리포트 생성이 몇 초 걸리므로, 클라이언트 응답을 먼저 보낸 다음 완료 알림을 보낸다
