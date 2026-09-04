@@ -16,7 +16,6 @@ import closeHandler from "../../../api/workday/close.js";
 import deliverNextHandler from "../../../api/workday/deliver-next.js";
 import periodHandler from "../../../api/workday/report/period.js";
 import adminDashboardHandler from "../../../api/admin/dashboard.js";
-import reportBenchmarkHandler from "../../../api/admin/report-benchmark.js";
 import cronDispatchHandler from "../../../api/cron/dispatch.js";
 
 const routes: Record<string, (req: any, res: any) => Promise<void>> = {
@@ -31,7 +30,6 @@ const routes: Record<string, (req: any, res: any) => Promise<void>> = {
   "/workday/deliver-next": deliverNextHandler,
   "/workday/report/period": periodHandler,
   "/admin/dashboard": adminDashboardHandler,
-  "/admin/report-benchmark": reportBenchmarkHandler,
   "/cron/dispatch": cronDispatchHandler,
 };
 
