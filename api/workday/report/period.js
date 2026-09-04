@@ -10,11 +10,16 @@ import { withErrors } from '../../../server/http.js'
 
 const SPELLING_ISSUE_PATTERN = /(오타|철자|스펠링|맞춤법|typo|spelling|misspell(?:ed|ing)?)/i
 const isSpellingIssue = (value) => SPELLING_ISSUE_PATTERN.test(String(value || ''))
+const isTransferPattern = (item) => /\[[^\]]+\]/.test(String(item?.en || ''))
 
-function hideSpellingIssues(report) {
+function sanitizeDailyReportView(report) {
   if (!report) return report
+  const keyPhrases = report.keyPhrases || []
+  const transferPatterns = keyPhrases.filter(isTransferPattern)
   return {
     ...report,
+    keyPhrases: transferPatterns.length ? transferPatterns.slice(0, 5) : keyPhrases,
+    improvementPoints: (report.improvementPoints || []).filter((item) => !isSpellingIssue(item?.note)),
     corrections: (report.corrections || []).filter((item) => !isSpellingIssue(item?.note)),
     recurring_issues: (report.recurring_issues || []).filter((item) => !isSpellingIssue(item)),
   }
@@ -51,7 +56,7 @@ export default withErrors(null, async (req, res) => {
         return
       }
       const result = await getDailyReportForDate(userId, date)
-      if (result?.report) result.report = hideSpellingIssues(result.report)
+      if (result?.report) result.report = sanitizeDailyReportView(result.report)
       res.status(200).json(result)
       return
     }
