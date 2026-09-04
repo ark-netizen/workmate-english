@@ -101,7 +101,7 @@ async function cleanGeneratedDailyReport(workdayId, report) {
   const recommendedExpressions = dedupeBy(
     report.recommended_expressions,
     (item) => normalizeSentence(item?.en),
-  )
+  ).slice(0, 5)
   const registerFeedback = dedupeBy(report.register_feedback, (item) => String(item?.role || ''))
   const recurringIssues = dedupeBy(
     (report.recurring_issues || []).filter((item) => !isSpellingIssue(item)),
@@ -135,6 +135,49 @@ async function cleanGeneratedDailyReport(workdayId, report) {
   if (updateResult.error) console.error('[daily-report] 최종 리포트 저장 실패:', updateResult.error)
 
   return cleaned
+}
+
+// closeWorkday()는 1차 리포트를 기준으로 익일 메모리를 먼저 만든 뒤 API 레이어에서 2차 검증을 한다.
+// 그대로 두면 다음날 시나리오가 검증 전 추천을 학습 목표로 받을 수 있으므로, 최종 리포트 확정 직후
+// 같은 메모리에 검증된 반복 이슈/익일 맥락/재사용 패턴을 다시 동기화한다.
+async function syncVerifiedLearningMemory(userId, workdayId, report) {
+  if (!report) return
+  const sb = admin()
+  const memoryResult = await sb
+    .from('workday_memories')
+    .select('id, summary')
+    .eq('user_id', userId)
+    .eq('workday_id', workdayId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (memoryResult.error) throw memoryResult.error
+  if (!memoryResult.data) return
+
+  const practicePatterns = dedupeBy(
+    (report.recommended_expressions || []).filter((item) => item?.en),
+    (item) => normalizeSentence(item.en),
+  )
+    .slice(0, 5)
+    .map((item) => ({
+      pattern: String(item.en || '').trim(),
+      ko: String(item.ko || '').trim(),
+      guidance: String(item.note || '').trim(),
+    }))
+
+  const existing = memoryResult.data.summary && typeof memoryResult.data.summary === 'object'
+    ? memoryResult.data.summary
+    : {}
+  const summary = {
+    ...existing,
+    frequent_errors: report.recurring_issues || [],
+    next_events: report.next_day_context || existing.next_events || '',
+    practice_patterns: practicePatterns,
+  }
+
+  const updateResult = await sb.from('workday_memories').update({ summary }).eq('id', memoryResult.data.id)
+  if (updateResult.error) throw updateResult.error
 }
 
 export default withErrors('POST', async (req, res) => {
@@ -198,6 +241,9 @@ export default withErrors('POST', async (req, res) => {
     // 1차 리포트 전체를 원문 대화와 다시 대조해 교정/톤/암기 추천/반복 이슈/요약을 최종 검수한다.
     const verified = await verifyDailyReport({ userId, workdayId, draftReport: result.report })
     result.report = await cleanGeneratedDailyReport(workdayId, verified)
+    await syncVerifiedLearningMemory(userId, workdayId, result.report).catch((error) => {
+      console.error('[daily-report] 익일 학습 패턴 메모리 동기화 실패:', error)
+    })
   }
 
   res.status(200).json(result)
