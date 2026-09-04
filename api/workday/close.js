@@ -21,6 +21,17 @@ const normalizeSentence = (value) =>
     .replace(/[^a-z0-9가-힣]+/g, ' ')
     .trim()
 
+const SPELLING_ISSUE_PATTERN = /(오타|철자|스펠링|맞춤법|typo|spelling|misspell(?:ed|ing)?)/i
+
+function isSpellingIssue(value) {
+  return SPELLING_ISSUE_PATTERN.test(String(value || ''))
+}
+
+function isSpellingCorrection(item) {
+  if (!item) return false
+  return isSpellingIssue(item.note)
+}
+
 function dedupeBy(items, makeKey) {
   if (!Array.isArray(items)) return []
   const seen = new Set()
@@ -57,7 +68,9 @@ async function seedPreviousReportIssues(userId, workdayId, workDate) {
 
   if (previousReportsResult.error) throw previousReportsResult.error
   const previousIssues = dedupeBy(
-    (previousReportsResult.data || []).flatMap((row) => row.recurring_issues || []),
+    (previousReportsResult.data || [])
+      .flatMap((row) => row.recurring_issues || [])
+      .filter((issue) => !isSpellingIssue(issue)),
     (issue) => normalizeSentence(issue),
   ).slice(0, 8)
 
@@ -72,11 +85,13 @@ async function seedPreviousReportIssues(userId, workdayId, workDate) {
 
 // LLM 프롬프트가 지켜야 하는 내용 규칙 중 스키마 검증만으로 잡히지 않는 모순은 저장 직후 한 번 더 정리한다.
 // 같은 교정이 중복되거나, 같은 사용자 문장이 "잘한 표현"과 "교정 내용"에 동시에 들어가는 경우를 제거한다.
+// 입력창의 "오타 교정"이 철자 문제를 전송 전에 처리하므로 일일 리포트에서는 철자/오타를 다시 평가하지 않는다.
+// 리포트는 문법·자연스러움·관계별 톤처럼 학습 가치가 남는 교정에만 집중한다.
 async function cleanGeneratedDailyReport(workdayId, report) {
   if (!report) return report
 
   const corrections = dedupeBy(
-    report.corrections,
+    (report.corrections || []).filter((item) => !isSpellingCorrection(item)),
     (item) => `${normalizeSentence(item?.before)}→${normalizeSentence(item?.after)}`,
   )
   const correctionBefore = new Set(corrections.map((item) => normalizeSentence(item?.before)).filter(Boolean))
@@ -89,7 +104,10 @@ async function cleanGeneratedDailyReport(workdayId, report) {
     (item) => normalizeSentence(item?.en),
   )
   const registerFeedback = dedupeBy(report.register_feedback, (item) => String(item?.role || ''))
-  const recurringIssues = dedupeBy(report.recurring_issues, (item) => normalizeSentence(item))
+  const recurringIssues = dedupeBy(
+    (report.recurring_issues || []).filter((item) => !isSpellingIssue(item)),
+    (item) => normalizeSentence(item),
+  )
 
   const cleaned = {
     ...report,
