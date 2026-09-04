@@ -1,6 +1,5 @@
 // 일일 리포트 2차 교차검증 — 1차 SOLAR 리포트를 원문 대화와 다시 대조해 최종본으로 다듬는다.
-// 목적: 문법적으로 맞는 표현을 취향 차이로 교정하거나, 축약형/비축약형을 우열로 평가하거나,
-// 실제 업무 맥락과 무관한 암기 표현을 추천하는 문제를 최종 저장 전에 한 번 더 걸러낸다.
+// 목적: 취향성 교정/축약형 지적/맥락 없는 암기 표현을 제거하고, 다음날 다시 쓸 수 있는 패턴만 남긴다.
 import { admin, unwrap } from './db.js'
 import { getProfile } from './profile.js'
 import { DailyReportSchema } from './llm/schemas.js'
@@ -67,19 +66,15 @@ function expandContractions(value) {
     .replace(/\bI'm\b/gi, 'I am')
     .replace(/\bI'll\b/gi, 'I will')
     .replace(/\bI've\b/gi, 'I have')
-    .replace(/\bI'd\b/gi, 'I would')
     .replace(/\bwe're\b/gi, 'we are')
     .replace(/\bwe'll\b/gi, 'we will')
     .replace(/\bwe've\b/gi, 'we have')
-    .replace(/\bwe'd\b/gi, 'we would')
     .replace(/\byou're\b/gi, 'you are')
     .replace(/\byou'll\b/gi, 'you will')
     .replace(/\byou've\b/gi, 'you have')
-    .replace(/\byou'd\b/gi, 'you would')
     .replace(/\bthey're\b/gi, 'they are')
     .replace(/\bthey'll\b/gi, 'they will')
     .replace(/\bthey've\b/gi, 'they have')
-    .replace(/\bthey'd\b/gi, 'they would')
     .replace(/\bhe's\b/gi, 'he is')
     .replace(/\bshe's\b/gi, 'she is')
     .replace(/\bit's\b/gi, 'it is')
@@ -105,6 +100,16 @@ function expandContractions(value) {
 function differsOnlyByContraction(before, after) {
   if (!before || !after) return false
   return normalize(expandContractions(before)) === normalize(expandContractions(after))
+}
+
+function isClearlyUnevaluable(value) {
+  const raw = String(value || '').trim()
+  if (!raw) return true
+  if (/^[^a-z가-힣0-9]+$/i.test(raw)) return true
+  const letters = raw.replace(/[^a-z]/gi, '')
+  if (letters.length >= 3 && /^([a-z])\1+$/i.test(letters)) return true
+  if (/^(?:asdf|qwer|zxcv|fdsa|hjkl)+$/i.test(letters)) return true
+  return false
 }
 
 function dedupeBy(items, makeKey) {
@@ -194,6 +199,20 @@ function buildTranscript(conversations) {
     .join('\n\n')
 }
 
+function buildModelReplyHints(conversations) {
+  const rows = []
+  for (const conversation of conversations) {
+    for (const message of conversation.messages || []) {
+      if (message.sender === 'user' || !Array.isArray(message.reply_hints)) continue
+      for (const hint of message.reply_hints) {
+        const text = String(hint || '').trim()
+        if (text) rows.push(`${conversation.role}: ${text}`)
+      }
+    }
+  }
+  return [...new Set(rows)].slice(0, 12)
+}
+
 function sanitizeVerifiedReport(report, conversations) {
   const userBodies = conversations.flatMap((conversation) =>
     conversation.messages.filter((message) => message.sender === 'user').map((message) => message.body),
@@ -223,6 +242,7 @@ function sanitizeVerifiedReport(report, conversations) {
     (report.corrections || []).filter((item) => {
       const before = normalize(item?.before)
       if (!before || !isGroundedInUser(item?.before) || hintCopiedText.has(before)) return false
+      if (isClearlyUnevaluable(item?.before)) return false
       if (differsOnlyByContraction(item?.before, item?.after)) return false
       return true
     }),
@@ -233,7 +253,7 @@ function sanitizeVerifiedReport(report, conversations) {
   const goodExpressions = dedupeBy(
     (report.good_expressions || []).filter((item) => {
       const text = normalize(item?.text)
-      return text && isGroundedInUser(item?.text) && !correctedBefore.has(text)
+      return text && !isClearlyUnevaluable(item?.text) && isGroundedInUser(item?.text) && !correctedBefore.has(text)
     }),
     (item) => normalize(item?.text),
   )
@@ -245,16 +265,25 @@ function sanitizeVerifiedReport(report, conversations) {
     (item) => String(item?.role || ''),
   )
 
+  const recommendedExpressions = dedupeBy(
+    (report.recommended_expressions || []).filter((item) => item?.en && item?.ko && item?.note),
+    (item) => normalize(item?.en),
+  ).slice(0, 5)
+
+  const hasEvaluableLanguage = userBodies.some((body) => !isClearlyUnevaluable(body))
+
   return {
     ...report,
     good_expressions: goodExpressions,
     corrections,
     register_feedback: registerFeedback,
-    recurring_issues: dedupeBy(
-      (report.recurring_issues || []).filter((item) => !NON_LEARNING_ISSUE_PATTERN.test(String(item || ''))),
-      (item) => normalize(item),
-    ),
-    recommended_expressions: dedupeBy(report.recommended_expressions, (item) => normalize(item?.en)),
+    recurring_issues: hasEvaluableLanguage
+      ? dedupeBy(
+          (report.recurring_issues || []).filter((item) => !NON_LEARNING_ISSUE_PATTERN.test(String(item || ''))),
+          (item) => normalize(item),
+        )
+      : [],
+    recommended_expressions: recommendedExpressions,
   }
 }
 
@@ -265,26 +294,33 @@ export async function verifyDailyReport({ userId, workdayId, draftReport }) {
   if (!profile || profile.is_trial || !conversations.length) return draftReport
 
   const transcript = buildTranscript(conversations)
+  const modelReplyHints = buildModelReplyHints(conversations)
   const system = `You are the SECOND-PASS senior editor for a Korean business-English learning service.
-A first model already produced a daily report. Treat that draft as UNTRUSTED. Your job is to compare every claim against the original transcript and return a corrected FINAL report in the exact same JSON shape.
+A first model already produced a daily report. Treat that draft as UNTRUSTED. Compare every claim against the original transcript and return a corrected FINAL report in the exact same JSON shape.
 
 Your priority is accuracy and learning value, not preserving the first draft.
 
 NON-NEGOTIABLE RULES:
-1. TRANSCRIPT IS THE ONLY SOURCE OF TRUTH. Never invent a user sentence, counterpart sentence, deadline, request, fact, or intent. Quotes in good_expressions/corrections/register_feedback must be exact transcript quotes from the correct speaker.
+1. TRANSCRIPT IS THE ONLY SOURCE OF TRUTH for what actually happened. Never invent a user sentence, counterpart sentence, deadline, request, fact, or intent. Quotes in good_expressions/corrections/register_feedback must be exact transcript quotes from the correct speaker. MODEL REPLY HINTS are a separate learning source only and must never be described as something the user said.
 2. DO NOT GRADE SPELLING/TYPOS/CAPITALIZATION. The app has a separate spelling-fix step before sending. Daily-report corrections must focus on grammar, word choice, prepositions/articles, genuinely unnatural phrasing, and communication quality that still matters after spelling cleanup.
-3. CONTRACTIONS ARE NOT A LEARNING ISSUE. "I'll" and "I will", "I'm" and "I am", "I've" and "I have", "don't" and "do not", etc. are both valid. Never correct one into the other, never praise one over the other, never claim the expanded form is inherently more professional, and never create register feedback or recurring issues about contraction vs. non-contraction. Do not recommend memorizing an expanded/contracted version merely because the draft used the other.
-4. NO STYLE-PREFERENCE CORRECTIONS. If the user's sentence is grammatical, natural, and appropriate enough for the relationship, keep it as good_expressions even if another wording is also possible. Corrections are for real defects, not teacher taste.
-5. MINIMAL, MEANING-PRESERVING FIXES. correction.before must be the exact user sentence. correction.after must change the fewest words needed and preserve the same facts/intent. note must explain the actual diff in Korean.
-6. COVERAGE. Every self-written user sentence in the transcript should appear exactly once in either good_expressions or corrections. A line marked [COPIED_SENTENCE_HINT] was supplied by the app: never put it in corrections. It may appear in good_expressions only if useful, and the note must say it was a provided hint rather than praising it as the user's own composition.
-7. REGISTER FEEDBACK. Include one entry for each relationship the user actually replied to. their_quote and user_quote must be exact transcript quotes. Evaluate concrete wording and pragmatic fit, but do not manufacture etiquette rules. Contraction choice by itself is never evidence of good/bad register.
-8. RECOMMENDED EXPRESSIONS MUST BE CONTEXTUAL. Return 3-5 expressions the learner could realistically reuse in the SAME kind of situation seen today. Prefer corrected sentences from corrections when useful, then expressions directly grounded in today's requests/replies. Reject generic filler, unrelated business phrases, invented commitments, or phrases whose tone does not fit the relevant relationship. Korean meaning must match the English exactly. note must state when/how to use it.
-9. RECURRING ISSUES MUST ACTUALLY RECUR. Only call something recurring if (a) it appears at least twice in today's self-written replies, or (b) it clearly matches one of the supplied previous recurring issues. A one-off mistake is not a recurring issue.
+3. CONTRACTIONS ARE NOT A LEARNING ISSUE. "I'll" and "I will", "I'm" and "I am", "I've" and "I have", "don't" and "do not", etc. are both valid. Never correct one into the other, praise one over the other, or create register/recurring feedback about contraction choice.
+4. NO STYLE-PREFERENCE CORRECTIONS. If the user's sentence is grammatical, natural, and appropriate enough for the relationship, keep it as good_expressions even if another wording is possible.
+5. MINIMAL, MEANING-PRESERVING FIXES. correction.before must be the exact user sentence. correction.after must change the fewest words needed and preserve the same facts/intent. If the input has NO recoverable semantic content (e.g. "ffff", "???", keyboard mash), there is no meaning to preserve: DO NOT invent a model answer and call it a correction. Such input is unevaluable language, not a grammar error.
+6. COVERAGE applies only to evaluable self-written English. Every evaluable self-written user sentence should appear exactly once in good_expressions or corrections. A line marked [COPIED_SENTENCE_HINT] was supplied by the app and never belongs in corrections. Gibberish/non-semantic input is an explicit exception and belongs in neither list.
+7. REGISTER FEEDBACK. Include one entry for each relationship the user actually replied to. their_quote and user_quote must be exact transcript quotes. If a reply is meaningless/too empty to evaluate, say that communication content was insufficient; do NOT derive imaginary grammar errors from it.
+8. RECOMMENDED EXPRESSIONS ARE NEXT-DAY TRANSFER PATTERNS. Return 3-5 items every normal workday, even if the learner's own replies were poor, because MODEL REPLY HINTS and today's ideal reply still provide learning material.
+   - en MUST be a reusable sentence TEMPLATE with square-bracket slots, e.g. "I'll [verb] [deliverable] by [time]." It must NOT be merely one fixed sentence with today's nouns.
+   - ko MUST translate that reusable template, keeping the replaceable parts visibly replaceable.
+   - note MUST contain a concrete "오늘 예문: ..." grounded in today's corrected answer/model reply hint/context, followed by a concise Korean explanation of when to reuse the pattern.
+   - Source priority: verified correction.after > MODEL REPLY HINTS > a structure directly useful for answering today's request. Never add an unrelated generic textbook phrase just to reach 3-5.
+   - Prefer OUTGOING reply patterns the learner can actually recall tomorrow: deadline commitments, status updates, confirmations, priority lists, clarification requests, acknowledgements.
+   - Make the patterns meaningfully different. Never create two whose only difference is contraction vs. non-contraction.
+9. RECURRING ISSUES MUST ACTUALLY RECUR. Only call something recurring if (a) it appears at least twice in today's evaluable self-written replies, or (b) it clearly matches one supplied previous recurring issue. Never infer capitalization/punctuation/grammar patterns from gibberish.
 10. SUMMARY/NEXT CONTEXT MUST BE FACTUAL. Keep workday_summary and next_day_context grounded in what actually happened. Do not infer completion, promises, or next steps that were never stated.
-11. INTERNAL CONSISTENCY. The same sentence cannot be both good and corrected. A register note cannot call something an error unless corrections contains the same sentence and its fix. Recommended expressions must not contradict corrections or the event context.
+11. INTERNAL CONSISTENCY. The same sentence cannot be both good and corrected. A register note cannot call something an error unless corrections contains the same sentence and its fix. Recommended patterns must not contradict corrections or the event context.
 12. Write all explanations/notes/summaries in Korean. Keep quoted/user-facing English expressions in English.
 
-If the first draft is weak, rewrite it substantially. You are not merely approving/rejecting entries; you are producing the final high-quality report.`
+If the first draft is weak, rewrite it substantially. You are producing the final high-quality report, not merely approving entries.`
 
   const user = `Today's event:
 ${JSON.stringify({ title: scenario?.title || '', summary: scenario?.summary || '', goal: scenario?.goal || '' }, null, 2)}
@@ -298,6 +334,9 @@ ${JSON.stringify(previousIssues, null, 2)}
 ORIGINAL TRANSCRIPT:
 ${transcript}
 
+MODEL REPLY HINTS FROM TODAY (learning-source only; never attribute these to the user):
+${modelReplyHints.length ? modelReplyHints.map((item) => `- ${item}`).join('\n') : '- none available'}
+
 FIRST-PASS DRAFT TO AUDIT:
 ${JSON.stringify(draftReport, null, 2)}
 
@@ -308,7 +347,7 @@ Return ONLY valid JSON with this exact shape:
   "corrections": [{ "before": string, "after": string, "after_ko": string, "note": string }],
   "register_feedback": [{ "role": "colleague"|"manager"|"client", "their_quote": string, "their_quote_ko": string, "user_quote": string, "note": string }],
   "recurring_issues": string[],
-  "recommended_expressions": [{ "en": string, "ko": string, "note": string }],
+  "recommended_expressions": [{ "en": string (reusable template with [slots]), "ko": string (Korean template), "note": string (must include today's concrete example + usage) }],
   "next_day_context": string
 }`
 
